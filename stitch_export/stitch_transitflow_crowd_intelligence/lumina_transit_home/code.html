@@ -1,0 +1,275 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Lumina Transit - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary": "#002e6a",
+                        "surface-tint": "#adc6ff",
+                        "surface-container-highest": "#2e3545",
+                        "on-tertiary-container": "#3e2400",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#005ac2",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#424754",
+                        "on-primary-container": "#00285d",
+                        "inverse-surface": "#dce2f7",
+                        "surface": "#0c1322",
+                        "surface-variant": "#2e3545",
+                        "secondary-container": "#00a572",
+                        "on-primary-fixed": "#001a42",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-tertiary": "#472a00",
+                        "background": "#0c1322",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary": "#ffb95f",
+                        "surface-bright": "#323949",
+                        "tertiary-fixed": "#ffddb8",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#d8e2ff",
+                        "on-background": "#dce2f7",
+                        "primary-container": "#4d8eff",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-container": "#191f2f",
+                        "outline": "#8c909f",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-dim": "#0c1322",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-container": "#ca8100",
+                        "surface-container-low": "#141b2b",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-surface": "#dce2f7",
+                        "inverse-on-surface": "#293040",
+                        "on-secondary": "#003824",
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-container-lowest": "#070e1d",
+                        "surface-container-high": "#232a3a",
+                        "primary": "#adc6ff",
+                        "secondary": "#4edea3",
+                        "on-tertiary-fixed": "#2a1700"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "transit": "1.5rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "container-margin": "20px",
+                        "stack-lg": "24px",
+                        "stack-sm": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter", "sans-serif"],
+                        "label-bold": ["Inter", "sans-serif"],
+                        "label-sm": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter", "sans-serif"],
+                        "headline-lg": ["Inter", "sans-serif"],
+                        "headline-lg-mobile": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "status-number": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "status-number": ["24px", { "lineHeight": "24px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background-color: rgba(46, 53, 69, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-inner { box-shadow: inset 0 0 20px rgba(173, 198, 255, 0.15); }
+        .live-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(78, 222, 163, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(78, 222, 163, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(78, 222, 163, 0); }
+        }
+        
+        /* Hide scrollbar for horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-[80px]">
+<!-- TopAppBar (from JSON) -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed top-0 w-full flex justify-between items-center px-container-margin h-16 z-50">
+<button aria-label="Location" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight">Lumina Transit</h1>
+<button aria-label="Notifications" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-[80px] px-container-margin pb-safe">
+<!-- Search Bar -->
+<div class="mb-stack-lg relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full pl-10 pr-4 py-3 glass-panel rounded-xl text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Where to?" type="text">
+</div>
+<!-- Map Preview -->
+<section class="mb-stack-lg">
+<div class="relative w-full h-[200px] rounded-transit overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="A stylized, high-contrast dark mode digital map showing city streets. The map relies on deep charcoal and black tones, accented by glowing neon blue transit routes and small teal location markers. The aesthetic is futuristic, sleek, and resembles a high-tech HUD." data-location="Colombo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBPwVEo7xJOmYW7jCiNOMYt7Anlkf6XA2PMxU8z-JCBKMl7ylc8p6HNlUyzFsku1ud9qOjeRKMbvRFtAnaikQQiGdk32j6En83YnY4BsKUYjkqjec6ZuH2-854bMq9KeNidqXpbAmo2ITLVYHcvXHZnWd0SUhlJTz-EJ0Zb-Yqh6MW8e9yhjIHkNSzj46kvCJwAisrRvwB7llQTCBrgWK0VdamngqpwScq3O7QyIXMhTWawS_yTZos-A">
+<!-- Map Overlays -->
+<div class="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none"></div>
+<div class="absolute bottom-4 left-4 glass-panel px-3 py-1.5 rounded-full flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary live-pulse"></div>
+<span class="font-label-sm text-label-sm text-on-surface">Live Network</span>
+</div>
+<button class="absolute bottom-4 right-4 bg-primary text-on-primary-container p-2 rounded-full shadow-lg">
+<span class="material-symbols-outlined text-[20px]">my_location</span>
+</button>
+</div>
+</section>
+<!-- Favorite Routes (Horizontal Scroll) -->
+<section class="mb-stack-lg">
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface mb-stack-sm">Favorite Routes</h2>
+<div class="flex overflow-x-auto no-scrollbar gap-gutter pb-2 -mx-container-margin px-container-margin">
+<!-- Route Card 1 -->
+<button class="flex-shrink-0 glass-panel rounded-transit p-4 w-[160px] text-left hover:bg-surface-container-high transition-colors active:scale-95">
+<div class="flex justify-between items-start mb-2">
+<span class="font-status-number text-status-number text-primary">138</span>
+<span class="material-symbols-outlined text-outline text-[20px]">favorite</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface truncate">Maharagama</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center mt-1">
+<span class="material-symbols-outlined text-[14px] mr-1">schedule</span> 4 mins
+                    </div>
+</button>
+<!-- Route Card 2 -->
+<button class="flex-shrink-0 glass-panel rounded-transit p-4 w-[160px] text-left hover:bg-surface-container-high transition-colors active:scale-95">
+<div class="flex justify-between items-start mb-2">
+<span class="font-status-number text-status-number text-primary">120</span>
+<span class="material-symbols-outlined text-outline text-[20px]">favorite</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface truncate">Piliyandala</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center mt-1">
+<span class="material-symbols-outlined text-[14px] mr-1">schedule</span> 12 mins
+                    </div>
+</button>
+<!-- Route Card 3 -->
+<button class="flex-shrink-0 glass-panel rounded-transit p-4 w-[160px] text-left hover:bg-surface-container-high transition-colors active:scale-95">
+<div class="flex justify-between items-start mb-2">
+<span class="font-status-number text-status-number text-primary">154</span>
+<span class="material-symbols-outlined text-outline text-[20px]">favorite</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface truncate">Angulana</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant flex items-center mt-1">
+<span class="material-symbols-outlined text-[14px] mr-1">schedule</span> 18 mins
+                    </div>
+</button>
+</div>
+</section>
+<!-- Active Buses Near You -->
+<section>
+<div class="flex justify-between items-end mb-stack-sm">
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Active Buses Near You</h2>
+<button class="font-label-bold text-label-bold text-primary hover:underline">View All</button>
+</div>
+<div class="flex flex-col gap-unit">
+<!-- Bus Card 1 -->
+<div class="glass-panel rounded-transit p-4 flex items-center gap-4 glow-inner">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary">directions_bus</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-status-number text-status-number text-primary">17</span>
+<span class="font-body-md text-body-md text-on-surface truncate">Panadura - Fort</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Arriving in <span class="text-on-surface font-semibold">3 mins</span></div>
+</div>
+<div class="flex-shrink-0 flex flex-col items-end gap-2">
+<!-- Crowd Level Pill -->
+<div class="bg-secondary/20 border border-secondary/30 text-secondary px-2 py-0.5 rounded-full flex items-center gap-1 shadow-[0_0_8px_rgba(78,222,163,0.3)]">
+<span class="material-symbols-outlined text-[12px]">group</span>
+<span class="font-label-sm text-label-sm">Low</span>
+</div>
+</div>
+</div>
+<!-- Bus Card 2 -->
+<div class="glass-panel rounded-transit p-4 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-outline">directions_bus</span>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex items-baseline gap-2">
+<span class="font-status-number text-status-number text-on-surface">155</span>
+<span class="font-body-md text-body-md text-on-surface truncate">Mattakkuliya</span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1">Arriving in <span class="text-on-surface font-semibold">8 mins</span></div>
+</div>
+<div class="flex-shrink-0 flex flex-col items-end gap-2">
+<!-- Crowd Level Pill (Amber) -->
+<div class="bg-tertiary/20 border border-tertiary/30 text-tertiary px-2 py-0.5 rounded-full flex items-center gap-1 shadow-[0_0_8px_rgba(255,185,95,0.3)]">
+<span class="material-symbols-outlined text-[12px]">group</span>
+<span class="font-label-sm text-label-sm">Med</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (from JSON) -->
+<nav class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe rounded-t-xl shadow-lg border-t border-white/10 md:hidden">
+<!-- Active: Home -->
+<button class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-4 py-1 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</button>
+<!-- Inactive: Trips -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1">
+<span class="material-symbols-outlined" data-icon="route">route</span>
+<span class="font-label-sm text-label-sm mt-1">Trips</span>
+</button>
+<!-- Inactive: Ranks -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+<span class="font-label-sm text-label-sm mt-1">Ranks</span>
+</button>
+<!-- Inactive: Profile -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</button>
+</nav>
+</body></html>

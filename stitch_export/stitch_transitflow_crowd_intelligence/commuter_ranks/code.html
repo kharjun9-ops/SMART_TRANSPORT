@@ -1,0 +1,418 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Lumina Transit - Gamification Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#004395",
+                    "on-primary": "#002e6a",
+                    "surface-tint": "#adc6ff",
+                    "surface-container-highest": "#2e3545",
+                    "on-tertiary-container": "#3e2400",
+                    "error-container": "#93000a",
+                    "inverse-primary": "#005ac2",
+                    "on-error-container": "#ffdad6",
+                    "outline-variant": "#424754",
+                    "on-primary-container": "#00285d",
+                    "inverse-surface": "#dce2f7",
+                    "surface": "#0c1322",
+                    "surface-variant": "#2e3545",
+                    "secondary-container": "#00a572",
+                    "on-primary-fixed": "#001a42",
+                    "on-surface-variant": "#c2c6d6",
+                    "on-tertiary": "#472a00",
+                    "background": "#0c1322",
+                    "on-error": "#690005",
+                    "secondary-fixed": "#6ffbbe",
+                    "on-secondary-fixed": "#002113",
+                    "on-tertiary-fixed-variant": "#653e00",
+                    "tertiary": "#ffb95f",
+                    "surface-bright": "#323949",
+                    "tertiary-fixed": "#ffddb8",
+                    "error": "#ffb4ab",
+                    "primary-fixed": "#d8e2ff",
+                    "on-background": "#dce2f7",
+                    "primary-container": "#4d8eff",
+                    "on-secondary-fixed-variant": "#005236",
+                    "surface-container": "#191f2f",
+                    "outline": "#8c909f",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-dim": "#0c1322",
+                    "on-secondary-container": "#00311f",
+                    "tertiary-container": "#ca8100",
+                    "surface-container-low": "#141b2b",
+                    "tertiary-fixed-dim": "#ffb95f",
+                    "on-surface": "#dce2f7",
+                    "inverse-on-surface": "#293040",
+                    "on-secondary": "#003824",
+                    "secondary-fixed-dim": "#4edea3",
+                    "surface-container-lowest": "#070e1d",
+                    "surface-container-high": "#232a3a",
+                    "primary": "#adc6ff",
+                    "secondary": "#4edea3",
+                    "on-tertiary-fixed": "#2a1700"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "stack-md": "16px",
+                    "container-margin": "20px",
+                    "stack-lg": "24px",
+                    "stack-sm": "8px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-bold": [
+                            "Inter"
+                    ],
+                    "label-sm": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "status-number": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-md": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "status-number": [
+                            "24px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Glassmorphism utilities */
+        .glass-panel {
+            background-color: theme('colors.surface-container-low' / 40%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid theme('colors.white' / 10%);
+        }
+        
+        .glass-panel-interactive:active {
+            background-color: theme('colors.surface-container-low' / 60%);
+            transform: scale(0.98);
+            transition: all 0.2s ease;
+        }
+
+        /* Animations */
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-subtle-pulse {
+            animation: subtle-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes progress-fill {
+            from { width: 0%; }
+            to { width: 75%; } /* Matches inline style */
+        }
+        .animate-progress {
+            animation: progress-fill 1.5s ease-out forwards;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col pb-24 selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed top-0 w-full border-b border-white/10 flex justify-between items-center px-container-margin h-16 w-full z-50">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined icon-fill">location_on</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight">Lumina Transit</h1>
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content Drawer -->
+<main class="flex-1 px-container-margin pt-24 space-y-stack-lg max-w-2xl mx-auto w-full">
+<!-- Hero: Profile Summary & Points -->
+<section class="glass-panel rounded-[24px] p-stack-md relative overflow-hidden">
+<!-- Decorative Glow -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-3xl rounded-full pointer-events-none"></div>
+<div class="flex items-center gap-stack-md mb-stack-lg relative z-10">
+<div class="w-16 h-16 rounded-full border-2 border-primary overflow-hidden shrink-0">
+<img alt="Alex P. Avatar" class="w-full h-full object-cover" data-alt="A futuristic, stylized 3D avatar portrait of a modern urban commuter, bright energetic neon blue and green lighting, highly detailed, clean minimalist background, fitting a high-tech transit app UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4EP3KmufQRohV2JAwHdmGJ5HVIPQNn2g6EPsqlSd9wEqGiRmyWq3JnKgaklODUu2uOgG-_2cuPg8gTVtiXzoU6-uvYnlf5zFcqaT42a_CUgVkFzaCdp2_UywIM9EvomqK3WY4S5aWtUrWpyrgdVGadk_Q5LWy9dQLiMaqUoNME-s4EO37Aowtm9mIetEwnaCzs1C0irXB398IYL4Cj9r7pZxgTZ0p9qEAir0nebk11KrI5K2YhhzCdQ">
+</div>
+<div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Alex P.</h2>
+<div class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-primary-container/20 border border-primary/30">
+<span class="material-symbols-outlined text-primary text-[14px]">military_tech</span>
+<span class="font-label-sm text-label-sm text-primary">Level 4: Contributor</span>
+</div>
+</div>
+</div>
+<div class="relative z-10">
+<div class="flex justify-between items-end mb-stack-sm">
+<div>
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Total Points</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">1,250 <span class="font-body-md text-body-md text-primary/70 font-normal">pts</span></p>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">250 to Level 5</span>
+</div>
+<!-- Progress Bar -->
+<div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden relative">
+<div class="h-full bg-primary rounded-full animate-progress relative shadow-[0_0_12px_theme('colors.primary')]" style="width: 75%;">
+<!-- Shine effect -->
+<div class="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-r from-transparent to-white/30 rounded-r-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Streak Tracker -->
+<section class="glass-panel rounded-xl p-stack-md border-l-4 border-l-tertiary flex items-center justify-between">
+<div class="flex items-center gap-stack-md">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary shadow-[0_0_15px_theme('colors.tertiary'/30)]">
+<span class="material-symbols-outlined icon-fill animate-subtle-pulse">local_fire_department</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">5 Day Streak</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Keep reporting to earn a bonus!</p>
+</div>
+</div>
+<div class="flex gap-1">
+<!-- Mini visual representation of streak -->
+<div class="w-2 h-6 rounded-full bg-tertiary opacity-40"></div>
+<div class="w-2 h-8 rounded-full bg-tertiary opacity-60"></div>
+<div class="w-2 h-10 rounded-full bg-tertiary opacity-80"></div>
+<div class="w-2 h-12 rounded-full bg-tertiary shadow-[0_0_8px_theme('colors.tertiary')]"></div>
+<div class="w-2 h-6 rounded-full bg-surface-container-highest"></div>
+</div>
+</section>
+<!-- Bento Grid: Badges & Leaderboard -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<!-- Your Badges -->
+<section class="glass-panel rounded-[24px] p-stack-md">
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">Your Badges</h3>
+<button class="font-label-sm text-label-sm text-primary hover:opacity-80">View All</button>
+</div>
+<div class="grid grid-cols-3 gap-stack-sm">
+<!-- Badge 1 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center relative shadow-[inset_0_0_10px_theme('colors.primary'/20)]">
+<span class="material-symbols-outlined text-primary text-[32px]">wb_twilight</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface text-center leading-tight">Early Bird</span>
+</div>
+<!-- Badge 2 -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center relative shadow-[inset_0_0_10px_theme('colors.secondary'/20)]">
+<span class="material-symbols-outlined text-secondary text-[32px]">group</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface text-center leading-tight">Crowd Watcher</span>
+</div>
+<!-- Badge 3 -->
+<div class="flex flex-col items-center gap-2 opacity-50 grayscale">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest border border-outline-variant border-dashed flex items-center justify-center">
+<span class="material-symbols-outlined text-outline text-[32px]">lock</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface text-center leading-tight">Verified Hero</span>
+</div>
+</div>
+</section>
+<!-- Weekly Leaderboard -->
+<section class="glass-panel rounded-[24px] p-stack-md">
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface">Local Rank</h3>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-label-sm text-label-sm">Ends in 2d</span>
+</div>
+</div>
+<ul class="space-y-stack-sm">
+<li class="flex items-center gap-3 p-2 rounded-lg">
+<span class="font-label-bold text-label-bold text-outline w-4 text-center">1</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden"></div>
+<span class="font-body-md text-body-md text-on-surface flex-1">Sarah M.</span>
+<span class="font-label-bold text-label-bold text-on-surface">1,420</span>
+</li>
+<!-- Current User Highlighted -->
+<li class="flex items-center gap-3 p-2 rounded-lg bg-primary-container/10 border border-primary/20 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<span class="font-label-bold text-label-bold text-primary w-4 text-center">2</span>
+<div class="w-8 h-8 rounded-full border border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A highly stylized, minimalist icon representation of a commuter's face, dark background, glowing blue outlines, suitable for a tiny avatar in a high-tech transit app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCubIWhe3aK1s4D7H7D8vA0h5aE81WTz14BFqOsr46Z7-VU3SlaJ-_pogzJC9R0HqDp5yXOnDUY2EQWwx95kPOS_Q2MfhQUJlGiRIOY01vJspitUl6okMJAg-yucKTLE8th2h_gty2nSUdhHMSly28SFpQlqxAG08EjXjdoJQEGJF1s5yKxvaPmLiTBZKmArSllANeDae4qUj4cPFOuDNJcRtG_YH_jBOVTdaRIdloHHquMnA3gyz1Eg">
+</div>
+<span class="font-body-md text-body-md text-primary font-medium flex-1">Alex P. (You)</span>
+<span class="font-label-bold text-label-bold text-primary">1,250</span>
+</li>
+<li class="flex items-center gap-3 p-2 rounded-lg">
+<span class="font-label-bold text-label-bold text-outline w-4 text-center">3</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden"></div>
+<span class="font-body-md text-body-md text-on-surface flex-1">David K.</span>
+<span class="font-label-bold text-label-bold text-on-surface">980</span>
+</li>
+</ul>
+</section>
+</div>
+<!-- Contribution History -->
+<section class="mb-stack-lg">
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-stack-md px-1">Recent Contributions</h3>
+<div class="space-y-unit">
+<!-- Item 1 -->
+<div class="glass-panel p-stack-sm rounded-xl flex items-center justify-between glass-panel-interactive cursor-pointer">
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[20px]">directions_bus</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Reported Delay on Route 42</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">2 hours ago</p>
+</div>
+</div>
+<div class="font-label-bold text-label-bold text-secondary bg-secondary-container/20 px-3 py-1 rounded-full">
+                        +15 pts
+                    </div>
+</div>
+<!-- Item 2 -->
+<div class="glass-panel p-stack-sm rounded-xl flex items-center justify-between glass-panel-interactive cursor-pointer">
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[20px]">group</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Updated Crowd Level</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Yesterday</p>
+</div>
+</div>
+<div class="font-label-bold text-label-bold text-primary bg-primary-container/20 px-3 py-1 rounded-full">
+                        +5 pts
+                    </div>
+</div>
+<!-- Item 3 -->
+<div class="glass-panel p-stack-sm rounded-xl flex items-center justify-between glass-panel-interactive cursor-pointer">
+<div class="flex items-center gap-stack-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-[20px]">check_circle</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Verified Stop Facility</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Mon, Oct 12</p>
+</div>
+</div>
+<div class="font-label-bold text-label-bold text-tertiary bg-tertiary-container/20 px-3 py-1 rounded-full">
+                        +10 pts
+                    </div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed bottom-0 w-full rounded-t-xl border-t border-white/10 shadow-lg fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">route</span>
+<span class="font-label-sm text-label-sm">Trips</span>
+</a>
+<!-- Active Tab: Ranks -->
+<a class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-4 py-1 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined icon-fill mb-1">military_tech</span>
+<span class="font-label-sm text-label-sm font-medium">Ranks</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

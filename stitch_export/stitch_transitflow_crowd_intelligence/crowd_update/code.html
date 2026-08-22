@@ -1,0 +1,250 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Lumina Transit - Crowd Feedback</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS & Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#004395",
+                        "on-primary": "#002e6a",
+                        "surface-tint": "#adc6ff",
+                        "surface-container-highest": "#2e3545",
+                        "on-tertiary-container": "#3e2400",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#005ac2",
+                        "on-error-container": "#ffdad6",
+                        "outline-variant": "#424754",
+                        "on-primary-container": "#00285d",
+                        "inverse-surface": "#dce2f7",
+                        "surface": "#0c1322",
+                        "surface-variant": "#2e3545",
+                        "secondary-container": "#00a572",
+                        "on-primary-fixed": "#001a42",
+                        "on-surface-variant": "#c2c6d6",
+                        "on-tertiary": "#472a00",
+                        "background": "#0c1322",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary": "#ffb95f",
+                        "surface-bright": "#323949",
+                        "tertiary-fixed": "#ffddb8",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#d8e2ff",
+                        "on-background": "#dce2f7",
+                        "primary-container": "#4d8eff",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-container": "#191f2f",
+                        "outline": "#8c909f",
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-dim": "#0c1322",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-container": "#ca8100",
+                        "surface-container-low": "#141b2b",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-surface": "#dce2f7",
+                        "inverse-on-surface": "#293040",
+                        "on-secondary": "#003824",
+                        "secondary-fixed-dim": "#4edea3",
+                        "surface-container-lowest": "#070e1d",
+                        "surface-container-high": "#232a3a",
+                        "primary": "#adc6ff",
+                        "secondary": "#4edea3",
+                        "on-tertiary-fixed": "#2a1700"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "stack-md": "16px",
+                        "container-margin": "20px",
+                        "stack-lg": "24px",
+                        "stack-sm": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-bold": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "status-number": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "status-number": ["24px", { "lineHeight": "24px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Subtle ambient glow behind content */
+        .ambient-glow {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(173, 198, 255, 0.05) 0%, rgba(12, 19, 34, 0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-md relative overflow-x-hidden">
+<div class="ambient-glow"></div>
+<!-- Shared Component: TopAppBar -->
+<header class="fixed top-0 w-full flex justify-between items-center px-container-margin h-16 z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10">
+<button aria-label="Location" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -ml-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight">Lumina Transit</h1>
+<button aria-label="Notifications" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -mr-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+</button>
+</header>
+<!-- Main Content Area -->
+<main class="relative z-10 pt-[88px] pb-[120px] px-container-margin max-w-lg mx-auto">
+<!-- Crowd Feedback Section -->
+<section class="flex flex-col gap-stack-md">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">How crowded is this bus?</h2>
+<div class="flex flex-col gap-stack-sm" id="crowd-selection-group">
+<!-- Low Card -->
+<button class="crowd-card group relative flex items-center p-stack-md rounded-xl border border-white/10 bg-surface-container/60 backdrop-blur-md transition-all duration-200 text-left w-full focus:outline-none hover:bg-surface-container-high/80 overflow-hidden" data-level="low" type="button">
+<div class="w-14 h-14 rounded-full bg-secondary/10 flex items-center justify-center mr-stack-md shrink-0 border border-secondary/20 text-secondary transition-all duration-300 group-[.is-selected]:bg-secondary group-[.is-selected]:text-on-secondary group-[.is-selected]:scale-110">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">airline_seat_recline_normal</span>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-headline-md-mobile text-secondary group-[.is-selected]:text-secondary-fixed transition-colors duration-300">Low</div>
+<div class="font-body-md text-body-md text-on-surface-variant">Plenty of seats</div>
+</div>
+<div class="absolute inset-0 border-2 border-transparent rounded-xl transition-colors duration-300 group-[.is-selected]:border-secondary/50 shadow-[inset_0_0_20px_rgba(78,222,163,0)] group-[.is-selected]:shadow-[inset_0_0_20px_rgba(78,222,163,0.15)] pointer-events-none"></div>
+</button>
+<!-- Medium Card -->
+<button class="crowd-card group relative flex items-center p-stack-md rounded-xl border border-white/10 bg-surface-container/60 backdrop-blur-md transition-all duration-200 text-left w-full focus:outline-none hover:bg-surface-container-high/80 overflow-hidden" data-level="medium" type="button">
+<div class="w-14 h-14 rounded-full bg-tertiary/10 flex items-center justify-center mr-stack-md shrink-0 border border-tertiary/20 text-tertiary transition-all duration-300 group-[.is-selected]:bg-tertiary group-[.is-selected]:text-on-tertiary group-[.is-selected]:scale-110">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">directions_walk</span>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-headline-md-mobile text-tertiary group-[.is-selected]:text-tertiary-fixed transition-colors duration-300">Medium</div>
+<div class="font-body-md text-body-md text-on-surface-variant">Standing room only</div>
+</div>
+<div class="absolute inset-0 border-2 border-transparent rounded-xl transition-colors duration-300 group-[.is-selected]:border-tertiary/50 shadow-[inset_0_0_20px_rgba(255,185,95,0)] group-[.is-selected]:shadow-[inset_0_0_20px_rgba(255,185,95,0.15)] pointer-events-none"></div>
+</button>
+<!-- High Card -->
+<button class="crowd-card group relative flex items-center p-stack-md rounded-xl border border-white/10 bg-surface-container/60 backdrop-blur-md transition-all duration-200 text-left w-full focus:outline-none hover:bg-surface-container-high/80 overflow-hidden" data-level="high" type="button">
+<div class="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mr-stack-md shrink-0 border border-error/20 text-error transition-all duration-300 group-[.is-selected]:bg-error group-[.is-selected]:text-on-error group-[.is-selected]:scale-110">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div class="flex-1">
+<div class="font-headline-md text-headline-md-mobile text-error group-[.is-selected]:text-error transition-colors duration-300">High</div>
+<div class="font-body-md text-body-md text-on-surface-variant">Very crowded</div>
+</div>
+<div class="absolute inset-0 border-2 border-transparent rounded-xl transition-colors duration-300 group-[.is-selected]:border-error/50 shadow-[inset_0_0_20px_rgba(255,180,171,0)] group-[.is-selected]:shadow-[inset_0_0_20px_rgba(255,180,171,0.15)] pointer-events-none"></div>
+</button>
+</div>
+<!-- Submit Action -->
+<button class="w-full mt-stack-sm py-4 rounded-xl bg-primary text-on-primary font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-primary-fixed transition-colors active:scale-[0.98] shadow-lg shadow-primary/20">
+<span>Submit &amp; Earn 10 Pts</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">stars</span>
+</button>
+</section>
+<!-- Secondary Section: Verify Stop -->
+<section class="mt-stack-lg p-stack-md rounded-xl border border-white/10 bg-surface-container-low/80 backdrop-blur-xl shadow-lg relative overflow-hidden">
+<div class="absolute -right-10 -top-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-1 relative z-10">Verify Stop</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-md relative z-10">
+                Are you currently at <strong class="text-primary font-medium">Grand Central Station</strong>?
+            </p>
+<div class="flex gap-gutter relative z-10">
+<button class="flex-1 py-3 rounded-lg border border-outline-variant bg-surface-container text-on-surface font-label-bold text-label-bold hover:bg-surface-container-high transition-colors active:scale-95">
+                    No
+                </button>
+<button class="flex-1 py-3 rounded-lg border border-primary/30 bg-primary-container/20 text-primary font-label-bold text-label-bold hover:bg-primary-container/40 transition-colors active:scale-95">
+                    Yes
+                </button>
+</div>
+</section>
+</main>
+<!-- Shared Component: BottomNavBar -->
+<!-- Active State Logic: Mapping user intent -> providing feedback implies an active "Trip". Therefore, "Trips" is active. -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-6 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl rounded-t-xl border-t border-white/10 shadow-lg">
+<!-- Inactive Tab: Home -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform w-16 h-12">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="font-label-sm text-label-sm mt-1">Home</span>
+</button>
+<!-- Active Tab: Trips -->
+<button class="flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-4 py-1 w-20 h-14">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">route</span>
+<span class="font-label-sm text-label-sm mt-1">Trips</span>
+</button>
+<!-- Inactive Tab: Ranks -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform w-16 h-12">
+<span class="material-symbols-outlined text-[24px]">military_tech</span>
+<span class="font-label-sm text-label-sm mt-1">Ranks</span>
+</button>
+<!-- Inactive Tab: Profile -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform w-16 h-12">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="font-label-sm text-label-sm mt-1">Profile</span>
+</button>
+</nav>
+<!-- Lightweight interaction script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.crowd-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Remove selected state from all
+                    cards.forEach(c => {
+                        c.classList.remove('is-selected');
+                        // Dim unselected slightly
+                        if (c !== card) {
+                            c.style.opacity = '0.6';
+                        }
+                    });
+                    
+                    // Add selected state to clicked
+                    card.classList.add('is-selected');
+                    card.style.opacity = '1';
+                });
+            });
+        });
+    </script>
+</body></html>
