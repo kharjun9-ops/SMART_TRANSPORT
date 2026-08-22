@@ -48,8 +48,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Serve static files with no-cache for instant development updates
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+    setHeaders: (res, path) => {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    }
+}));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'data', 'uploads')));
 
 // API Routes
