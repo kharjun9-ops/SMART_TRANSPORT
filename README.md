@@ -135,4 +135,4 @@ Visit **`http://localhost:3000`** in your browser.
 ---
 
 ## 👥 Contributors
-Developed for **Omni Hackathon** by **kharjun9-ops**.
+Developed for **Omni Hackathon** by **kharjun9-ops** and **thanu2509**.
