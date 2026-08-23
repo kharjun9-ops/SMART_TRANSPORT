@@ -139,25 +139,47 @@ const API = {
         return this.request(`/trips/stops/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
     },
 
+    async getWaitlistForecast(tripId) {
+        return this.request(`/trips/${tripId}/waitlist-forecast`);
+    },
+
+    async joinWaitlist(stopId, routeId, tripId = null, destinationStopId = null, lat = null, lng = null, isDemo = false) {
+        return this.request('/trips/waitlist/join', {
+            method: 'POST',
+            body: JSON.stringify({ stopId, routeId, tripId, destinationStopId, latitude: lat, longitude: lng, isDemo })
+        });
+    },
+
+    async leaveWaitlist(stopId, tripId = null) {
+        return this.request('/trips/waitlist/leave', {
+            method: 'POST',
+            body: JSON.stringify({ stopId, tripId })
+        });
+    },
+
+    async getMyWaitlists() {
+        return this.request('/trips/waitlist/my');
+    },
+
     // Updates
-    async reportBoarding(tripId, stopId, lat, lng) {
+    async reportBoarding(tripId, stopId, lat, lng, isDemo = false) {
         return this.request('/updates/board', {
             method: 'POST',
-            body: JSON.stringify({ tripId, stopId, latitude: lat, longitude: lng })
+            body: JSON.stringify({ tripId, stopId, latitude: lat, longitude: lng, isDemo })
         });
     },
 
-    async reportDeboarding(tripId, stopId, lat, lng) {
+    async reportDeboarding(tripId, stopId, lat, lng, isDemo = false) {
         return this.request('/updates/deboard', {
             method: 'POST',
-            body: JSON.stringify({ tripId, stopId, latitude: lat, longitude: lng })
+            body: JSON.stringify({ tripId, stopId, latitude: lat, longitude: lng, isDemo })
         });
     },
 
-    async reportCrowd(tripId, stopId, crowdLevel, lat, lng) {
+    async reportCrowd(tripId, stopId, crowdLevel, lat, lng, isDemo = false) {
         return this.request('/updates/crowd', {
             method: 'POST',
-            body: JSON.stringify({ tripId, stopId, crowdLevel, latitude: lat, longitude: lng })
+            body: JSON.stringify({ tripId, stopId, crowdLevel, latitude: lat, longitude: lng, isDemo })
         });
     },
 

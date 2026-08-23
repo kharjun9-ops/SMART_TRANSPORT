@@ -13,57 +13,100 @@ class GamificationEngine {
 
     // Point values for different actions
     static POINT_VALUES = {
-        board: 5,
+        board: 10,
         deboard: 5,
         crowd_feedback: 10,
+        waitlist_join: 5,
         complaint: 15,
         streak_bonus_multiplier: 2,
-        verified_bonus: 5
+        verified_accuracy_bonus: 5
     };
 
     /**
-     * Award points for a user action
+     * Award points strictly based on verification result
      */
-    static awardPoints(userId, action, relatedUpdateId = null) {
+    static awardPoints(userId, action, relatedUpdateId = null, verificationResult = { status: 'verified', isVerified: true }) {
         const db = getDb();
         const basePoints = this.POINT_VALUES[action] || 5;
 
-        // Check streak bonus
         const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
         if (!user) return null;
 
+        const isVerified = verificationResult.status === 'verified' || verificationResult.isVerified === true;
+        const isPending = verificationResult.status === 'pending';
+        const isRejected = verificationResult.status === 'rejected';
+
+        // ❌ REJECTED: 0 points awarded
+        if (isRejected) {
+            const transactionId = uuidv4();
+            db.prepare(`
+                INSERT INTO point_transactions (id, user_id, amount, reason, related_update_id, is_verified, is_permanent)
+                VALUES (?, ?, 0, ?, ?, 0, 0)
+            `).run(transactionId, userId, `${action} (Rejected: ${verificationResult.rejectionReason || 'Unverified Location'})`, relatedUpdateId);
+
+            return {
+                points: 0,
+                status: 'rejected',
+                message: verificationResult.rejectionReason || 'Verification failed. Points withheld.',
+                transactionId
+            };
+        }
+
+        // ⏳ PENDING: Points placed in Escrow, NOT added to user balance until cross-verified
+        if (isPending) {
+            const transactionId = uuidv4();
+            db.prepare(`
+                INSERT INTO point_transactions (id, user_id, amount, reason, related_update_id, is_verified, is_permanent)
+                VALUES (?, ?, ?, ?, ?, 0, 0)
+            `).run(transactionId, userId, basePoints, `${action} (Pending Cross-Verification)`, relatedUpdateId);
+
+            return {
+                points: 0,
+                pendingPoints: basePoints,
+                status: 'pending',
+                message: 'Check-in recorded. Points held in escrow pending crowd cross-verification.',
+                transactionId
+            };
+        }
+
+        // ✅ VERIFIED: Points awarded with potential streak multiplier and accuracy bonus
         let multiplier = 1;
         if (user.streak_days >= 7) {
             multiplier = this.POINT_VALUES.streak_bonus_multiplier;
         }
 
-        const points = basePoints * multiplier;
-        const reason = `${action}${multiplier > 1 ? ` (${multiplier}x streak bonus)` : ''}`;
+        const accuracyBonus = isVerified ? this.POINT_VALUES.verified_accuracy_bonus : 0;
+        const totalPoints = (basePoints * multiplier) + accuracyBonus;
+        const reason = `${action} [GPS Verified ✓]${multiplier > 1 ? ` (${multiplier}x streak bonus)` : ''}${accuracyBonus > 0 ? ` (+${accuracyBonus} accuracy bonus)` : ''}`;
 
-        // Create point transaction (pending verification)
         const transactionId = uuidv4();
         db.prepare(`
             INSERT INTO point_transactions (id, user_id, amount, reason, related_update_id, is_verified, is_permanent)
-            VALUES (?, ?, ?, ?, ?, 0, 0)
-        `).run(transactionId, userId, points, reason, relatedUpdateId);
+            VALUES (?, ?, ?, ?, ?, 1, 1)
+        `).run(transactionId, userId, totalPoints, reason, relatedUpdateId);
 
-        // Add provisional points
-        db.prepare('UPDATE users SET points = points + ? WHERE id = ?').run(points, userId);
+        // Add points directly to user's permanent balance
+        db.prepare('UPDATE users SET points = points + ? WHERE id = ?').run(totalPoints, userId);
 
-        // Update streak
+        // Update streak & contributions
         this.updateStreak(userId);
-
-        // Check and update level
         this.updateLevel(userId);
-
-        // Check for new badges
         this.checkBadges(userId);
 
-        return { points, multiplier, reason, transactionId };
+        return {
+            points: totalPoints,
+            basePoints,
+            accuracyBonus,
+            multiplier,
+            status: 'verified',
+            reason,
+            transactionId,
+            message: `+${totalPoints} Points Added to your balance!`
+        };
     }
 
     /**
-     * Verify and make points permanent when the associated update is verified
+     * Unlock and credit pending points when an update becomes verified
      */
     static verifyPoints(updateId) {
         const db = getDb();
@@ -71,44 +114,23 @@ class GamificationEngine {
             SELECT * FROM point_transactions WHERE related_update_id = ? AND is_verified = 0
         `).get(updateId);
 
-        if (!transaction) return;
+        if (!transaction || transaction.amount <= 0) return;
 
-        // Award bonus for verified contribution
-        const bonusPoints = this.POINT_VALUES.verified_bonus;
+        const bonusPoints = this.POINT_VALUES.verified_accuracy_bonus;
+        const totalCredited = transaction.amount + bonusPoints;
 
         db.prepare(`
-            UPDATE point_transactions SET is_verified = 1, is_permanent = 1, verified_at = datetime('now')
+            UPDATE point_transactions 
+            SET is_verified = 1, is_permanent = 1, amount = ?, verified_at = datetime('now')
             WHERE id = ?
-        `).run(transaction.id);
+        `).run(totalCredited, transaction.id);
 
-        // Add verification bonus
-        db.prepare('UPDATE users SET points = points + ? WHERE id = ?').run(bonusPoints, transaction.user_id);
-
+        db.prepare('UPDATE users SET points = points + ? WHERE id = ?').run(totalCredited, transaction.user_id);
         this.updateLevel(transaction.user_id);
     }
 
     /**
-     * Revoke points for rejected updates
-     */
-    static revokePoints(updateId) {
-        const db = getDb();
-        const transaction = db.prepare(`
-            SELECT * FROM point_transactions WHERE related_update_id = ? AND is_permanent = 0
-        `).get(updateId);
-
-        if (!transaction) return;
-
-        // Remove the provisional points
-        db.prepare('UPDATE users SET points = MAX(0, points - ?) WHERE id = ?')
-            .run(transaction.amount, transaction.user_id);
-
-        db.prepare('DELETE FROM point_transactions WHERE id = ?').run(transaction.id);
-
-        this.updateLevel(transaction.user_id);
-    }
-
-    /**
-     * Update user's streak
+     * Update user streak days
      */
     static updateStreak(userId) {
         const db = getDb();
@@ -121,63 +143,61 @@ class GamificationEngine {
         if (!lastDate) {
             db.prepare('UPDATE users SET streak_days = 1, last_contribution_date = ? WHERE id = ?')
                 .run(today, userId);
-        } else if (lastDate === today) {
-            // Same day, no change
-        } else {
-            const lastDateObj = new Date(lastDate);
-            const todayObj = new Date(today);
-            const diffDays = Math.floor((todayObj - lastDateObj) / (1000 * 60 * 60 * 24));
+            return;
+        }
 
-            if (diffDays === 1) {
-                // Consecutive day
-                db.prepare('UPDATE users SET streak_days = streak_days + 1, last_contribution_date = ? WHERE id = ?')
-                    .run(today, userId);
-            } else {
-                // Streak broken
-                db.prepare('UPDATE users SET streak_days = 1, last_contribution_date = ? WHERE id = ?')
-                    .run(today, userId);
-            }
+        const last = new Date(lastDate);
+        const current = new Date(today);
+        const diffDays = Math.round((current - last) / (1000 * 3600 * 24));
+
+        if (diffDays === 1) {
+            db.prepare('UPDATE users SET streak_days = streak_days + 1, last_contribution_date = ? WHERE id = ?')
+                .run(today, userId);
+        } else if (diffDays > 1) {
+            db.prepare('UPDATE users SET streak_days = 1, last_contribution_date = ? WHERE id = ?')
+                .run(today, userId);
         }
     }
 
     /**
-     * Update user level based on points
+     * Update user level based on total points
      */
     static updateLevel(userId) {
         const db = getDb();
-        const user = db.prepare('SELECT points FROM users WHERE id = ?').get(userId);
+        const user = db.prepare('SELECT points, level FROM users WHERE id = ?').get(userId);
         if (!user) return;
 
-        let newLevel = 'Commuter';
-        for (const level of this.LEVELS) {
-            if (user.points >= level.minPoints) {
-                newLevel = level.name;
+        let newLevel = this.LEVELS[0].name;
+        for (let i = this.LEVELS.length - 1; i >= 0; i--) {
+            if (user.points >= this.LEVELS[i].minPoints) {
+                newLevel = this.LEVELS[i].name;
+                break;
             }
         }
 
-        db.prepare('UPDATE users SET level = ? WHERE id = ?').run(newLevel, userId);
-        return newLevel;
+        if (newLevel !== user.level) {
+            db.prepare('UPDATE users SET level = ? WHERE id = ?').run(newLevel, userId);
+        }
     }
 
     /**
-     * Check and award badges
+     * Check and award new badges
      */
     static checkBadges(userId) {
         const db = getDb();
         const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
         if (!user) return [];
 
-        const earnedBadges = db.prepare('SELECT badge_id FROM user_badges WHERE user_id = ?').all(userId);
-        const earnedIds = new Set(earnedBadges.map(b => b.badge_id));
-
         const allBadges = db.prepare('SELECT * FROM badges').all();
-        const newBadges = [];
+        const userBadges = db.prepare('SELECT badge_id FROM user_badges WHERE user_id = ?').all(userId);
+        const earnedBadgeIds = new Set(userBadges.map(ub => ub.badge_id));
+
+        const newlyEarned = [];
 
         for (const badge of allBadges) {
-            if (earnedIds.has(badge.id)) continue;
+            if (earnedBadgeIds.has(badge.id)) continue;
 
             let earned = false;
-
             switch (badge.requirement_type) {
                 case 'contributions':
                     earned = user.total_contributions >= badge.requirement_value;
@@ -189,99 +209,19 @@ class GamificationEngine {
                     earned = user.points >= badge.requirement_value;
                     break;
                 case 'special':
-                    // Special badges checked separately
                     if (badge.id === 'badge_08') {
-                        earned = user.reliability_score >= 0.9;
+                        earned = (user.reliability_score || 0) >= (badge.requirement_value / 100);
                     }
                     break;
             }
 
             if (earned) {
-                db.prepare('INSERT OR IGNORE INTO user_badges (user_id, badge_id) VALUES (?, ?)')
-                    .run(userId, badge.id);
-                newBadges.push(badge);
+                db.prepare('INSERT OR IGNORE INTO user_badges (user_id, badge_id) VALUES (?, ?)').run(userId, badge.id);
+                newlyEarned.push(badge);
             }
         }
 
-        return newBadges;
-    }
-
-    /**
-     * Get user's gamification profile
-     */
-    static getProfile(userId) {
-        const db = getDb();
-        const user = db.prepare(`
-            SELECT id, name, email, points, level, reliability_score, 
-                   total_contributions, streak_days, last_contribution_date, created_at
-            FROM users WHERE id = ?
-        `).get(userId);
-
-        if (!user) return null;
-
-        // Get current level info
-        const currentLevel = this.LEVELS.find(l => l.name === user.level) || this.LEVELS[0];
-        const currentLevelIndex = this.LEVELS.indexOf(currentLevel);
-        const nextLevel = currentLevelIndex < this.LEVELS.length - 1 ? this.LEVELS[currentLevelIndex + 1] : null;
-
-        // Calculate progress to next level
-        let levelProgress = 100;
-        if (nextLevel) {
-            const range = nextLevel.minPoints - currentLevel.minPoints;
-            const progress = user.points - currentLevel.minPoints;
-            levelProgress = Math.min(100, Math.round((progress / range) * 100));
-        }
-
-        // Get badges
-        const badges = db.prepare(`
-            SELECT b.*, ub.earned_at 
-            FROM user_badges ub 
-            JOIN badges b ON ub.badge_id = b.id 
-            WHERE ub.user_id = ?
-            ORDER BY ub.earned_at DESC
-        `).all(userId);
-
-        // Get recent point transactions
-        const recentTransactions = db.prepare(`
-            SELECT * FROM point_transactions 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC 
-            LIMIT 20
-        `).all(userId);
-
-        // Get contribution stats
-        const stats = db.prepare(`
-            SELECT 
-                COUNT(*) as total_updates,
-                SUM(CASE WHEN update_type = 'board' THEN 1 ELSE 0 END) as boarding_count,
-                SUM(CASE WHEN update_type = 'deboard' THEN 1 ELSE 0 END) as deboarding_count,
-                SUM(CASE WHEN update_type = 'crowd_feedback' THEN 1 ELSE 0 END) as crowd_feedback_count
-            FROM user_updates WHERE user_id = ?
-        `).get(userId);
-
-        return {
-            ...user,
-            currentLevel: { ...currentLevel },
-            nextLevel,
-            levelProgress,
-            badges,
-            recentTransactions,
-            stats: stats || { total_updates: 0, boarding_count: 0, deboarding_count: 0, crowd_feedback_count: 0 }
-        };
-    }
-
-    /**
-     * Get leaderboard
-     */
-    static getLeaderboard(limit = 20) {
-        const db = getDb();
-        return db.prepare(`
-            SELECT id, name, points, level, reliability_score, total_contributions, streak_days,
-                   (SELECT COUNT(*) FROM user_badges WHERE user_id = users.id) as badge_count
-            FROM users 
-            ORDER BY points DESC 
-            LIMIT ?
-        `).all(limit);
+        return newlyEarned;
     }
 }
 

@@ -167,9 +167,12 @@ const HomeView = {
                         const durationMins = opt.route?.avg_duration_minutes || 30;
                         const fare = opt.route?.fare_lkr || 25;
 
+                        const nextStopForecast = opt.trip?.next_stop_forecast;
+                        const nextNextForecast = opt.trip?.next_next_stop_forecast;
+
                         return `
                             <div class="glass-panel rounded-2xl p-4 shadow-xl border ${idx === 0 ? 'border-primary/40 glow-inner' : 'border-white/10'} hover:bg-surface-container-high transition-all">
-                                <div class="flex items-start justify-between mb-2.5">
+                                <div class="flex items-start justify-between mb-2">
                                     <div class="flex items-center gap-3">
                                         <div class="w-12 h-12 rounded-xl bg-primary text-on-primary font-bold font-status-number text-base flex items-center justify-center shadow-[0_0_12px_rgba(173,198,255,0.5)]">
                                             ${opt.route?.route_number || '252'}
@@ -187,13 +190,24 @@ const HomeView = {
                                     </div>
                                 </div>
 
+                                <!-- Downstream Stop Intelligence Strip -->
+                                <div class="bg-surface-container/60 rounded-xl px-3 py-1.5 mb-2.5 flex items-center justify-between text-[10px] border border-white/5">
+                                    <div class="flex items-center gap-1 text-on-surface-variant">
+                                        <span class="material-symbols-outlined text-secondary text-xs">hail</span>
+                                        <span>Next Stop Waitlist: <strong class="text-on-surface">${nextStopForecast ? nextStopForecast.waiting_passengers_count : 3} waiting</strong></span>
+                                    </div>
+                                    <div class="font-bold ${nextNextForecast && nextNextForecast.boarding_probability_percentage < 50 ? 'text-error' : 'text-secondary'}">
+                                        Next+1: ${nextNextForecast ? nextNextForecast.boarding_probability_percentage : 85}% Seat Chance
+                                    </div>
+                                </div>
+
                                 <div class="flex items-center justify-between pt-2 border-t border-white/10">
                                     ${crowdBadge}
                                     <button 
                                         class="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary-fixed active:scale-95 transition-all shadow-md"
                                         onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
                                     >
-                                        <span>Start Journey</span>
+                                        <span>Track & Join Queue</span>
                                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
                                     </button>
                                 </div>

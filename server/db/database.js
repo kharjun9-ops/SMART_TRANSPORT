@@ -18,7 +18,8 @@ class MemoryDatabase {
             complaints: [],
             notifications: [],
             point_transactions: [],
-            user_journeys: []
+            user_journeys: [],
+            stop_waiting_list: []
         };
         this.dbPath = path.join(__dirname, '..', '..', 'data', 'transit_store.json');
     }
@@ -146,7 +147,7 @@ class MemoryDatabase {
         if (lower.startsWith('select * from stops')) {
             return this.tables.stops.map(s => ({ ...s }));
         }
-        if (lower.startsWith('select latitude, longitude from stops where id = ?') || lower.startsWith('select is_major from stops where id = ?') || lower.startsWith('select * from stops where id = ?')) {
+        if (lower.includes('from stops where id = ?')) {
             const s = this.tables.stops.find(x => x.id === params[0]);
             return s ? [{ ...s }] : [];
         }
@@ -359,6 +360,27 @@ class MemoryDatabase {
         }
         if (lower.includes('from user_updates') && lower.includes('where trip_id = ?')) {
             return this.tables.user_updates.filter(u => u.trip_id === params[0]);
+        }
+
+        // 13. Stop Waiting List
+        if (lower.includes('from stop_waiting_list where stop_id = ? and route_id = ? and status = ?')) {
+            return this.tables.stop_waiting_list.filter(w => w.stop_id === params[0] && w.route_id === params[1] && w.status === params[2]);
+        }
+        if (lower.includes('from stop_waiting_list where stop_id = ? and status = ?')) {
+            return this.tables.stop_waiting_list.filter(w => w.stop_id === params[0] && w.status === params[1]);
+        }
+        if (lower.includes('from stop_waiting_list where trip_id = ? and status = ?')) {
+            return this.tables.stop_waiting_list.filter(w => w.trip_id === params[0] && w.status === params[1]);
+        }
+        if (lower.includes('from stop_waiting_list where user_id = ? and status = ?')) {
+            return this.tables.stop_waiting_list.filter(w => w.user_id === params[0] && w.status === params[1]);
+        }
+        if (lower.includes('from stop_waiting_list where id = ?')) {
+            const w = this.tables.stop_waiting_list.find(x => x.id === params[0]);
+            return w ? [{ ...w }] : [];
+        }
+        if (lower.includes('from stop_waiting_list')) {
+            return this.tables.stop_waiting_list.map(w => ({ ...w }));
         }
 
         return [];
@@ -646,6 +668,59 @@ class MemoryDatabase {
             return { changes: 1 };
         }
 
+        // 11. Stop Waiting List
+        if (lower.startsWith('insert into stop_waiting_list')) {
+            const [id, user_id, stop_id, route_id, trip_id, destination_stop_id, status] = params;
+            this.tables.stop_waiting_list.push({
+                id,
+                user_id,
+                stop_id,
+                route_id,
+                trip_id: trip_id || null,
+                destination_stop_id: destination_stop_id || null,
+                status: status || 'waiting',
+                joined_at: new Date().toISOString(),
+                created_at: new Date().toISOString()
+            });
+            this.saveToDisk();
+            return { changes: 1 };
+        }
+        if (lower.includes('update stop_waiting_list set status = ? where id = ?')) {
+            const item = this.tables.stop_waiting_list.find(x => x.id === params[1]);
+            if (item) {
+                item.status = params[0];
+                item.updated_at = new Date().toISOString();
+            }
+            this.saveToDisk();
+            return { changes: 1 };
+        }
+        if (lower.includes('update stop_waiting_list set status = ? where user_id = ? and stop_id = ? and status = ?')) {
+            const items = this.tables.stop_waiting_list.filter(x => x.user_id === params[1] && x.stop_id === params[2] && x.status === params[3]);
+            items.forEach(item => {
+                item.status = params[0];
+                item.updated_at = new Date().toISOString();
+            });
+            this.saveToDisk();
+            return { changes: items.length };
+        }
+        if (lower.includes('update stop_waiting_list set status = ? where user_id = ? and status = ?')) {
+            const items = this.tables.stop_waiting_list.filter(x => x.user_id === params[1] && x.status === params[2]);
+            items.forEach(item => {
+                item.status = params[0];
+                item.updated_at = new Date().toISOString();
+            });
+            this.saveToDisk();
+            return { changes: items.length };
+        }
+        if (lower.includes('delete from stop_waiting_list where id = ?')) {
+            const idx = this.tables.stop_waiting_list.findIndex(x => x.id === params[0]);
+            if (idx !== -1) {
+                this.tables.stop_waiting_list.splice(idx, 1);
+                this.saveToDisk();
+                return { changes: 1 };
+            }
+        }
+
         return { changes: 0 };
     }
 }
@@ -798,14 +873,24 @@ function initializeDatabase() {
         // Seed Bengaluru commuters for leaderboard
         const bcrypt = require('bcryptjs');
         const demoHash = bcrypt.hashSync('password123', 10);
-        db.tables.users = [
-            { id: 'usr_01', name: 'Karthik Rao', email: 'karthik@demo.in', password_hash: demoHash, points: 1540, level: 'Expert', reliability_score: 0.95, total_contributions: 72, streak_days: 14 },
-            { id: 'usr_02', name: 'Sneha Hegde', email: 'sneha@demo.in', password_hash: demoHash, points: 1020, level: 'Contributor', reliability_score: 0.91, total_contributions: 48, streak_days: 9 },
-            { id: 'usr_03', name: 'Praveen Gowda', email: 'praveen@demo.in', password_hash: demoHash, points: 810, level: 'Contributor', reliability_score: 0.88, total_contributions: 36, streak_days: 6 },
-            { id: 'usr_04', name: 'Deepa Narayan', email: 'deepa@demo.in', password_hash: demoHash, points: 460, level: 'Regular', reliability_score: 0.84, total_contributions: 22, streak_days: 5 }
+        // Seed initial waiting list data across major Bengaluru stops
+        db.tables.stop_waiting_list = [
+            { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
+            { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_12', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
+            { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_09', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_14', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() },
+            { id: 'wait_blr_04', user_id: 'usr_04', stop_id: 'stop_blr_03', route_id: 'route_blr_01', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_05', status: 'waiting', joined_at: new Date(Date.now() - 5 * 60000).toISOString(), created_at: new Date(Date.now() - 5 * 60000).toISOString() }
         ];
 
         db.saveToDisk();
+    } else {
+        if (!db.tables.stop_waiting_list) {
+            db.tables.stop_waiting_list = [
+                { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
+                { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_12', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
+                { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_09', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_14', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
+            ];
+            db.saveToDisk();
+        }
     }
 
     console.log('✅ TransitIQ In-Memory Database initialized with persistent store');

@@ -12,7 +12,7 @@ const router = express.Router();
 // POST /api/updates/board - Report boarding a bus
 router.post('/board', authenticateToken, (req, res) => {
     try {
-        const { tripId, stopId, latitude, longitude } = req.body;
+        const { tripId, stopId, latitude, longitude, isDemo } = req.body;
         const userId = req.user.id;
 
         if (!tripId) {
@@ -22,11 +22,54 @@ router.post('/board', authenticateToken, (req, res) => {
         const db = getDb();
         const updateId = uuidv4();
 
-        // Create update record
+        // 1. Run Verification First
+        const updateCandidate = {
+            id: updateId,
+            user_id: userId,
+            trip_id: tripId,
+            stop_id: stopId || null,
+            update_type: 'board',
+            latitude: latitude || null,
+            longitude: longitude || null,
+            is_demo: !!isDemo,
+            timestamp: new Date().toISOString()
+        };
+
+        const verification = VerificationEngine.verifyUpdate(updateCandidate);
+
+        // 2. If Verification is REJECTED (e.g. user is 5km away, fake location)
+        if (verification.status === 'rejected') {
+            // Record the rejected check-in attempt
+            db.prepare(`
+                INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
+                VALUES (?, ?, ?, ?, 'board', ?, ?, 0, 'rejected', ?, ?)
+            `).run(updateId, userId, tripId, stopId || null, latitude || null, longitude || null, verification.confidenceScore, verification.rejectionReason);
+
+            return res.status(422).json({
+                verified: false,
+                status: 'rejected',
+                points: 0,
+                message: verification.rejectionReason,
+                verification: {
+                    confidence: verification.confidenceScore,
+                    distanceToStopMeters: verification.distanceToStopMeters,
+                    distanceToBusMeters: verification.distanceToBusMeters,
+                    allowedPerimeterMeters: verification.allowedPerimeterMeters,
+                    checks: verification.checks
+                }
+            });
+        }
+
+        // 3. If Verification PASSED or PENDING:
+        // Save the update record
         db.prepare(`
-            INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude)
-            VALUES (?, ?, ?, ?, 'board', ?, ?)
-        `).run(updateId, userId, tripId, stopId || null, latitude || null, longitude || null);
+            INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
+            VALUES (?, ?, ?, ?, 'board', ?, ?, ?, ?, ?, ?)
+        `).run(
+            updateId, userId, tripId, stopId || null, latitude || null, longitude || null,
+            verification.isVerified ? 1 : 0, verification.status, verification.confidenceScore,
+            verification.notes ? verification.notes.join('; ') : ''
+        );
 
         // Process in crowd intelligence engine
         CrowdIntelligenceEngine.processBoarding(tripId, stopId, userId);
@@ -38,16 +81,11 @@ router.post('/board', authenticateToken, (req, res) => {
             VALUES (?, ?, ?, ?)
         `).run(journeyId, userId, tripId, stopId || 'unknown');
 
-        // Run verification
-        const update = db.prepare('SELECT * FROM user_updates WHERE id = ?').get(updateId);
-        const verification = VerificationEngine.verifyUpdate(update);
+        // Award points based on verification
+        const pointsResult = GamificationEngine.awardPoints(userId, 'board', updateId, verification);
 
-        // Award points
-        const points = GamificationEngine.awardPoints(userId, 'board', updateId);
-
-        // Send notification
-        if (points) {
-            NotificationEngine.sendPointsEarned(userId, points.points, 'boarding confirmation');
+        if (pointsResult && pointsResult.points > 0) {
+            NotificationEngine.sendPointsEarned(userId, pointsResult.points, 'verified boarding confirmation');
         }
 
         // Check for new badges
@@ -56,30 +94,38 @@ router.post('/board', authenticateToken, (req, res) => {
             NotificationEngine.sendBadgeEarned(userId, badge);
         }
 
-        // Update total contributions
-        db.prepare('UPDATE users SET total_contributions = total_contributions + 1 WHERE id = ?').run(userId);
+        // Update total contributions only for verified actions
+        if (verification.isVerified) {
+            db.prepare('UPDATE users SET total_contributions = total_contributions + 1 WHERE id = ?').run(userId);
+        }
 
         res.json({
-            message: 'Boarding recorded successfully',
+            verified: verification.isVerified,
+            message: pointsResult.message,
             updateId,
             journeyId,
+            points: pointsResult.points,
+            pendingPoints: pointsResult.pendingPoints || 0,
             verification: {
                 status: verification.status,
-                confidence: verification.confidenceScore
+                confidence: verification.confidenceScore,
+                distanceToStopMeters: verification.distanceToStopMeters,
+                distanceToBusMeters: verification.distanceToBusMeters,
+                allowedPerimeterMeters: verification.allowedPerimeterMeters,
+                checks: verification.checks
             },
-            points: points ? points.points : 0,
             newBadges
         });
     } catch (err) {
         console.error('Board update error:', err);
-        res.status(500).json({ error: 'Failed to record boarding' });
+        res.status(500).json({ error: 'Failed to process boarding' });
     }
 });
 
 // POST /api/updates/deboard - Report deboarding
 router.post('/deboard', authenticateToken, (req, res) => {
     try {
-        const { tripId, stopId, latitude, longitude } = req.body;
+        const { tripId, stopId, latitude, longitude, isDemo } = req.body;
         const userId = req.user.id;
 
         if (!tripId) {
@@ -89,10 +135,38 @@ router.post('/deboard', authenticateToken, (req, res) => {
         const db = getDb();
         const updateId = uuidv4();
 
+        const updateCandidate = {
+            id: updateId,
+            user_id: userId,
+            trip_id: tripId,
+            stop_id: stopId || null,
+            update_type: 'deboard',
+            latitude: latitude || null,
+            longitude: longitude || null,
+            is_demo: !!isDemo,
+            timestamp: new Date().toISOString()
+        };
+
+        const verification = VerificationEngine.verifyUpdate(updateCandidate);
+
+        if (verification.status === 'rejected') {
+            return res.status(422).json({
+                verified: false,
+                status: 'rejected',
+                points: 0,
+                message: verification.rejectionReason,
+                verification
+            });
+        }
+
         db.prepare(`
-            INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude)
-            VALUES (?, ?, ?, ?, 'deboard', ?, ?)
-        `).run(updateId, userId, tripId, stopId || null, latitude || null, longitude || null);
+            INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
+            VALUES (?, ?, ?, ?, 'deboard', ?, ?, ?, ?, ?, ?)
+        `).run(
+            updateId, userId, tripId, stopId || null, latitude || null, longitude || null,
+            verification.isVerified ? 1 : 0, verification.status, verification.confidenceScore,
+            verification.notes ? verification.notes.join('; ') : ''
+        );
 
         // Process in crowd intelligence engine
         CrowdIntelligenceEngine.processDeboarding(tripId, stopId, userId);
@@ -104,24 +178,26 @@ router.post('/deboard', authenticateToken, (req, res) => {
             WHERE user_id = ? AND trip_id = ? AND status = 'active'
         `).run(stopId || 'unknown', userId, tripId);
 
-        // Run verification
-        const update = db.prepare('SELECT * FROM user_updates WHERE id = ?').get(updateId);
-        const verification = VerificationEngine.verifyUpdate(update);
-
         // Award points
-        const points = GamificationEngine.awardPoints(userId, 'deboard', updateId);
+        const pointsResult = GamificationEngine.awardPoints(userId, 'deboard', updateId, verification);
 
-        // Update contributions
-        db.prepare('UPDATE users SET total_contributions = total_contributions + 1 WHERE id = ?').run(userId);
+        if (verification.isVerified) {
+            db.prepare('UPDATE users SET total_contributions = total_contributions + 1 WHERE id = ?').run(userId);
+        }
 
         res.json({
-            message: 'Deboarding recorded successfully',
+            verified: verification.isVerified,
+            message: pointsResult.message,
             updateId,
+            points: pointsResult.points,
+            pendingPoints: pointsResult.pendingPoints || 0,
             verification: {
                 status: verification.status,
-                confidence: verification.confidenceScore
-            },
-            points: points ? points.points : 0
+                confidence: verification.confidenceScore,
+                distanceToStopMeters: verification.distanceToStopMeters,
+                distanceToBusMeters: verification.distanceToBusMeters,
+                checks: verification.checks
+            }
         });
     } catch (err) {
         console.error('Deboard update error:', err);
@@ -129,10 +205,10 @@ router.post('/deboard', authenticateToken, (req, res) => {
     }
 });
 
-// POST /api/updates/crowd - Submit crowd feedback
+// POST /api/updates/crowd - Submit crowd feedback with strict verification
 router.post('/crowd', authenticateToken, (req, res) => {
     try {
-        const { tripId, stopId, crowdLevel, latitude, longitude } = req.body;
+        const { tripId, stopId, crowdLevel, latitude, longitude, isDemo } = req.body;
         const userId = req.user.id;
 
         if (!tripId || !crowdLevel) {
@@ -146,20 +222,52 @@ router.post('/crowd', authenticateToken, (req, res) => {
         const db = getDb();
         const updateId = uuidv4();
 
-        db.prepare(`
-            INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, crowd_level, latitude, longitude)
-            VALUES (?, ?, ?, ?, 'crowd_feedback', ?, ?, ?)
-        `).run(updateId, userId, tripId, stopId || null, crowdLevel, latitude || null, longitude || null);
+        const updateCandidate = {
+            id: updateId,
+            user_id: userId,
+            trip_id: tripId,
+            stop_id: stopId || null,
+            update_type: 'crowd_feedback',
+            crowd_level: crowdLevel,
+            latitude: latitude || null,
+            longitude: longitude || null,
+            is_demo: !!isDemo,
+            timestamp: new Date().toISOString()
+        };
 
-        // Process crowd feedback
+        // 1. Verify First
+        const verification = VerificationEngine.verifyUpdate(updateCandidate);
+
+        if (verification.status === 'rejected') {
+            return res.status(422).json({
+                verified: false,
+                status: 'rejected',
+                points: 0,
+                message: verification.rejectionReason,
+                verification: {
+                    confidence: verification.confidenceScore,
+                    distanceToStopMeters: verification.distanceToStopMeters,
+                    distanceToBusMeters: verification.distanceToBusMeters,
+                    allowedPerimeterMeters: verification.allowedPerimeterMeters,
+                    checks: verification.checks
+                }
+            });
+        }
+
+        db.prepare(`
+            INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, crowd_level, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
+            VALUES (?, ?, ?, ?, 'crowd_feedback', ?, ?, ?, ?, ?, ?, ?)
+        `).run(
+            updateId, userId, tripId, stopId || null, crowdLevel, latitude || null, longitude || null,
+            verification.isVerified ? 1 : 0, verification.status, verification.confidenceScore,
+            verification.notes ? verification.notes.join('; ') : ''
+        );
+
+        // Process crowd feedback in engine
         CrowdIntelligenceEngine.processCrowdFeedback(tripId, stopId, crowdLevel);
 
-        // Verify
-        const update = db.prepare('SELECT * FROM user_updates WHERE id = ?').get(updateId);
-        const verification = VerificationEngine.verifyUpdate(update);
-
         // Award points
-        const points = GamificationEngine.awardPoints(userId, 'crowd_feedback', updateId);
+        const pointsResult = GamificationEngine.awardPoints(userId, 'crowd_feedback', updateId, verification);
 
         // Cross-verify older pending updates
         const pendingUpdates = db.prepare(`
@@ -170,20 +278,25 @@ router.post('/crowd', authenticateToken, (req, res) => {
             VerificationEngine.crossVerifyWithSubsequent(pu.id);
         }
 
-        // Update contributions
-        db.prepare('UPDATE users SET total_contributions = total_contributions + 1 WHERE id = ?').run(userId);
-
-        // Update user reliability
-        VerificationEngine.updateUserReliability(userId);
+        if (verification.isVerified) {
+            db.prepare('UPDATE users SET total_contributions = total_contributions + 1 WHERE id = ?').run(userId);
+            VerificationEngine.updateUserReliability(userId);
+        }
 
         res.json({
-            message: 'Crowd feedback recorded',
+            verified: verification.isVerified,
+            message: pointsResult.message,
             updateId,
+            points: pointsResult.points,
+            pendingPoints: pointsResult.pendingPoints || 0,
             verification: {
                 status: verification.status,
-                confidence: verification.confidenceScore
-            },
-            points: points ? points.points : 0
+                confidence: verification.confidenceScore,
+                distanceToStopMeters: verification.distanceToStopMeters,
+                distanceToBusMeters: verification.distanceToBusMeters,
+                allowedPerimeterMeters: verification.allowedPerimeterMeters,
+                checks: verification.checks
+            }
         });
     } catch (err) {
         console.error('Crowd feedback error:', err);
@@ -206,7 +319,7 @@ router.get('/trip/:tripId', (req, res) => {
     res.json({ updates });
 });
 
-// GET /api/updates/my - Get user's own updates
+// GET /api/updates/my - Get user's own updates with verification history
 router.get('/my', authenticateToken, (req, res) => {
     const db = getDb();
     const updates = db.prepare(`
