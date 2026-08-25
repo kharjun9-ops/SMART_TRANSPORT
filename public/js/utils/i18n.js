@@ -128,6 +128,14 @@ const I18n = {
             hi: 'अगला+1: ${pct}% सीट मौका'
         },
 
+        // Popular Destination Names
+        'dest.kengeri_ttmc': { en: 'Kengeri TTMC', kn: 'ಕೆಂಗೇರಿ TTMC', hi: 'केंगेरी TTMC' },
+        'dest.konanakunte_cross': { en: 'Konanakunte Cross', kn: 'ಕೋಣನಕುಂಟೆ ಕ್ರಾಸ್', hi: 'कोनानकुंटे क्रॉस' },
+        'dest.banashankari_ttmc': { en: 'Banashankari TTMC', kn: 'ಬನಶಂಕರಿ TTMC', hi: 'बनशंकरी TTMC' },
+        'dest.rr_nagar_gate': { en: 'RR Nagar Gate', kn: 'ಆರ್.ಆರ್. ನಗರ ಗೇಟ್', hi: 'आर.आर. नगर गेट' },
+        'dest.silk_institute': { en: 'Silk Institute', kn: 'ಸಿಲ್ಕ್ ಇನ್ಸ್ಟಿಟ್ಯೂಟ್', hi: 'सिल्क इंस्टीट्यूट' },
+        'dest.kengeri_satellite': { en: 'Kengeri Satellite Town', kn: 'ಕೆಂಗೇರಿ ಸ್ಯಾಟಲೈಟ್ ಟೌನ್', hi: 'केंगेरी सैटेलाइट टाउन' },
+
         // Crowd Levels
         'crowd.plenty_seats': {
             en: '🟢 Plenty of Seats',

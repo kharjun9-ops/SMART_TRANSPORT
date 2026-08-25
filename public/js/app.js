@@ -136,40 +136,20 @@ const app = {
     },
 
     setLanguage(lang) {
-        console.log('[App] setLanguage called with:', lang);
-        if (window.I18n) {
-            // Force set directly
+        if (typeof window.switchLang === 'function') {
+            window.switchLang(lang);
+        } else if (window.I18n) {
             I18n.currentLang = lang;
             localStorage.setItem('lumina_lang', lang);
-            if (typeof I18n.setLang === 'function') {
-                I18n.setLang(lang);
-            }
-            
             this.updateNavLabels();
-            
-            if (this.currentView === 'profile' && window.ProfileView && typeof ProfileView.renderProfileContent === 'function') {
-                ProfileView.renderProfileContent();
-            } else {
-                this.navigate(this.currentView, this.currentParams);
-            }
-            
-            // Hardcoded toast per language
-            const toasts = {
-                en: { title: 'Language changed', msg: 'English selected' },
-                kn: { title: 'ಭಾಷೆ ಬದಲಾಯಿಸಲಾಗಿದೆ', msg: 'ಕನ್ನಡ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ' },
-                hi: { title: 'भाषा बदल दी गई', msg: 'हिन्दी चयनित' }
-            };
-            const t = toasts[lang] || toasts.en;
-            if (window.NotificationUtils) {
-                NotificationUtils.showToast(t.title, t.msg, 'success', 2500);
-            }
+            this.navigate(this.currentView, this.currentParams);
         }
     },
 
     cycleLanguage() {
         if (window.I18n) {
             const order = ['en', 'kn', 'hi'];
-            const idx = order.indexOf(I18n.currentLang);
+            const idx = order.indexOf(I18n.currentLang || 'en');
             const next = order[(idx + 1) % order.length];
             this.setLanguage(next);
         }

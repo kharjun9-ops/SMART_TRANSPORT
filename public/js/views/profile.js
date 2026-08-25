@@ -7,6 +7,13 @@ const ProfileView = {
     notifications: [],
 
     async render() {
+        if (this.user) {
+            return `
+                <div class="view-fade-in pt-[80px] px-container-margin pb-[100px] max-w-xl mx-auto space-y-4" id="profile-container">
+                    ${this.buildProfileHTML()}
+                </div>
+            `;
+        }
         return `
             <div class="view-fade-in pt-[80px] px-container-margin pb-[100px] max-w-xl mx-auto space-y-4" id="profile-container">
                 <div class="glass-panel rounded-transit p-8 text-center text-on-surface-variant">
@@ -73,37 +80,13 @@ const ProfileView = {
     },
 
     setLanguage(lang) {
-        console.log('[ProfileView] setLanguage called with:', lang);
-        
-        // Force set the language directly (bulletproof)
-        if (window.I18n) {
+        if (typeof window.switchLang === 'function') {
+            window.switchLang(lang);
+        } else {
             I18n.currentLang = lang;
             localStorage.setItem('lumina_lang', lang);
-            if (typeof I18n.setLang === 'function') {
-                I18n.setLang(lang);
-            }
+            this.renderProfileContent();
         }
-        
-        console.log('[ProfileView] I18n.currentLang is now:', window.I18n ? I18n.currentLang : 'NO I18n');
-        
-        // Update nav labels
-        if (window.app && typeof window.app.updateNavLabels === 'function') {
-            window.app.updateNavLabels();
-        }
-        
-        // Show toast in the SELECTED language
-        const toasts = {
-            en: { title: 'Language changed', msg: 'English selected' },
-            kn: { title: 'ಭಾಷೆ ಬದಲಾಯಿಸಲಾಗಿದೆ', msg: 'ಕನ್ನಡ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ' },
-            hi: { title: 'भाषा बदल दी गई', msg: 'हिन्दी चयनित' }
-        };
-        const t = toasts[lang] || toasts.en;
-        if (window.NotificationUtils) {
-            NotificationUtils.showToast(t.title, t.msg, 'success', 2500);
-        }
-        
-        // Re-render the profile content
-        this.renderProfileContent();
     },
 
     renderProfileContent() {
@@ -115,10 +98,14 @@ const ProfileView = {
             return;
         }
 
+        container.innerHTML = this.buildProfileHTML();
+    },
+
+    buildProfileHTML() {
         const user = this.user || { name: 'Karthik Rao', email: 'karthik@demo.in', points: 1250, level: 'Level 4: Contributor' };
         const currentLang = I18n.getLang();
 
-        container.innerHTML = `
+        return `
             <!-- Passenger Identity Card -->
             <div class="glass-panel rounded-2xl p-5 shadow-2xl relative overflow-hidden border border-white/10">
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-3xl rounded-full pointer-events-none"></div>

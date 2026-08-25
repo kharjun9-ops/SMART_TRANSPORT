@@ -254,35 +254,18 @@
     <!-- Global language switcher (inline - cannot be cached) -->
     <script>
     window.switchLang = function(lang) {
-        alert('Switching language to: ' + lang);
+        if (!lang) return;
         
-        // 1. Set language on I18n
+        // Save to localStorage — I18n.init() reads this on page load
+        localStorage.setItem('lumina_lang', lang);
+        
+        // Force set on I18n object immediately
         if (window.I18n) {
             I18n.currentLang = lang;
-            localStorage.setItem('lumina_lang', lang);
         }
         
-        // 2. Update bottom nav labels
-        var labels = {
-            en: { home: 'Home', trips: 'Trips', ranks: 'Ranks', report: 'Report', profile: 'Profile', title: 'Lumina Transit' },
-            kn: { home: 'ಮುಖಪುಟ', trips: 'ಪ್ರಯಾಣ', ranks: 'ಶ್ರೇಣಿ', report: 'ದೂರು', profile: 'ಪ್ರೊಫೈಲ್', title: 'ಲುಮಿನಾ ಟ್ರಾನ್ಸಿಟ್' },
-            hi: { home: 'होम', trips: 'यात्रा', ranks: 'रैंक', report: 'रिपोर्ट', profile: 'प्रोफ़ाइल', title: 'लुमिना ट्रांज़िट' }
-        };
-        var l = labels[lang] || labels.en;
-        
-        var el;
-        el = document.getElementById('nav-label-home'); if (el) el.textContent = l.home;
-        el = document.getElementById('nav-label-trips'); if (el) el.textContent = l.trips;
-        el = document.getElementById('nav-label-ranks'); if (el) el.textContent = l.ranks;
-        el = document.getElementById('nav-label-report'); if (el) el.textContent = l.report;
-        el = document.getElementById('nav-label-profile'); if (el) el.textContent = l.profile;
-        el = document.getElementById('app-title-header'); if (el) el.textContent = l.title;
-        el = document.getElementById('lang-toggle-label'); if (el) el.textContent = (lang === 'kn' ? 'ಕನ್ನಡ' : lang === 'hi' ? 'हिन्दी' : 'EN');
-        
-        // 3. Re-render current view
-        if (window.app && window.app.currentView) {
-            app.navigate(app.currentView, app.currentParams);
-        }
+        // Force full page reload to re-render everything in the new language
+        window.location.reload();
     };
     </script>
 </body>
