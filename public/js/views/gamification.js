@@ -12,7 +12,7 @@ const GamificationView = {
             <div class="view-fade-in pt-[80px] px-container-margin pb-[100px] max-w-xl mx-auto space-y-stack-lg" id="ranks-container">
                 <div class="glass-panel rounded-transit p-8 text-center text-on-surface-variant">
                     <span class="material-symbols-outlined animate-spin text-3xl text-primary mb-2">sync</span>
-                    <p class="text-sm">Loading commuter metrics and local rank...</p>
+                    <p class="text-sm">${I18n.t('ranks.loading')}</p>
                 </div>
             </div>
         `;
@@ -51,9 +51,9 @@ const GamificationView = {
             container.innerHTML = `
                 <div class="glass-panel rounded-transit p-8 text-center">
                     <span class="material-symbols-outlined text-4xl text-primary mb-2">military_tech</span>
-                    <h3 class="font-headline-md text-on-surface font-bold">Commuter Ranks</h3>
-                    <p class="text-xs text-on-surface-variant mt-1 mb-4">Sign in to track points, unlock badges and climb the leaderboards.</p>
-                    <button class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-lg" onclick="window.app.showAuthModal()">Sign In Now</button>
+                    <h3 class="font-headline-md text-on-surface font-bold">${I18n.t('ranks.title')}</h3>
+                    <p class="text-xs text-on-surface-variant mt-1 mb-4">${I18n.t('ranks.sign_in_prompt')}</p>
+                    <button class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs shadow-lg" onclick="window.app.showAuthModal()">${I18n.t('ranks.sign_in_now')}</button>
                 </div>
             `;
         }
@@ -86,7 +86,7 @@ const GamificationView = {
                         <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">${p.name}</h2>
                         <div class="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full bg-primary-container/20 border border-primary/30">
                             <span class="material-symbols-outlined text-primary text-[14px]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
-                            <span class="font-label-sm text-xs text-primary font-medium">${p.currentLevel.name || 'Level 4: Contributor'}</span>
+                            <span class="font-label-sm text-xs text-primary font-medium">${I18n.translateDynamic(p.currentLevel?.name || 'Level 4: Contributor')}</span>
                         </div>
                     </div>
                 </div>
@@ -94,12 +94,12 @@ const GamificationView = {
                 <div class="relative z-10">
                     <div class="flex justify-between items-end mb-stack-sm">
                         <div>
-                            <p class="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Total Points</p>
+                            <p class="font-label-bold text-xs text-on-surface-variant uppercase tracking-wider font-semibold">${I18n.t('ranks.total_points')}</p>
                             <p class="font-headline-lg-mobile text-headline-lg-mobile text-primary font-bold">
-                                ${pointsFormatted} <span class="font-body-md text-sm text-primary/70 font-normal">pts</span>
+                                ${pointsFormatted} <span class="font-body-md text-sm text-primary/70 font-normal">${I18n.t('ranks.pts')}</span>
                             </p>
                         </div>
-                        <span class="font-label-sm text-xs text-on-surface-variant">${ptsRemaining > 0 ? `${ptsRemaining} to Next Tier` : 'Top Tier Commuter'}</span>
+                        <span class="font-label-sm text-xs text-on-surface-variant">${ptsRemaining > 0 ? I18n.t('ranks.to_next_tier', { pts: ptsRemaining }) : I18n.t('ranks.top_tier')}</span>
                     </div>
 
                     <!-- Animated Progress Bar -->
@@ -118,8 +118,8 @@ const GamificationView = {
                         <span class="material-symbols-outlined text-2xl icon-fill animate-subtle-pulse" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
                     </div>
                     <div>
-                        <h3 class="font-headline-md text-base font-bold text-on-surface">${streakDays} Day Streak</h3>
-                        <p class="font-label-sm text-xs text-on-surface-variant">Keep reporting to earn 2x multiplier!</p>
+                        <h3 class="font-headline-md text-base font-bold text-on-surface">${I18n.t('ranks.day_streak', { days: streakDays })}</h3>
+                        <p class="font-label-sm text-xs text-on-surface-variant">${I18n.t('ranks.keep_reporting')}</p>
                     </div>
                 </div>
                 <div class="flex gap-1 items-end">
@@ -136,7 +136,7 @@ const GamificationView = {
                 <!-- Your Badges -->
                 <section class="glass-panel rounded-[24px] p-stack-md shadow-lg">
                     <div class="flex justify-between items-center mb-stack-md">
-                        <h3 class="font-headline-md text-base font-bold text-on-surface">Your Badges</h3>
+                        <h3 class="font-headline-md text-base font-bold text-on-surface">${I18n.t('ranks.your_badges')}</h3>
                         <span class="font-label-sm text-xs text-primary font-medium">${earnedBadgeIds.size} / ${this.badgesData.length || 6}</span>
                     </div>
                     <div class="grid grid-cols-3 gap-stack-sm">
@@ -145,7 +145,7 @@ const GamificationView = {
                             <div class="w-14 h-14 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center relative shadow-[inset_0_0_10px_rgba(173,198,255,0.2)]">
                                 <span class="material-symbols-outlined text-primary text-[28px]">wb_twilight</span>
                             </div>
-                            <span class="font-label-sm text-[11px] text-on-surface text-center leading-tight font-medium">Early Bird</span>
+                            <span class="font-label-sm text-[11px] text-on-surface text-center leading-tight font-medium">${I18n.t('ranks.early_bird')}</span>
                         </div>
 
                         <!-- Badge 2: Crowd Watcher -->
@@ -153,7 +153,7 @@ const GamificationView = {
                             <div class="w-14 h-14 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center relative shadow-[inset_0_0_10px_rgba(78,222,163,0.2)]">
                                 <span class="material-symbols-outlined text-secondary text-[28px]">group</span>
                             </div>
-                            <span class="font-label-sm text-[11px] text-on-surface text-center leading-tight font-medium">Crowd Watcher</span>
+                            <span class="font-label-sm text-[11px] text-on-surface text-center leading-tight font-medium">${I18n.t('ranks.crowd_watcher')}</span>
                         </div>
 
                         <!-- Badge 3: Verified Hero (Locked) -->
@@ -161,7 +161,7 @@ const GamificationView = {
                             <div class="w-14 h-14 rounded-full bg-surface-container-lowest border border-outline-variant border-dashed flex items-center justify-center">
                                 <span class="material-symbols-outlined text-outline text-[28px]">lock</span>
                             </div>
-                            <span class="font-label-sm text-[11px] text-on-surface text-center leading-tight">Verified Hero</span>
+                            <span class="font-label-sm text-[11px] text-on-surface text-center leading-tight">${I18n.t('ranks.verified_hero')}</span>
                         </div>
                     </div>
                 </section>
@@ -169,10 +169,10 @@ const GamificationView = {
                 <!-- Weekly Local Rank -->
                 <section class="glass-panel rounded-[24px] p-stack-md shadow-lg">
                     <div class="flex justify-between items-center mb-stack-md">
-                        <h3 class="font-headline-md text-base font-bold text-on-surface">Local Rank</h3>
+                        <h3 class="font-headline-md text-base font-bold text-on-surface">${I18n.t('ranks.local_rank')}</h3>
                         <div class="flex items-center gap-1 text-on-surface-variant text-xs">
                             <span class="material-symbols-outlined text-[14px]">schedule</span>
-                            <span>Ends in 2d</span>
+                            <span>${I18n.t('ranks.ends_in')}</span>
                         </div>
                     </div>
                     <ul class="space-y-stack-sm">
@@ -183,7 +183,7 @@ const GamificationView = {
 
             <!-- Contribution History (Stitch commuter_ranks) -->
             <section class="mb-stack-lg">
-                <h3 class="font-headline-md text-base font-bold text-on-surface mb-stack-md px-1">Recent Contributions</h3>
+                <h3 class="font-headline-md text-base font-bold text-on-surface mb-stack-md px-1">${I18n.t('ranks.recent_contributions')}</h3>
                 <div class="space-y-2.5">
                     <!-- Item 1 -->
                     <div class="glass-panel p-stack-sm rounded-xl flex items-center justify-between glass-panel-interactive cursor-pointer shadow-md">
@@ -192,12 +192,12 @@ const GamificationView = {
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
                             </div>
                             <div>
-                                <p class="font-body-md text-sm text-on-surface font-medium">Reported Delay on Route 138</p>
-                                <p class="font-label-sm text-[11px] text-on-surface-variant">2 hours ago</p>
+                                <p class="font-body-md text-sm text-on-surface font-medium">${I18n.t('ranks.reported_delay')}</p>
+                                <p class="font-label-sm text-[11px] text-on-surface-variant">${I18n.t('ranks.hours_ago')}</p>
                             </div>
                         </div>
                         <div class="font-label-bold text-xs text-secondary bg-secondary-container/20 border border-secondary/30 px-3 py-1 rounded-full font-bold">
-                            +15 pts
+                            +15 ${I18n.t('ranks.pts')}
                         </div>
                     </div>
 
@@ -208,12 +208,12 @@ const GamificationView = {
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">group</span>
                             </div>
                             <div>
-                                <p class="font-body-md text-sm text-on-surface font-medium">Updated Bus Crowd Level</p>
-                                <p class="font-label-sm text-[11px] text-on-surface-variant">Yesterday</p>
+                                <p class="font-body-md text-sm text-on-surface font-medium">${I18n.t('ranks.updated_crowd')}</p>
+                                <p class="font-label-sm text-[11px] text-on-surface-variant">${I18n.t('ranks.yesterday')}</p>
                             </div>
                         </div>
                         <div class="font-label-bold text-xs text-primary bg-primary-container/20 border border-primary/30 px-3 py-1 rounded-full font-bold">
-                            +10 pts
+                            +10 ${I18n.t('ranks.pts')}
                         </div>
                     </div>
 
@@ -224,12 +224,12 @@ const GamificationView = {
                                 <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
                             </div>
                             <div>
-                                <p class="font-body-md text-sm text-on-surface font-medium">Verified Stop Location</p>
-                                <p class="font-label-sm text-[11px] text-on-surface-variant">2 days ago</p>
+                                <p class="font-body-md text-sm text-on-surface font-medium">${I18n.t('ranks.verified_stop')}</p>
+                                <p class="font-label-sm text-[11px] text-on-surface-variant">${I18n.t('ranks.days_ago')}</p>
                             </div>
                         </div>
                         <div class="font-label-bold text-xs text-tertiary bg-tertiary-container/20 border border-tertiary/30 px-3 py-1 rounded-full font-bold">
-                            +5 pts
+                            +5 ${I18n.t('ranks.pts')}
                         </div>
                     </div>
                 </div>
@@ -246,20 +246,20 @@ const GamificationView = {
                 <div class="w-16 h-16 rounded-full bg-tertiary-container/20 border border-tertiary/30 flex items-center justify-center mx-auto mb-3 text-tertiary">
                     <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">stars</span>
                 </div>
-                <h3 class="font-headline-md text-lg font-bold text-on-surface">Join the Lumina Commuter Network</h3>
+                <h3 class="font-headline-md text-lg font-bold text-on-surface">${I18n.t('ranks.join_network')}</h3>
                 <p class="text-xs text-on-surface-variant mt-1.5 mb-5 max-w-sm mx-auto">
-                    Earn points, unlock transit badges, and climb the local leaderboards by verifying live bus crowd conditions.
+                    ${I18n.t('ranks.join_desc')}
                 </p>
                 <button class="px-6 py-3 rounded-xl bg-primary text-on-primary font-bold text-sm shadow-lg hover:bg-primary-fixed active:scale-95 transition-all" onclick="window.app.showAuthModal()">
-                    Sign In / Register
+                    ${I18n.t('ranks.sign_in_register')}
                 </button>
             </div>
 
             <!-- Public Leaderboard -->
             <section class="glass-panel rounded-[24px] p-stack-md shadow-lg">
                 <div class="flex justify-between items-center mb-stack-md">
-                    <h3 class="font-headline-md text-base font-bold text-on-surface">Top Community Contributors</h3>
-                    <span class="text-xs text-on-surface-variant">Live Standings</span>
+                    <h3 class="font-headline-md text-base font-bold text-on-surface">${I18n.t('ranks.top_contributors')}</h3>
+                    <span class="text-xs text-on-surface-variant">${I18n.t('ranks.live_standings')}</span>
                 </div>
                 <ul class="space-y-stack-sm">
                     ${this.renderLeaderboardList(null)}
@@ -285,7 +285,7 @@ const GamificationView = {
                             <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">person</span>
                         </div>
                         <span class="font-body-md text-xs text-primary font-semibold flex-1 truncate">${item.name}</span>
-                        <span class="font-label-bold text-xs text-primary font-bold">${item.points.toLocaleString()} pts</span>
+                        <span class="font-label-bold text-xs text-primary font-bold">${item.points.toLocaleString()} ${I18n.t('ranks.pts')}</span>
                     </li>
                 `;
             } else {
@@ -296,7 +296,7 @@ const GamificationView = {
                             <span class="material-symbols-outlined text-sm">person</span>
                         </div>
                         <span class="font-body-md text-xs text-on-surface flex-1 truncate">${item.name}</span>
-                        <span class="font-label-bold text-xs text-on-surface-variant font-medium">${item.points.toLocaleString()} pts</span>
+                        <span class="font-label-bold text-xs text-on-surface-variant font-medium">${item.points.toLocaleString()} ${I18n.t('ranks.pts')}</span>
                     </li>
                 `;
             }

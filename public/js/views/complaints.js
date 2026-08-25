@@ -6,24 +6,28 @@ const ComplaintsView = {
     selectedCategory: 'overcrowding',
     capturedImageBlob: null,
     cameraStream: null,
-    categories: [
-        { id: 'overcrowding', label: 'Overcrowding', icon: 'groups' },
-        { id: 'delay', label: 'Severe Delay', icon: 'schedule' },
-        { id: 'safety', label: 'Safety Hazard', icon: 'warning' },
-        { id: 'cleanliness', label: 'Cleanliness', icon: 'cleaning_services' },
-        { id: 'driver_behavior', label: 'Driver Issue', icon: 'airline_seat_recline_normal' },
-        { id: 'other', label: 'Other Issue', icon: 'report_problem' }
-    ],
+    
+    getCategories() {
+        return [
+            { id: 'overcrowding', label: I18n.t('cat.overcrowding'), icon: 'groups' },
+            { id: 'delay', label: I18n.t('cat.delay'), icon: 'schedule' },
+            { id: 'safety', label: I18n.t('cat.safety'), icon: 'warning' },
+            { id: 'cleanliness', label: I18n.t('cat.cleanliness'), icon: 'cleaning_services' },
+            { id: 'driver_behavior', label: I18n.t('cat.driver_behavior'), icon: 'airline_seat_recline_normal' },
+            { id: 'other', label: I18n.t('cat.other'), icon: 'report_problem' }
+        ];
+    },
     complaints: [],
 
     async render() {
+        const categories = this.getCategories();
         return `
             <div class="view-fade-in pt-[80px] px-container-margin pb-[100px] max-w-xl mx-auto space-y-4">
                 <!-- Header -->
                 <div class="flex justify-between items-end mb-1">
                     <div>
-                        <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">Report an Incident</h2>
-                        <p class="text-xs text-on-surface-variant">Continuous crowd feedback & evidence verification</p>
+                        <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">${I18n.t('report.title')}</h2>
+                        <p class="text-xs text-on-surface-variant">${I18n.t('report.subtitle')}</p>
                     </div>
                 </div>
 
@@ -33,18 +37,18 @@ const ComplaintsView = {
                         <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">verified</span>
                     </div>
                     <div>
-                        <div class="font-bold text-xs text-secondary font-semibold">Earn +15 Points for Valid Reports</div>
-                        <div class="text-[11px] text-on-surface-variant">Include photo evidence to expedite transit authority investigations.</div>
+                        <div class="font-bold text-xs text-secondary font-semibold">${I18n.t('report.earn_points')}</div>
+                        <div class="text-[11px] text-on-surface-variant">${I18n.t('report.include_photo')}</div>
                     </div>
                 </div>
 
                 <!-- Step 1: Category Selection -->
                 <div class="glass-panel rounded-2xl p-4 shadow-lg">
-                    <label class="block font-label-bold text-xs text-on-surface font-semibold mb-3">1. Select Incident Category</label>
+                    <label class="block font-label-bold text-xs text-on-surface font-semibold mb-3">${I18n.t('report.step1')}</label>
                     <div class="grid grid-cols-3 gap-2" id="complaint-categories-grid">
-                        ${this.categories.map(cat => `
+                        ${categories.map(cat => `
                             <button 
-                                type="button"
+                                type="button" 
                                 class="p-3 rounded-xl border ${this.selectedCategory === cat.id ? 'border-primary bg-primary/20 text-primary shadow-[0_0_12px_rgba(173,198,255,0.25)]' : 'border-white/10 bg-surface-container/60 text-on-surface-variant hover:bg-surface-container-high'} flex flex-col items-center gap-1.5 transition-all text-center cursor-pointer"
                                 onclick="ComplaintsView.selectCategory('${cat.id}')"
                             >
@@ -58,32 +62,32 @@ const ComplaintsView = {
                 <!-- Step 2: Form & Camera Evidence -->
                 <div class="glass-panel rounded-2xl p-4 shadow-lg space-y-3.5">
                     <div>
-                        <label class="block font-label-bold text-xs text-on-surface font-semibold mb-1.5">2. Incident Description</label>
+                        <label class="block font-label-bold text-xs text-on-surface font-semibold mb-1.5">${I18n.t('report.step2')}</label>
                         <textarea 
                             id="complaint-description" 
                             rows="3" 
                             class="w-full p-3 glass-panel rounded-xl text-body-md text-xs text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary border border-white/10"
-                            placeholder="Describe what happened (e.g. Bus #WP-ND-4521 dangerously packed with open doors at Bambalapitiya)"
+                            placeholder="${I18n.t('report.describe')}"
                             required
                         ></textarea>
                     </div>
 
                     <div>
-                        <label class="block font-label-bold text-xs text-on-surface font-semibold mb-1.5">3. Severity Level</label>
+                        <label class="block font-label-bold text-xs text-on-surface font-semibold mb-1.5">${I18n.t('report.step3')}</label>
                         <select 
                             id="complaint-severity" 
                             class="w-full p-2.5 glass-panel rounded-xl text-xs text-on-surface border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary bg-surface-container"
                         >
-                            <option value="low">Low - Minor Inconvenience</option>
-                            <option value="medium" selected>Medium - Significant Discomfort</option>
-                            <option value="high">High - Dangerous Overcrowding</option>
-                            <option value="critical">Critical - Immediate Safety Risk</option>
+                            <option value="low">${I18n.t('severity.low')}</option>
+                            <option value="medium" selected>${I18n.t('severity.medium')}</option>
+                            <option value="high">${I18n.t('severity.high')}</option>
+                            <option value="critical">${I18n.t('severity.critical')}</option>
                         </select>
                     </div>
 
                     <!-- In-app Camera Evidence -->
                     <div>
-                        <label class="block font-label-bold text-xs text-on-surface font-semibold mb-1.5">4. Evidence (Photo or Camera)</label>
+                        <label class="block font-label-bold text-xs text-on-surface font-semibold mb-1.5">${I18n.t('report.step4')}</label>
                         
                         <!-- Camera Stream Container -->
                         <div id="camera-container" class="relative rounded-xl overflow-hidden bg-black mb-2" style="display: none;">
@@ -93,7 +97,7 @@ const ComplaintsView = {
                                 class="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 shadow-lg"
                                 onclick="ComplaintsView.capturePhoto()"
                             >
-                                <span class="material-symbols-outlined text-sm">photo_camera</span> Snap Photo
+                                <span class="material-symbols-outlined text-sm">photo_camera</span> ${I18n.t('report.snap_photo')}
                             </button>
                         </div>
 
@@ -115,11 +119,11 @@ const ComplaintsView = {
                                 class="flex-1 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/20 transition-all active:scale-95"
                                 onclick="ComplaintsView.startCamera()"
                             >
-                                <span class="material-symbols-outlined text-base">photo_camera</span> Open Camera
+                                <span class="material-symbols-outlined text-base">photo_camera</span> ${I18n.t('report.open_camera')}
                             </button>
 
                             <label class="flex-1 py-2.5 rounded-xl border border-white/15 bg-surface-container text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-surface-container-high transition-all active:scale-95 cursor-pointer">
-                                <span class="material-symbols-outlined text-base text-tertiary">upload_file</span> Upload Photo
+                                <span class="material-symbols-outlined text-base text-tertiary">upload_file</span> ${I18n.t('report.upload_photo')}
                                 <input type="file" id="complaint-file-input" accept="image/*" class="hidden" onchange="ComplaintsView.handleFileUpload(event)">
                             </label>
                         </div>
@@ -131,7 +135,7 @@ const ComplaintsView = {
                         class="w-full py-3.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-2 hover:bg-primary-fixed active:scale-[0.98] transition-all shadow-lg shadow-primary/25 mt-2"
                         onclick="ComplaintsView.submitReport()"
                     >
-                        <span class="material-symbols-outlined text-base">send</span> Submit Report (+15 Pts)
+                        <span class="material-symbols-outlined text-base">send</span> ${I18n.t('report.submit')}
                     </button>
                 </div>
 
@@ -139,10 +143,10 @@ const ComplaintsView = {
                 <div class="glass-panel rounded-2xl p-4 shadow-lg">
                     <h3 class="font-headline-md text-xs font-bold text-on-surface mb-3 flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-primary text-base">history</span>
-                        My Incident History
+                        ${I18n.t('report.history')}
                     </h3>
                     <div id="past-complaints-list" class="space-y-2">
-                        <div class="text-xs text-on-surface-variant text-center py-2">Loading past reports...</div>
+                        <div class="text-xs text-on-surface-variant text-center py-2">${I18n.t('report.loading_history')}</div>
                     </div>
                 </div>
             </div>
@@ -154,7 +158,7 @@ const ComplaintsView = {
             await this.loadPastComplaints();
         } else {
             const list = document.getElementById('past-complaints-list');
-            if (list) list.innerHTML = `<div class="text-xs text-on-surface-variant text-center py-2">Sign in to view your submission history.</div>`;
+            if (list) list.innerHTML = `<div class="text-xs text-on-surface-variant text-center py-2">${I18n.t('report.sign_in_history')}</div>`;
         }
     },
 
@@ -256,7 +260,7 @@ const ComplaintsView = {
         const submitBtn = document.getElementById('submit-complaint-btn');
 
         if (!description) {
-            NotificationUtils.showToast('Description Required', 'Please describe the incident', 'warning');
+            NotificationUtils.showToast(I18n.t('toast.desc_required'), I18n.t('toast.desc_required_msg'), 'warning');
             return;
         }
 
@@ -271,13 +275,13 @@ const ComplaintsView = {
 
         try {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">sync</span> Submitting...`;
+            submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">sync</span> ${I18n.t('report.submitting')}`;
 
             await API.submitComplaint(formData);
 
             NotificationUtils.showToast(
-                'Report Submitted!',
-                'Earned +15 Points. Transit operators notified for investigation.',
+                I18n.t('toast.report_submitted'),
+                I18n.t('toast.report_msg'),
                 'success'
             );
 
@@ -290,7 +294,7 @@ const ComplaintsView = {
             NotificationUtils.showToast('Submission Failed', e.message, 'error');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = `<span class="material-symbols-outlined text-base">send</span> Submit Report (+15 Pts)`;
+            submitBtn.innerHTML = `<span class="material-symbols-outlined text-base">send</span> ${I18n.t('report.submit')}`;
         }
     },
 
@@ -303,7 +307,7 @@ const ComplaintsView = {
             this.complaints = res.complaints || [];
 
             if (this.complaints.length === 0) {
-                list.innerHTML = `<div class="text-on-surface-variant text-xs text-center py-2">No incidents reported yet.</div>`;
+                list.innerHTML = `<div class="text-on-surface-variant text-xs text-center py-2">${I18n.t('report.no_reports')}</div>`;
                 return;
             }
 

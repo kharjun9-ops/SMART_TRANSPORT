@@ -223,6 +223,49 @@ class GamificationEngine {
 
         return newlyEarned;
     }
+
+    /**
+     * Get gamification profile for a user
+     */
+    static getProfile(userId) {
+        const db = getDb();
+        const user = db.prepare('SELECT id, name, email, points, level, streak_days, total_contributions, reliability_score, created_at FROM users WHERE id = ?').get(userId);
+        if (!user) return null;
+
+        const badges = db.prepare(`
+            SELECT b.*, ub.earned_at
+            FROM user_badges ub
+            JOIN badges b ON ub.badge_id = b.id
+            WHERE ub.user_id = ?
+            ORDER BY ub.earned_at DESC
+        `).all(userId);
+
+        const recentTransactions = db.prepare(`
+            SELECT * FROM point_transactions
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            LIMIT 10
+        `).all(userId);
+
+        return {
+            ...user,
+            badges,
+            recentTransactions
+        };
+    }
+
+    /**
+     * Get leaderboard of top contributors
+     */
+    static getLeaderboard(limit = 20) {
+        const db = getDb();
+        return db.prepare(`
+            SELECT id, name, level, points, streak_days, total_contributions, reliability_score
+            FROM users
+            ORDER BY points DESC
+            LIMIT ?
+        `).all(limit);
+    }
 }
 
 module.exports = GamificationEngine;

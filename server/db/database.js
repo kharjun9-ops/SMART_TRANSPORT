@@ -737,125 +737,58 @@ function initializeDatabase() {
     const db = getDb();
     const loaded = db.loadFromDisk();
 
-    // Default Seed Data
-    if (!loaded || db.tables.stops.length === 0) {
+    // Seed Data - Only Route 378 (Silk Institute to Kengeri)
+    if (!loaded || !db.tables.routes || db.tables.routes.length === 0 || db.tables.routes[0].route_number !== '378') {
+        const bcrypt = require('bcryptjs');
+        const demoHash = bcrypt.hashSync('password123', 10);
+
+        db.tables.users = [
+            { id: 'usr_01', name: 'Karthik Rao', email: 'karthik@demo.in', password_hash: demoHash, points: 1695, level: 'Contributor', reliability_score: 0.96, total_contributions: 23, streak_days: 2, last_contribution_date: '2026-08-24' },
+            { id: 'usr_02', name: 'Sneha Hegde', email: 'sneha@demo.in', password_hash: demoHash, points: 1020, level: 'Contributor', reliability_score: 0.91, total_contributions: 48, streak_days: 9 },
+            { id: 'usr_03', name: 'Praveen Gowda', email: 'praveen@demo.in', password_hash: demoHash, points: 810, level: 'Contributor', reliability_score: 0.88, total_contributions: 36, streak_days: 6 },
+            { id: 'usr_04', name: 'Deepa Narayan', email: 'deepa@demo.in', password_hash: demoHash, points: 460, level: 'Regular', reliability_score: 0.84, total_contributions: 22, streak_days: 5 }
+        ];
+
         db.tables.stops = [
-            { id: 'stop_blr_01', name: 'Yeshwanthpur TTMC', latitude: 13.0238, longitude: 77.5503, zone: 'North Zone', is_major: 1 },
-            { id: 'stop_blr_02', name: 'Yeshwanthpur Railway Station', latitude: 13.0280, longitude: 77.5406, zone: 'North Zone', is_major: 1 },
-            { id: 'stop_blr_03', name: 'Malleshwaram 18th Cross', latitude: 13.0085, longitude: 77.5685, zone: 'North Zone', is_major: 0 },
-            { id: 'stop_blr_04', name: 'Malleshwaram 8th Cross', latitude: 12.9980, longitude: 77.5710, zone: 'Central Zone', is_major: 0 },
-            { id: 'stop_blr_05', name: 'Rajajinagar 1st Block', latitude: 13.0038, longitude: 77.5555, zone: 'West Zone', is_major: 0 },
-            { id: 'stop_blr_06', name: 'Kempegowda Bus Station (Majestic)', latitude: 12.9778, longitude: 77.5726, zone: 'Central Hub', is_major: 1 },
-            { id: 'stop_blr_07', name: 'Corporation / Town Hall', latitude: 12.9634, longitude: 77.5855, zone: 'Central Zone', is_major: 1 },
-            { id: 'stop_blr_08', name: 'Lalbagh Main Gate', latitude: 12.9507, longitude: 77.5844, zone: 'South Zone', is_major: 0 },
-            { id: 'stop_blr_09', name: 'South End Circle', latitude: 12.9378, longitude: 77.5785, zone: 'South Zone', is_major: 0 },
-            { id: 'stop_blr_10', name: 'Jayanagar 4th Block TTMC', latitude: 12.9299, longitude: 77.5824, zone: 'South Zone', is_major: 1 },
-            { id: 'stop_blr_11', name: 'Banashankari TTMC', latitude: 12.9177, longitude: 77.5739, zone: 'South Hub', is_major: 1 },
-            { id: 'stop_blr_12', name: 'Sarakki Junction', latitude: 12.9050, longitude: 77.5742, zone: 'South Zone', is_major: 0 },
-            { id: 'stop_blr_13', name: 'Konanakunte Cross', latitude: 12.8895, longitude: 77.5738, zone: 'Kanakapura Corridor', is_major: 1 },
-            { id: 'stop_blr_14', name: 'Doddakallasandra', latitude: 12.8765, longitude: 77.5615, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_15', name: 'Vajrahalli', latitude: 12.8645, longitude: 77.5448, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_16', name: 'Thalaghattapura', latitude: 12.8550, longitude: 77.5390, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_17', name: 'Silk Institute (Kanakapura Rd)', latitude: 12.8465, longitude: 77.5342, zone: 'South Terminal', is_major: 1 },
-            { id: 'stop_blr_18', name: 'Vijayanagar TTMC', latitude: 12.9698, longitude: 77.5360, zone: 'West Hub', is_major: 1 },
-            { id: 'stop_blr_19', name: 'Nayandahalli Metro', latitude: 12.9468, longitude: 77.5255, zone: 'Mysore Rd Corridor', is_major: 1 },
-            { id: 'stop_blr_20', name: 'Rajarajeshwari Nagar Gate', latitude: 12.9288, longitude: 77.5188, zone: 'Mysore Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_21', name: 'Bangalore University Gate', latitude: 12.9185, longitude: 77.5020, zone: 'Mysore Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_22', name: 'Kengeri TTMC / Bus Terminal', latitude: 12.9081, longitude: 77.4835, zone: 'West Terminal', is_major: 1 },
-            { id: 'stop_blr_23', name: 'Kengeri Satellite Town', latitude: 12.8985, longitude: 77.4780, zone: 'West Terminal', is_major: 0 },
-            { id: 'stop_blr_24', name: 'Electronic City Toll Gate', latitude: 12.8452, longitude: 77.6602, zone: 'Tech Hub South', is_major: 1 },
-            { id: 'stop_blr_25', name: 'Whitefield TTMC', latitude: 12.9698, longitude: 77.7499, zone: 'IT Corridor East', is_major: 1 }
+            { id: 'stop_blr_01', name: 'Silk Institute (Kanakapura Rd)', latitude: 12.8465, longitude: 77.5342, zone: 'South Terminal', is_major: 1 },
+            { id: 'stop_blr_02', name: 'Thalaghattapura', latitude: 12.8550, longitude: 77.5390, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_03', name: 'Vajrahalli', latitude: 12.8645, longitude: 77.5448, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_04', name: 'Doddakallasandra', latitude: 12.8765, longitude: 77.5615, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_05', name: 'Konanakunte Cross', latitude: 12.8895, longitude: 77.5738, zone: 'Kanakapura Corridor', is_major: 1 },
+            { id: 'stop_blr_06', name: 'Banashankari TTMC', latitude: 12.9177, longitude: 77.5739, zone: 'South Hub', is_major: 1 },
+            { id: 'stop_blr_07', name: 'Rajarajeshwari Nagar Gate', latitude: 12.9288, longitude: 77.5188, zone: 'Mysore Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_08', name: 'Bangalore University Gate', latitude: 12.9185, longitude: 77.5020, zone: 'Mysore Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_09', name: 'Kengeri TTMC / Bus Terminal', latitude: 12.9081, longitude: 77.4835, zone: 'West Terminal', is_major: 1 },
+            { id: 'stop_blr_10', name: 'Kengeri Satellite Town', latitude: 12.8985, longitude: 77.4780, zone: 'West Terminal', is_major: 0 }
         ];
 
         db.tables.routes = [
-            { id: 'route_blr_01', name: 'Yeshwanthpur - Majestic Express', route_number: '252', color: '#4285F4', total_distance_km: 8.5, avg_duration_minutes: 30, fare_lkr: 25, status: 'active' },
-            { id: 'route_blr_02', name: 'Majestic - Silk Institute via Konanakunte', route_number: '215C', color: '#10B981', total_distance_km: 19.8, avg_duration_minutes: 60, fare_lkr: 45, status: 'active' },
-            { id: 'route_blr_03', name: 'Majestic - Kengeri TTMC via Vijayanagar', route_number: '226N', color: '#F59E0B', total_distance_km: 16.2, avg_duration_minutes: 50, fare_lkr: 40, status: 'active' },
-            { id: 'route_blr_04', name: 'Yeshwanthpur - Kengeri via Rajajinagar', route_number: '401K', color: '#EC4899', total_distance_km: 18.5, avg_duration_minutes: 55, fare_lkr: 40, status: 'active' },
-            { id: 'route_blr_05', name: 'Kengeri - Konanakunte - Silk Institute Link', route_number: '375K', color: '#8B5CF6', total_distance_km: 21.0, avg_duration_minutes: 65, fare_lkr: 50, status: 'active' },
-            { id: 'route_blr_06', name: 'Majestic - Electronic City Express', route_number: '356CW', color: '#00bcd4', total_distance_km: 22.0, avg_duration_minutes: 55, fare_lkr: 55, status: 'active' },
-            { id: 'route_blr_07', name: 'Majestic - Whitefield IT Corridor', route_number: '335E', color: '#ff7043', total_distance_km: 24.0, avg_duration_minutes: 65, fare_lkr: 60, status: 'active' }
+            { id: 'route_blr_378', name: 'Silk Institute - Kengeri TTMC', route_number: '378', color: '#10B981', description: 'Direct BMTC route connecting Silk Institute to Kengeri TTMC via Kanakapura Corridor & RR Nagar', total_distance_km: 21.5, avg_duration_minutes: 55, fare_lkr: 35, status: 'active' }
         ];
 
         db.tables.route_stops = [
-            // Route 252: Yeshwanthpur TTMC -> Majestic
-            { route_id: 'route_blr_01', stop_id: 'stop_blr_01', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_01', stop_id: 'stop_blr_02', sequence_order: 2, distance_from_start_km: 1.2, avg_time_from_start_min: 4 },
-            { route_id: 'route_blr_01', stop_id: 'stop_blr_03', sequence_order: 3, distance_from_start_km: 3.5, avg_time_from_start_min: 12 },
-            { route_id: 'route_blr_01', stop_id: 'stop_blr_04', sequence_order: 4, distance_from_start_km: 5.8, avg_time_from_start_min: 20 },
-            { route_id: 'route_blr_01', stop_id: 'stop_blr_06', sequence_order: 5, distance_from_start_km: 8.5, avg_time_from_start_min: 30 },
-
-            // Route 215C: Majestic -> Silk Institute via Konanakunte Cross
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_06', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_07', sequence_order: 2, distance_from_start_km: 2.1, avg_time_from_start_min: 7 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_08', sequence_order: 3, distance_from_start_km: 4.2, avg_time_from_start_min: 14 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_09', sequence_order: 4, distance_from_start_km: 6.0, avg_time_from_start_min: 20 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_10', sequence_order: 5, distance_from_start_km: 7.8, avg_time_from_start_min: 26 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_11', sequence_order: 6, distance_from_start_km: 9.6, avg_time_from_start_min: 32 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_12', sequence_order: 7, distance_from_start_km: 11.5, avg_time_from_start_min: 38 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_13', sequence_order: 8, distance_from_start_km: 13.8, avg_time_from_start_min: 44 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_14', sequence_order: 9, distance_from_start_km: 15.6, avg_time_from_start_min: 49 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_15', sequence_order: 10, distance_from_start_km: 17.2, avg_time_from_start_min: 54 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_16', sequence_order: 11, distance_from_start_km: 18.5, avg_time_from_start_min: 57 },
-            { route_id: 'route_blr_02', stop_id: 'stop_blr_17', sequence_order: 12, distance_from_start_km: 19.8, avg_time_from_start_min: 60 },
-
-            // Route 226N: Majestic -> Kengeri TTMC via Vijayanagar
-            { route_id: 'route_blr_03', stop_id: 'stop_blr_06', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_03', stop_id: 'stop_blr_18', sequence_order: 2, distance_from_start_km: 5.2, avg_time_from_start_min: 16 },
-            { route_id: 'route_blr_03', stop_id: 'stop_blr_19', sequence_order: 3, distance_from_start_km: 8.5, avg_time_from_start_min: 26 },
-            { route_id: 'route_blr_03', stop_id: 'stop_blr_20', sequence_order: 4, distance_from_start_km: 11.0, avg_time_from_start_min: 34 },
-            { route_id: 'route_blr_03', stop_id: 'stop_blr_21', sequence_order: 5, distance_from_start_km: 13.5, avg_time_from_start_min: 42 },
-            { route_id: 'route_blr_03', stop_id: 'stop_blr_22', sequence_order: 6, distance_from_start_km: 16.2, avg_time_from_start_min: 50 },
-
-            // Route 401K: Yeshwanthpur TTMC -> Kengeri TTMC
-            { route_id: 'route_blr_04', stop_id: 'stop_blr_01', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_04', stop_id: 'stop_blr_05', sequence_order: 2, distance_from_start_km: 3.2, avg_time_from_start_min: 10 },
-            { route_id: 'route_blr_04', stop_id: 'stop_blr_18', sequence_order: 3, distance_from_start_km: 7.0, avg_time_from_start_min: 22 },
-            { route_id: 'route_blr_04', stop_id: 'stop_blr_19', sequence_order: 4, distance_from_start_km: 10.5, avg_time_from_start_min: 32 },
-            { route_id: 'route_blr_04', stop_id: 'stop_blr_20', sequence_order: 5, distance_from_start_km: 13.0, avg_time_from_start_min: 40 },
-            { route_id: 'route_blr_04', stop_id: 'stop_blr_22', sequence_order: 6, distance_from_start_km: 18.5, avg_time_from_start_min: 55 },
-
-            // Route 375K: Kengeri TTMC -> Konanakunte Cross -> Silk Institute
-            { route_id: 'route_blr_05', stop_id: 'stop_blr_22', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_05', stop_id: 'stop_blr_20', sequence_order: 2, distance_from_start_km: 4.8, avg_time_from_start_min: 14 },
-            { route_id: 'route_blr_05', stop_id: 'stop_blr_11', sequence_order: 3, distance_from_start_km: 10.5, avg_time_from_start_min: 32 },
-            { route_id: 'route_blr_05', stop_id: 'stop_blr_13', sequence_order: 4, distance_from_start_km: 15.0, avg_time_from_start_min: 46 },
-            { route_id: 'route_blr_05', stop_id: 'stop_blr_17', sequence_order: 5, distance_from_start_km: 21.0, avg_time_from_start_min: 65 },
-
-            // Route 356CW: Majestic -> Electronic City
-            { route_id: 'route_blr_06', stop_id: 'stop_blr_06', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_06', stop_id: 'stop_blr_07', sequence_order: 2, distance_from_start_km: 2.5, avg_time_from_start_min: 8 },
-            { route_id: 'route_blr_06', stop_id: 'stop_blr_08', sequence_order: 3, distance_from_start_km: 5.0, avg_time_from_start_min: 15 },
-            { route_id: 'route_blr_06', stop_id: 'stop_blr_24', sequence_order: 4, distance_from_start_km: 22.0, avg_time_from_start_min: 55 },
-
-            // Route 335E: Majestic -> Whitefield
-            { route_id: 'route_blr_07', stop_id: 'stop_blr_06', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_07', stop_id: 'stop_blr_07', sequence_order: 2, distance_from_start_km: 2.5, avg_time_from_start_min: 8 },
-            { route_id: 'route_blr_07', stop_id: 'stop_blr_25', sequence_order: 3, distance_from_start_km: 24.0, avg_time_from_start_min: 65 }
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_01', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_02', sequence_order: 2, distance_from_start_km: 1.8, avg_time_from_start_min: 5 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_03', sequence_order: 3, distance_from_start_km: 3.5, avg_time_from_start_min: 10 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_04', sequence_order: 4, distance_from_start_km: 5.8, avg_time_from_start_min: 16 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_05', sequence_order: 5, distance_from_start_km: 8.2, avg_time_from_start_min: 23 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_06', sequence_order: 6, distance_from_start_km: 12.0, avg_time_from_start_min: 32 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_07', sequence_order: 7, distance_from_start_km: 16.5, avg_time_from_start_min: 42 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_08', sequence_order: 8, distance_from_start_km: 18.8, avg_time_from_start_min: 48 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_09', sequence_order: 9, distance_from_start_km: 21.5, avg_time_from_start_min: 55 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_10', sequence_order: 10, distance_from_start_km: 23.0, avg_time_from_start_min: 60 }
         ];
 
         db.tables.buses = [
-            { id: 'bus_blr_01', route_id: 'route_blr_01', bus_number: 'KA-01-F-4589', capacity: 55, current_latitude: 13.0085, current_longitude: 77.5685, current_speed_kmh: 32, driver_name: 'Manjunath Gowda', status: 'in_service' },
-            { id: 'bus_blr_02', route_id: 'route_blr_01', bus_number: 'KA-04-F-2214', capacity: 55, current_latitude: 12.9980, current_longitude: 77.5710, current_speed_kmh: 28, driver_name: 'Ramesh Kumar', status: 'in_service' },
-            { id: 'bus_blr_03', route_id: 'route_blr_02', bus_number: 'KA-57-F-7890', capacity: 52, current_latitude: 12.9177, current_longitude: 77.5739, current_speed_kmh: 38, driver_name: 'Shankarappa', status: 'in_service' },
-            { id: 'bus_blr_04', route_id: 'route_blr_02', bus_number: 'KA-01-FA-1102', capacity: 52, current_latitude: 12.8895, current_longitude: 77.5738, current_speed_kmh: 35, driver_name: 'Venkatesh Babu', status: 'in_service' },
-            { id: 'bus_blr_05', route_id: 'route_blr_03', bus_number: 'KA-41-F-6345', capacity: 50, current_latitude: 12.9468, current_longitude: 77.5255, current_speed_kmh: 40, driver_name: 'Pradeep Patil', status: 'in_service' },
-            { id: 'bus_blr_06', route_id: 'route_blr_04', bus_number: 'KA-01-F-9932', capacity: 50, current_latitude: 12.9698, current_longitude: 77.5360, current_speed_kmh: 36, driver_name: 'Anand Murthy', status: 'in_service' },
-            { id: 'bus_blr_07', route_id: 'route_blr_05', bus_number: 'KA-57-F-3321', capacity: 50, current_latitude: 12.8765, current_longitude: 77.5615, current_speed_kmh: 30, driver_name: 'Basavaraj Hiremath', status: 'in_service' },
-            { id: 'bus_blr_08', route_id: 'route_blr_06', bus_number: 'KA-01-F-8812', capacity: 55, current_latitude: 12.8900, current_longitude: 77.6200, current_speed_kmh: 42, driver_name: 'Kiran Kumar', status: 'in_service' },
-            { id: 'bus_blr_09', route_id: 'route_blr_07', bus_number: 'KA-53-F-4411', capacity: 55, current_latitude: 12.9600, current_longitude: 77.6800, current_speed_kmh: 35, driver_name: 'Suresh Reddy', status: 'in_service' }
+            { id: 'bus_blr_01', route_id: 'route_blr_378', bus_number: 'KA-01-F-3781', capacity: 55, current_latitude: 12.8645, current_longitude: 77.5448, current_speed_kmh: 34, driver_name: 'Manjunath Gowda', status: 'in_service' },
+            { id: 'bus_blr_02', route_id: 'route_blr_378', bus_number: 'KA-57-F-3782', capacity: 55, current_latitude: 12.9185, current_longitude: 77.5020, current_speed_kmh: 30, driver_name: 'Ramesh Kumar', status: 'in_service' },
+            { id: 'bus_blr_03', route_id: 'route_blr_378', bus_number: 'KA-41-F-3783', capacity: 52, current_latitude: 12.8895, current_longitude: 77.5738, current_speed_kmh: 28, driver_name: 'Shankarappa', status: 'in_service' }
         ];
 
         db.tables.trips = [
-            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_01', direction: 'outbound', scheduled_start: new Date(Date.now() - 18 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 24, delay_minutes: 2 },
-            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_01', direction: 'inbound', scheduled_start: new Date(Date.now() - 10 * 60000).toISOString(), status: 'active', current_stop_index: 3, current_passenger_count: 46, delay_minutes: 0 },
-            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_02', direction: 'outbound', scheduled_start: new Date(Date.now() - 32 * 60000).toISOString(), status: 'active', current_stop_index: 5, current_passenger_count: 38, delay_minutes: 4 },
-            { id: 'trip_blr_04', bus_id: 'bus_blr_04', route_id: 'route_blr_02', direction: 'outbound', scheduled_start: new Date(Date.now() - 42 * 60000).toISOString(), status: 'active', current_stop_index: 7, current_passenger_count: 18, delay_minutes: 1 },
-            { id: 'trip_blr_05', bus_id: 'bus_blr_05', route_id: 'route_blr_03', direction: 'outbound', scheduled_start: new Date(Date.now() - 22 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 28, delay_minutes: 3 },
-            { id: 'trip_blr_06', bus_id: 'bus_blr_06', route_id: 'route_blr_04', direction: 'outbound', scheduled_start: new Date(Date.now() - 15 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 32, delay_minutes: 0 },
-            { id: 'trip_blr_07', bus_id: 'bus_blr_07', route_id: 'route_blr_05', direction: 'outbound', scheduled_start: new Date(Date.now() - 28 * 60000).toISOString(), status: 'active', current_stop_index: 3, current_passenger_count: 16, delay_minutes: 0 },
-            { id: 'trip_blr_08', bus_id: 'bus_blr_08', route_id: 'route_blr_06', direction: 'outbound', scheduled_start: new Date(Date.now() - 20 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 44, delay_minutes: 2 },
-            { id: 'trip_blr_09', bus_id: 'bus_blr_09', route_id: 'route_blr_07', direction: 'outbound', scheduled_start: new Date(Date.now() - 35 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 35, delay_minutes: 5 }
+            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 15 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 26, delay_minutes: 1 },
+            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 25 * 60000).toISOString(), status: 'active', current_stop_index: 7, current_passenger_count: 38, delay_minutes: 0 },
+            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 35 * 60000).toISOString(), status: 'active', current_stop_index: 4, current_passenger_count: 32, delay_minutes: 2 }
         ];
 
         db.tables.badges = [
@@ -870,24 +803,27 @@ function initializeDatabase() {
             { id: 'badge_09', name: 'Bengaluru Transit Legend', description: 'Reach 5000 points', icon: '👑', rarity: 'legendary', requirement_type: 'points', requirement_value: 5000 }
         ];
 
-        // Seed Bengaluru commuters for leaderboard
-        const bcrypt = require('bcryptjs');
-        const demoHash = bcrypt.hashSync('password123', 10);
-        // Seed initial waiting list data across major Bengaluru stops
         db.tables.stop_waiting_list = [
-            { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
-            { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_12', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
-            { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_09', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_14', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() },
-            { id: 'wait_blr_04', user_id: 'usr_04', stop_id: 'stop_blr_03', route_id: 'route_blr_01', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_05', status: 'waiting', joined_at: new Date(Date.now() - 5 * 60000).toISOString(), created_at: new Date(Date.now() - 5 * 60000).toISOString() }
+            { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
+            { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_05', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
+            { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_07', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
         ];
+
+        db.tables.user_updates = [];
+        db.tables.crowd_estimates = [];
+        db.tables.user_badges = [];
+        db.tables.complaints = [];
+        db.tables.notifications = [];
+        db.tables.point_transactions = [];
+        db.tables.user_journeys = [];
 
         db.saveToDisk();
     } else {
         if (!db.tables.stop_waiting_list) {
             db.tables.stop_waiting_list = [
-                { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
-                { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_08', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_12', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
-                { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_09', route_id: 'route_blr_02', trip_id: 'trip_blr_03', destination_stop_id: 'stop_blr_14', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
+                { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
+                { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_05', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
+                { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_07', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
             ];
             db.saveToDisk();
         }

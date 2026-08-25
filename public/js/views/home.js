@@ -9,17 +9,17 @@ const HomeView = {
     routes: [],
     activeTrips: [],
     stops: [],
-    userLocation: { lat: 12.9778, lng: 77.5726, name: 'Kempegowda Station (Majestic)' },
+    userLocation: { lat: 12.8465, lng: 77.5342, name: 'Silk Institute (Kanakapura Rd)' },
     destination: null,
     matchedTransitOptions: [],
 
     popularDestinations: [
-        { name: 'Silk Institute', query: 'Silk Institute', routeNum: '215C', stopName: 'Silk Institute (Kanakapura Rd)' },
-        { name: 'Kengeri TTMC', query: 'Kengeri', routeNum: '226N', stopName: 'Kengeri TTMC / Bus Terminal' },
-        { name: 'Yeshwanthpur TTMC', query: 'Yeshwanthpur', routeNum: '252', stopName: 'Yeshwanthpur TTMC' },
-        { name: 'Jayanagar 4th Block', query: 'Jayanagar', routeNum: '215C', stopName: 'Jayanagar 4th Block TTMC' },
-        { name: 'Banashankari TTMC', query: 'Banashankari', routeNum: '215C', stopName: 'Banashankari TTMC' },
-        { name: 'Electronic City', query: 'Electronic City', routeNum: '356CW', stopName: 'Electronic City Toll Gate' }
+        { key: 'dest.kengeri_ttmc', name: 'Kengeri TTMC', query: 'Kengeri', routeNum: '378', stopName: 'Kengeri TTMC / Bus Terminal' },
+        { key: 'dest.konanakunte_cross', name: 'Konanakunte Cross', query: 'Konanakunte', routeNum: '378', stopName: 'Konanakunte Cross' },
+        { key: 'dest.banashankari_ttmc', name: 'Banashankari TTMC', query: 'Banashankari', routeNum: '378', stopName: 'Banashankari TTMC' },
+        { key: 'dest.rr_nagar_gate', name: 'RR Nagar Gate', query: 'Rajarajeshwari', routeNum: '378', stopName: 'Rajarajeshwari Nagar Gate' },
+        { key: 'dest.silk_institute', name: 'Silk Institute', query: 'Silk Institute', routeNum: '378', stopName: 'Silk Institute (Kanakapura Rd)' },
+        { key: 'dest.kengeri_satellite', name: 'Kengeri Satellite Town', query: 'Kengeri Satellite', routeNum: '378', stopName: 'Kengeri Satellite Town' }
     ],
 
     async render() {
@@ -50,7 +50,7 @@ const HomeView = {
                                 <input 
                                     id="destination-input"
                                     class="w-full px-3.5 py-2.5 bg-surface-container-high rounded-xl text-xs text-on-surface placeholder:text-outline border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary font-medium"
-                                    placeholder="Enter Bengaluru destination (e.g. Silk Institute, Kengeri, Yeshwanthpur)..."
+                                    placeholder="${I18n.t('home.search_placeholder')}"
                                     type="text"
                                     value="${this.destination ? this.destination.name : ''}"
                                     onkeydown="if(event.key==='Enter') HomeView.handleSearchSubmit(this.value)"
@@ -66,24 +66,35 @@ const HomeView = {
                     </div>
                 </div>
 
-                <!-- Clean Location Map -->
+                <!-- Clean Location Map (Google Maps Interface) -->
                 <section class="relative">
-                    <div class="relative w-full h-[230px] rounded-transit overflow-hidden border border-white/10 shadow-2xl bg-surface-container-low">
+                    <div class="relative w-full h-[240px] rounded-transit overflow-hidden border border-white/10 shadow-2xl bg-surface-container-low">
                         <div id="home-map" class="w-full h-full"></div>
                         
                         <!-- HUD Status Badge -->
                         <div class="absolute bottom-3 left-3 glass-panel px-3 py-1 rounded-full flex items-center gap-2 shadow-lg pointer-events-none z-[400]">
                             <div class="w-2 h-2 rounded-full ${this.destination ? 'bg-primary' : 'bg-secondary'} live-pulse"></div>
                             <span class="font-label-sm text-[11px] text-on-surface font-medium" id="map-status-label">
-                                ${this.destination ? 'Route Calculated' : 'Bengaluru Location'}
+                                ${this.destination ? I18n.t('home.route_calculated') : I18n.t('home.map_label')}
                             </span>
                         </div>
+
+                        <!-- Google Maps Layer Switcher -->
+                        <button 
+                            onclick="HomeView.toggleMapType()"
+                            class="absolute top-3 right-3 glass-panel text-on-surface hover:text-primary px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1 text-[11px] font-bold z-[400] active:scale-95 transition-all cursor-pointer"
+                            title="Toggle Google Maps Satellite / Default"
+                            id="map-type-btn"
+                        >
+                            <span class="material-symbols-outlined text-sm text-primary">layers</span>
+                            <span id="map-type-label">${I18n.t('home.satellite')}</span>
+                        </button>
 
                         <!-- Recenter GPS Button -->
                         <button 
                             onclick="HomeView.detectGPSLocation()"
-                            class="absolute bottom-3 right-3 bg-primary text-on-primary p-2 rounded-full shadow-[0_0_15px_rgba(173,198,255,0.5)] hover:bg-primary-fixed active:scale-90 transition-all z-[400] flex items-center justify-center"
-                            title="Recenter"
+                            class="absolute bottom-3 right-3 bg-primary text-on-primary p-2.5 rounded-full shadow-[0_2px_12px_rgba(26,115,232,0.4)] hover:bg-primary-fixed active:scale-90 transition-all z-[400] flex items-center justify-center cursor-pointer"
+                            title="Recenter GPS"
                         >
                             <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">my_location</span>
                         </button>
@@ -104,8 +115,8 @@ const HomeView = {
             return `
                 <div class="pt-1">
                     <h3 class="font-headline-md text-xs font-bold text-on-surface mb-2.5 px-1 flex items-center justify-between">
-                        <span>Popular BMTC Destinations</span>
-                        <span class="text-[11px] text-on-surface-variant font-normal">Tap to find buses</span>
+                        <span>${I18n.t('home.popular_destinations')}</span>
+                        <span class="text-[11px] text-on-surface-variant font-normal">${I18n.t('home.tap_to_find')}</span>
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
                         ${this.popularDestinations.map(p => `
@@ -114,8 +125,8 @@ const HomeView = {
                                 onclick="HomeView.selectDestination('${p.name}', '${p.query}')"
                             >
                                 <div class="min-w-0 pr-2">
-                                    <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">${p.name}</div>
-                                    <div class="text-[10px] text-on-surface-variant mt-0.5 font-medium">Route ${p.routeNum} Available</div>
+                                    <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">${I18n.t(p.key) || p.name}</div>
+                                    <div class="text-[10px] text-on-surface-variant mt-0.5 font-medium">${I18n.t('home.route_available', { num: p.routeNum })}</div>
                                 </div>
                                 <div class="w-7 h-7 rounded-lg bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary flex-shrink-0">
                                     <span class="material-symbols-outlined text-sm">directions_bus</span>
@@ -132,9 +143,9 @@ const HomeView = {
             return `
                 <div class="glass-panel rounded-2xl p-6 text-center shadow-lg">
                     <span class="material-symbols-outlined text-3xl text-outline mb-1">directions_bus</span>
-                    <h4 class="font-bold text-sm text-on-surface">No direct buses found</h4>
-                    <p class="text-xs text-on-surface-variant mt-1">Try selecting a nearby Bengaluru stop.</p>
-                    <button class="mt-3 px-4 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold" onclick="HomeView.clearDestination()">Choose Other</button>
+                    <h4 class="font-bold text-sm text-on-surface">${I18n.t('home.no_buses')}</h4>
+                    <p class="text-xs text-on-surface-variant mt-1">${I18n.t('home.try_nearby')}</p>
+                    <button class="mt-3 px-4 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold" onclick="HomeView.clearDestination()">${I18n.t('home.choose_other')}</button>
                 </div>
             `;
         }
@@ -143,11 +154,11 @@ const HomeView = {
             <div class="space-y-2.5">
                 <div class="flex items-center justify-between px-1">
                     <div>
-                        <h3 class="font-headline-md text-sm font-bold text-on-surface">Available BMTC Buses to ${this.destination.name}</h3>
-                        <p class="text-[11px] text-on-surface-variant">${this.matchedTransitOptions.length} routes found</p>
+                        <h3 class="font-headline-md text-sm font-bold text-on-surface">${I18n.t('home.available_buses_to', { dest: this.destination.name })}</h3>
+                        <p class="text-[11px] text-on-surface-variant">${I18n.t('home.routes_found', { count: this.matchedTransitOptions.length })}</p>
                     </div>
                     <button onclick="HomeView.clearDestination()" class="text-xs text-primary font-semibold hover:underline">
-                        Change
+                        ${I18n.t('home.change')}
                     </button>
                 </div>
 
@@ -156,11 +167,11 @@ const HomeView = {
                         const crowdLevel = opt.trip?.crowd_level || 'low';
                         let crowdBadge = '';
                         if (crowdLevel === 'low') {
-                            crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(78,222,163,0.3)]">🟢 Plenty of Seats</span>`;
+                            crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(78,222,163,0.3)]">${I18n.t('crowd.plenty_seats')}</span>`;
                         } else if (crowdLevel === 'medium') {
-                            crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(255,185,95,0.3)]">🟡 Standing Room</span>`;
+                            crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(255,185,95,0.3)]">${I18n.t('crowd.standing_room')}</span>`;
                         } else {
-                            crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(255,180,171,0.3)]">🔴 Very Crowded</span>`;
+                            crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(255,180,171,0.3)]">${I18n.t('crowd.very_crowded')}</span>`;
                         }
 
                         const arrivingMins = Math.max(2, (opt.trip?.delay_minutes || 0) + (idx === 0 ? 3 : (idx + 1) * 6));
@@ -175,14 +186,14 @@ const HomeView = {
                                 <div class="flex items-start justify-between mb-2">
                                     <div class="flex items-center gap-3">
                                         <div class="w-12 h-12 rounded-xl bg-primary text-on-primary font-bold font-status-number text-base flex items-center justify-center shadow-[0_0_12px_rgba(173,198,255,0.5)]">
-                                            ${opt.route?.route_number || '252'}
+                                            ${opt.route?.route_number || '378'}
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-sm text-on-surface">${opt.route?.name || 'BMTC Transit Route'}</h4>
                                             <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
-                                                <span class="text-primary font-bold">Arriving in ${arrivingMins} mins</span>
+                                                <span class="text-primary font-bold">${I18n.t('home.arriving_in', { mins: arrivingMins })}</span>
                                                 <span>•</span>
-                                                <span>~${durationMins} min trip</span>
+                                                <span>${I18n.t('home.min_trip', { mins: durationMins })}</span>
                                                 <span>•</span>
                                                 <span>₹${fare}</span>
                                             </div>
@@ -194,10 +205,10 @@ const HomeView = {
                                 <div class="bg-surface-container/60 rounded-xl px-3 py-1.5 mb-2.5 flex items-center justify-between text-[10px] border border-white/5">
                                     <div class="flex items-center gap-1 text-on-surface-variant">
                                         <span class="material-symbols-outlined text-secondary text-xs">hail</span>
-                                        <span>Next Stop Waitlist: <strong class="text-on-surface">${nextStopForecast ? nextStopForecast.waiting_passengers_count : 3} waiting</strong></span>
+                                        <span>${I18n.t('home.next_stop_waitlist')} <strong class="text-on-surface">${I18n.t('home.waiting', { count: nextStopForecast ? nextStopForecast.waiting_passengers_count : 3 })}</strong></span>
                                     </div>
                                     <div class="font-bold ${nextNextForecast && nextNextForecast.boarding_probability_percentage < 50 ? 'text-error' : 'text-secondary'}">
-                                        Next+1: ${nextNextForecast ? nextNextForecast.boarding_probability_percentage : 85}% Seat Chance
+                                        ${I18n.t('home.seat_chance', { pct: nextNextForecast ? nextNextForecast.boarding_probability_percentage : 85 })}
                                     </div>
                                 </div>
 
@@ -207,7 +218,7 @@ const HomeView = {
                                         class="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary-fixed active:scale-95 transition-all shadow-md"
                                         onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
                                     >
-                                        <span>Track & Join Queue</span>
+                                        <span>${I18n.t('home.track_join')}</span>
                                         <span class="material-symbols-outlined text-sm">arrow_forward</span>
                                     </button>
                                 </div>

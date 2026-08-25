@@ -17,6 +17,10 @@ const app = {
     },
 
     async init() {
+        if (window.ThemeUtils) {
+            ThemeUtils.init();
+        }
+
         // Hide loading screen after smooth progress animation
         setTimeout(async () => {
             const loadingScreen = document.getElementById('loading-screen');
@@ -97,6 +101,7 @@ const app = {
             if (topBar) topBar.style.display = 'flex';
             if (bottomNav) bottomNav.style.display = 'flex';
             this.updateNavActiveState(viewName);
+            this.updateNavLabels();
 
             // Render HTML into main content
             if (mainContent) {
@@ -109,6 +114,65 @@ const app = {
 
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'instant' });
+    },
+
+    updateNavLabels() {
+        if (!window.I18n) return;
+        const homeLabel = document.getElementById('nav-label-home');
+        const tripsLabel = document.getElementById('nav-label-trips');
+        const ranksLabel = document.getElementById('nav-label-ranks');
+        const reportLabel = document.getElementById('nav-label-report');
+        const profileLabel = document.getElementById('nav-label-profile');
+        const titleHeader = document.getElementById('app-title-header');
+        const langToggleLabel = document.getElementById('lang-toggle-label');
+        
+        if (homeLabel) homeLabel.textContent = I18n.t('nav.home');
+        if (tripsLabel) tripsLabel.textContent = I18n.t('nav.trips');
+        if (ranksLabel) ranksLabel.textContent = I18n.t('nav.ranks');
+        if (reportLabel) reportLabel.textContent = I18n.t('nav.report');
+        if (profileLabel) profileLabel.textContent = I18n.t('nav.profile');
+        if (titleHeader) titleHeader.textContent = I18n.t('app.name');
+        if (langToggleLabel) langToggleLabel.textContent = I18n.getLangShort();
+    },
+
+    setLanguage(lang) {
+        console.log('[App] setLanguage called with:', lang);
+        if (window.I18n) {
+            // Force set directly
+            I18n.currentLang = lang;
+            localStorage.setItem('lumina_lang', lang);
+            if (typeof I18n.setLang === 'function') {
+                I18n.setLang(lang);
+            }
+            
+            this.updateNavLabels();
+            
+            if (this.currentView === 'profile' && window.ProfileView && typeof ProfileView.renderProfileContent === 'function') {
+                ProfileView.renderProfileContent();
+            } else {
+                this.navigate(this.currentView, this.currentParams);
+            }
+            
+            // Hardcoded toast per language
+            const toasts = {
+                en: { title: 'Language changed', msg: 'English selected' },
+                kn: { title: 'ಭಾಷೆ ಬದಲಾಯಿಸಲಾಗಿದೆ', msg: 'ಕನ್ನಡ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ' },
+                hi: { title: 'भाषा बदल दी गई', msg: 'हिन्दी चयनित' }
+            };
+            const t = toasts[lang] || toasts.en;
+            if (window.NotificationUtils) {
+                NotificationUtils.showToast(t.title, t.msg, 'success', 2500);
+            }
+        }
+    },
+
+    cycleLanguage() {
+        if (window.I18n) {
+            const order = ['en', 'kn', 'hi'];
+            const idx = order.indexOf(I18n.currentLang);
+            const next = order[(idx + 1) % order.length];
+            this.setLanguage(next);
+        }
     },
 
     async refreshCurrentView() {

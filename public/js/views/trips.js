@@ -34,10 +34,10 @@ const TripsView = {
                     <div class="flex flex-col items-center">
                         <h1 class="font-headline-md text-headline-md-mobile text-on-surface tracking-tight flex items-center gap-1.5 font-bold" id="live-header-title">
                             <span class="material-symbols-outlined text-primary text-xl live-pulse" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                            Tracking Route ${this.tripData ? this.tripData.route_number : '...'}
+                            ${this.tripData ? I18n.t('trips.tracking_route', { num: this.tripData.route_number }) : '...'}
                         </h1>
                         <p class="font-label-sm text-label-sm text-on-surface-variant" id="live-header-subtitle">
-                            ${this.tripData ? (this.tripData.direction === 'outbound' ? 'Outbound Route' : 'Inbound Route') : 'Connecting live telemetry...'}
+                            ${this.tripData ? (this.tripData.direction === 'outbound' ? I18n.t('trips.outbound') : I18n.t('trips.inbound')) : I18n.t('trips.connecting')}
                         </p>
                     </div>
 
@@ -66,7 +66,7 @@ const TripsView = {
                     <div class="flex-1 overflow-y-auto px-container-margin flex flex-col gap-3.5" id="trip-live-drawer-content">
                         <div class="text-center py-8 text-on-surface-variant">
                             <span class="material-symbols-outlined animate-spin text-3xl text-primary mb-2">sync</span>
-                            <p class="text-sm">Retrieving real-time bus & waitlist telemetry...</p>
+                            <p class="text-sm">${I18n.t('trips.retrieving')}</p>
                         </div>
                     </div>
                 </main>
@@ -83,11 +83,11 @@ const TripsView = {
                 <div class="view-fade-in pt-[80px] px-container-margin pb-[100px] max-w-xl mx-auto">
                     <div class="flex justify-between items-end mb-stack-md">
                         <div>
-                            <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">Select Active Bus</h2>
-                            <p class="text-xs text-on-surface-variant">Live GPS tracking & Next-Stop Waitlist Intelligence</p>
+                            <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">${I18n.t('trips.select_bus')}</h2>
+                            <p class="text-xs text-on-surface-variant">${I18n.t('trips.live_gps')}</p>
                         </div>
                         <button class="font-label-bold text-xs text-primary bg-primary-container/20 px-3 py-1 rounded-full hover:bg-primary-container/30 transition-all flex items-center gap-1" onclick="TripsView.renderTripSelector()">
-                            <span class="material-symbols-outlined text-xs">sync</span> Refresh
+                            <span class="material-symbols-outlined text-xs">sync</span> ${I18n.t('trips.refresh')}
                         </button>
                     </div>
 
@@ -96,11 +96,11 @@ const TripsView = {
                             const crowdLevel = trip.crowd_level || 'low';
                             let crowdPillHtml = '';
                             if (crowdLevel === 'low') {
-                                crowdPillHtml = `<span class="bg-secondary/20 border border-secondary/30 text-secondary text-[11px] px-2 py-0.5 rounded-full font-semibold">Low Crowd</span>`;
+                                crowdPillHtml = `<span class="bg-secondary/20 border border-secondary/30 text-secondary text-[11px] px-2 py-0.5 rounded-full font-semibold">${I18n.t('crowd.low')}</span>`;
                             } else if (crowdLevel === 'medium') {
-                                crowdPillHtml = `<span class="bg-tertiary/20 border border-tertiary/30 text-tertiary text-[11px] px-2 py-0.5 rounded-full font-semibold">Med Crowd</span>`;
+                                crowdPillHtml = `<span class="bg-tertiary/20 border border-tertiary/30 text-tertiary text-[11px] px-2 py-0.5 rounded-full font-semibold">${I18n.t('crowd.medium')}</span>`;
                             } else {
-                                crowdPillHtml = `<span class="bg-error/20 border border-error/30 text-error text-[11px] px-2 py-0.5 rounded-full font-semibold">High Crowd</span>`;
+                                crowdPillHtml = `<span class="bg-error/20 border border-error/30 text-error text-[11px] px-2 py-0.5 rounded-full font-semibold">${I18n.t('crowd.high')}</span>`;
                             }
 
                             const nextStopName = trip.next_stop_forecast ? trip.next_stop_forecast.stop_name : 'Next Stop';
@@ -122,13 +122,13 @@ const TripsView = {
                                                 <div class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
                                                     <span>${trip.bus_number}</span>
                                                     <span>•</span>
-                                                    <span class="text-primary font-medium">${trip.delay_minutes > 0 ? `+${trip.delay_minutes}m delay` : 'On Time'}</span>
+                                                    <span class="text-primary font-medium">${trip.delay_minutes > 0 ? I18n.t('trips.delay', { mins: trip.delay_minutes }) : I18n.t('trips.on_time')}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="flex flex-col items-end gap-1">
                                             ${crowdPillHtml}
-                                            <span class="text-[10px] text-on-surface-variant">${trip.current_passenger_count}/${trip.capacity} onboard</span>
+                                            <span class="text-[10px] text-on-surface-variant">${I18n.t('trips.onboard', { count: trip.current_passenger_count, total: trip.capacity })}</span>
                                         </div>
                                     </div>
 
@@ -136,12 +136,12 @@ const TripsView = {
                                     <div class="bg-surface-container/60 rounded-xl px-3 py-1.5 flex items-center justify-between text-[11px] border border-white/5">
                                         <div class="flex items-center gap-1.5 text-on-surface-variant truncate">
                                             <span class="material-symbols-outlined text-secondary text-xs">hail</span>
-                                            <span class="truncate">Next: <strong class="text-on-surface">${nextStopName}</strong></span>
-                                            <span class="bg-secondary/15 text-secondary px-1.5 py-0.2 rounded font-semibold text-[10px]">${nextWaitCount} waiting</span>
+                                            <span class="truncate">${I18n.t('trips.next')} <strong class="text-on-surface">${nextStopName}</strong></span>
+                                            <span class="bg-secondary/15 text-secondary px-1.5 py-0.2 rounded font-semibold text-[10px]">${I18n.t('trips.waiting', { count: nextWaitCount })}</span>
                                         </div>
                                         ${nextNextProb !== null ? `
                                             <div class="text-[10px] font-semibold ${nextNextProb >= 80 ? 'text-secondary' : (nextNextProb >= 50 ? 'text-tertiary' : 'text-error')} flex items-center gap-0.5 flex-shrink-0 ml-2">
-                                                <span>Next+1: ${nextNextProb}% seat chance</span>
+                                                <span>${I18n.t('trips.seat_chance', { pct: nextNextProb })}</span>
                                             </div>
                                         ` : ''}
                                     </div>
@@ -156,7 +156,7 @@ const TripsView = {
                 <div class="pt-[88px] px-container-margin text-center">
                     <div class="glass-panel rounded-transit p-6">
                         <span class="material-symbols-outlined text-4xl text-error mb-2">error</span>
-                        <h3 class="font-headline-md text-on-surface">Unable to load active trips</h3>
+                        <h3 class="font-headline-md text-on-surface">${I18n.t('trips.unable_load')}</h3>
                         <p class="text-sm text-on-surface-variant mt-1">${e.message}</p>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ const ETAEngine = require('../engines/eta');
 const CrowdIntelligenceEngine = require('../engines/crowdIntelligence');
 const GamificationEngine = require('../engines/gamification');
 const NotificationEngine = require('../engines/notifications');
+const VerificationEngine = require('../engines/verification');
 
 const router = express.Router();
 

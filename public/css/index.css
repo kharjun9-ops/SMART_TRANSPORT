@@ -1,10 +1,15 @@
 /* ==========================================================================
-   Lumina Transit - High-Contrast Glassmorphism HUD Design System
-   Based on Stitch Lumina Transit Specification
+   Lumina Transit - Universal Design System
+   Supports:
+   1. Google Maps Light Mode (Clean, High-Legibility, Material 3 Transit Palette)
+   2. Lumina Dark HUD Mode (High-Contrast Glassmorphism HUD)
    ========================================================================== */
 
-:root {
-    /* Color Palette */
+/* 🌙 Dark HUD Theme (Default / Dark) */
+:root,
+html.dark {
+    /* Base Surfaces */
+    --color-surface-rgb: 12, 19, 34;
     --color-surface: #0c1322;
     --color-surface-dim: #0c1322;
     --color-surface-bright: #323949;
@@ -14,32 +19,114 @@
     --color-surface-container-high: #232a3a;
     --color-surface-container-highest: #2e3545;
 
+    /* Text & Lines */
     --color-on-surface: #dce2f7;
     --color-on-surface-variant: #c2c6d6;
     --color-outline: #8c909f;
     --color-outline-variant: #424754;
 
     /* Primaries */
+    --color-primary-rgb: 173, 198, 255;
     --color-primary: #adc6ff;
     --color-primary-container: #4d8eff;
     --color-on-primary: #002e6a;
     --color-on-primary-container: #00285d;
+    --color-primary-fixed: #d8e2ff;
 
     /* Semantics / Crowd Levels */
+    --color-secondary-rgb: 78, 222, 163;
     --color-secondary: #4edea3; /* Low Crowd / Plenty of Seats */
     --color-secondary-container: #00a572;
+    --color-on-secondary: #003824;
+    --color-on-secondary-container: #00311f;
+
+    --color-tertiary-rgb: 255, 185, 95;
     --color-tertiary: #ffb95f; /* Medium Crowd / Standing Room Only */
     --color-tertiary-container: #ca8100;
+    --color-on-tertiary: #472a00;
+    --color-on-tertiary-container: #3e2400;
+
+    --color-error-rgb: 255, 180, 171;
     --color-error: #ffb4ab; /* High Crowd / Packed */
     --color-error-container: #93000a;
+    --color-on-error: #690005;
+    --color-on-error-container: #ffdad6;
 
-    /* Spacing & Radius */
+    /* Panels & Chrome */
+    --panel-bg: rgba(46, 53, 69, 0.45);
+    --panel-bg-hover: rgba(46, 53, 69, 0.7);
+    --panel-border: rgba(255, 255, 255, 0.1);
+    --panel-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --header-bg: rgba(12, 19, 34, 0.85);
+    --nav-bg: rgba(12, 19, 34, 0.85);
+    --ambient-glow: radial-gradient(circle, rgba(173, 198, 255, 0.07) 0%, rgba(12, 19, 34, 0) 70%);
+}
+
+/* ☀️ Google Maps Light Mode */
+html.light {
+    /* Base Surfaces (Google Maps Off-White & Clean Slate) */
+    --color-surface-rgb: 255, 255, 255;
+    --color-surface: #ffffff;
+    --color-surface-dim: #f1f3f4;
+    --color-surface-bright: #ffffff;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #f8f9fa;
+    --color-surface-container: #f1f3f4;
+    --color-surface-container-high: #e8eaed;
+    --color-surface-container-highest: #dadce0;
+
+    /* Text & Lines (Google Maps High Contrast Dark Slate) */
+    --color-on-surface: #202124;
+    --color-on-surface-variant: #5f6368;
+    --color-outline: #70757a;
+    --color-outline-variant: #dadce0;
+
+    /* Google Maps Brand Blue */
+    --color-primary-rgb: 26, 115, 232;
+    --color-primary: #1a73e8;
+    --color-primary-container: #e8f0fe;
+    --color-on-primary: #ffffff;
+    --color-on-primary-container: #1967d2;
+    --color-primary-fixed: #d2e3fc;
+
+    /* Google Maps Transit Green */
+    --color-secondary-rgb: 24, 128, 56;
+    --color-secondary: #188038;
+    --color-secondary-container: #e6f4ea;
+    --color-on-secondary: #ffffff;
+    --color-on-secondary-container: #137333;
+
+    /* Google Maps Amber / Warning */
+    --color-tertiary-rgb: 234, 134, 0;
+    --color-tertiary: #ea8600;
+    --color-tertiary-container: #fef7e0;
+    --color-on-tertiary: #ffffff;
+    --color-on-tertiary-container: #b06000;
+
+    /* Google Maps Alert Red */
+    --color-error-rgb: 217, 48, 37;
+    --color-error: #d93025;
+    --color-error-container: #fce8e6;
+    --color-on-error: #ffffff;
+    --color-on-error-container: #c5221f;
+
+    /* Google Maps Material Elevation & Cards */
+    --panel-bg: rgba(255, 255, 255, 0.95);
+    --panel-bg-hover: #ffffff;
+    --panel-border: rgba(60, 64, 67, 0.15);
+    --panel-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.15), 0 4px 8px 3px rgba(60, 64, 67, 0.05);
+    --header-bg: rgba(255, 255, 255, 0.95);
+    --nav-bg: rgba(255, 255, 255, 0.96);
+    --ambient-glow: radial-gradient(circle, rgba(26, 115, 232, 0.04) 0%, rgba(248, 249, 250, 0) 70%);
+}
+
+/* Global Spacing & Typography */
+:root {
     --radius-transit: 1.5rem;
     --radius-lg: 1rem;
     --radius-md: 0.75rem;
     --radius-sm: 0.5rem;
     --radius-full: 9999px;
-
     --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -52,12 +139,13 @@
 
 body {
     font-family: var(--font-inter);
-    background-color: var(--color-surface);
+    background-color: var(--color-surface-dim);
     color: var(--color-on-surface);
     min-height: 100vh;
     min-height: 100dvh;
     overflow-x: hidden;
     line-height: 1.5;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Ambient glow background */
@@ -70,30 +158,33 @@ body {
     height: 90vw;
     max-width: 600px;
     max-height: 600px;
-    background: radial-gradient(circle, rgba(173, 198, 255, 0.07) 0%, rgba(12, 19, 34, 0) 70%);
+    background: var(--ambient-glow);
     z-index: 0;
     pointer-events: none;
+    transition: background 0.3s ease;
 }
 
-/* Glassmorphism Panels */
+/* Glassmorphism & Material 3 Panels */
 .glass-panel {
-    background-color: rgba(46, 53, 69, 0.45);
+    background-color: var(--panel-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
 }
 
 .glass-panel-interactive {
-    background-color: rgba(46, 53, 69, 0.45);
+    background-color: var(--panel-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--panel-shadow);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-panel-interactive:hover {
-    background-color: rgba(46, 53, 69, 0.7);
-    border-color: rgba(173, 198, 255, 0.3);
+    background-color: var(--panel-bg-hover);
+    border-color: var(--color-primary);
 }
 
 .glass-panel-interactive:active {
@@ -101,7 +192,43 @@ body {
 }
 
 .glow-inner {
-    box-shadow: inset 0 0 20px rgba(173, 198, 255, 0.15);
+    box-shadow: inset 0 0 20px rgba(var(--color-primary-rgb), 0.15);
+}
+
+/* Google Maps Light Mode Specific Global Overrides */
+html.light .border-white\/5,
+html.light .border-white\/10,
+html.light .border-white\/15,
+html.light .border-white\/20 {
+    border-color: rgba(60, 64, 67, 0.12) !important;
+}
+
+html.light .border-white\/30,
+html.light .border-white\/40 {
+    border-color: rgba(60, 64, 67, 0.25) !important;
+}
+
+html.light #app-header {
+    background-color: var(--header-bg) !important;
+    border-bottom: 1px solid rgba(60, 64, 67, 0.12) !important;
+    box-shadow: 0 1px 3px rgba(60, 64, 67, 0.1) !important;
+}
+
+html.light #bottom-nav {
+    background-color: var(--nav-bg) !important;
+    border-top: 1px solid rgba(60, 64, 67, 0.12) !important;
+    box-shadow: 0 -2px 10px rgba(60, 64, 67, 0.08) !important;
+}
+
+html.light input,
+html.light select,
+html.light textarea {
+    color: var(--color-on-surface) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+    color: #70757a !important;
 }
 
 /* Material Symbols configuration */
@@ -123,11 +250,11 @@ body {
 @keyframes livePulseAnim {
     0%, 100% {
         transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(78, 222, 163, 0.7);
+        box-shadow: 0 0 0 0 rgba(var(--color-secondary-rgb), 0.7);
     }
     50% {
         transform: scale(1.05);
-        box-shadow: 0 0 0 10px rgba(78, 222, 163, 0);
+        box-shadow: 0 0 0 10px rgba(var(--color-secondary-rgb), 0);
     }
 }
 
@@ -157,14 +284,14 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
 }
 ::-webkit-scrollbar-track {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--color-outline-variant);
     border-radius: 4px;
 }
 
@@ -172,7 +299,7 @@ body {
 .loading-screen {
     position: fixed;
     inset: 0;
-    background: #0c1322;
+    background: var(--color-surface);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -182,7 +309,7 @@ body {
 .loading-bar {
     width: 180px;
     height: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--color-surface-container-high);
     border-radius: 999px;
     overflow: hidden;
     margin: 16px auto 0;
@@ -190,7 +317,7 @@ body {
 
 .loading-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4d8eff, #4edea3);
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
     border-radius: 999px;
     animation: loadingBarAnim 1.2s ease-in-out infinite;
 }
@@ -209,7 +336,7 @@ body {
     transform: translateX(-50%);
     z-index: 99999;
     display: flex;
-    flex-col: column;
+    flex-direction: column;
     gap: 8px;
     width: calc(100% - 32px);
     max-width: 420px;
@@ -217,14 +344,14 @@ body {
 }
 
 .toast {
-    background: rgba(25, 31, 47, 0.9);
+    background: var(--color-surface-container);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #dce2f7;
+    border: 1px solid var(--panel-border);
+    color: var(--color-on-surface);
     padding: 12px 16px;
     border-radius: 16px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -233,16 +360,16 @@ body {
 }
 
 .toast.toast-success {
-    border-left: 4px solid #4edea3;
+    border-left: 4px solid var(--color-secondary);
 }
 .toast.toast-warning, .toast.toast-destination_approaching {
-    border-left: 4px solid #ffb95f;
+    border-left: 4px solid var(--color-tertiary);
 }
 .toast.toast-error {
-    border-left: 4px solid #ffb4ab;
+    border-left: 4px solid var(--color-error);
 }
 .toast.toast-info, .toast.toast-points_earned {
-    border-left: 4px solid #adc6ff;
+    border-left: 4px solid var(--color-primary);
 }
 
 @keyframes toastSlide {
@@ -256,13 +383,13 @@ body {
     }
 }
 
-/* Leaflet Map Styling (Lumina Dark Theme) */
+/* Leaflet Map Styling */
 .leaflet-container {
-    background: #070e1d !important;
+    background: var(--color-surface-dim) !important;
     font-family: var(--font-inter) !important;
 }
 
-.leaflet-control-zoom {
+html.dark .leaflet-control-zoom {
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     background: rgba(25, 31, 47, 0.8) !important;
     backdrop-filter: blur(12px) !important;
@@ -270,17 +397,17 @@ body {
     overflow: hidden;
 }
 
-.leaflet-control-zoom a {
+html.dark .leaflet-control-zoom a {
     background: transparent !important;
     color: #adc6ff !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.leaflet-control-zoom a:hover {
+html.dark .leaflet-control-zoom a:hover {
     background: rgba(255, 255, 255, 0.1) !important;
 }
 
-.leaflet-popup-content-wrapper {
+html.dark .leaflet-popup-content-wrapper {
     background: rgba(20, 27, 43, 0.95) !important;
     backdrop-filter: blur(16px) !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -289,8 +416,44 @@ body {
     box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
 }
 
-.leaflet-popup-tip {
+html.dark .leaflet-popup-tip {
     background: rgba(20, 27, 43, 0.95) !important;
+}
+
+/* Light Mode Leaflet (Google Maps Style) */
+html.light .leaflet-container {
+    background: #e5e3df !important;
+}
+
+html.light .leaflet-control-zoom {
+    border: 1px solid rgba(60, 64, 67, 0.2) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 1px 4px rgba(60, 64, 67, 0.3) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+}
+
+html.light .leaflet-control-zoom a {
+    background: #ffffff !important;
+    color: #3c4043 !important;
+    border-bottom: 1px solid rgba(60, 64, 67, 0.12) !important;
+}
+
+html.light .leaflet-control-zoom a:hover {
+    background: #f1f3f4 !important;
+    color: #1a73e8 !important;
+}
+
+html.light .leaflet-popup-content-wrapper {
+    background: #ffffff !important;
+    border: 1px solid rgba(60, 64, 67, 0.15) !important;
+    color: #202124 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(60, 64, 67, 0.2) !important;
+}
+
+html.light .leaflet-popup-tip {
+    background: #ffffff !important;
 }
 
 /* Pulse keyframes for map dots */
@@ -312,6 +475,6 @@ body {
 
 /* Crowd Selection Card Active States */
 .crowd-card.is-selected {
-    border-color: rgba(173, 198, 255, 0.5) !important;
-    background-color: rgba(35, 42, 58, 0.9) !important;
+    border-color: var(--color-primary) !important;
+    background-color: var(--color-surface-container-high) !important;
 }

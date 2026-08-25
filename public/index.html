@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html class="light" lang="en">
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
     <meta name="description" content="Lumina Transit - Smart Public Transport Crowd Intelligence & Passenger Assistance System">
-    <meta name="theme-color" content="#0c1322">
+    <meta name="theme-color" content="#ffffff">
     <title>Lumina Transit - Crowd Intelligence</title>
 
-    <!-- Tailwind CSS with Lumina Transit Configuration -->
+    <!-- Theme Initialization Script (Pre-render) -->
+    <script src="/js/utils/theme.js"></script>
+
+    <!-- Tailwind CSS with Lumina Transit Adaptive Theme Configuration -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -15,53 +18,60 @@
             theme: {
                 extend: {
                     colors: {
-                        "on-primary-fixed-variant": "#004395",
-                        "on-primary": "#002e6a",
-                        "surface-tint": "#adc6ff",
-                        "surface-container-highest": "#2e3545",
-                        "on-tertiary-container": "#3e2400",
-                        "error-container": "#93000a",
-                        "inverse-primary": "#005ac2",
-                        "on-error-container": "#ffdad6",
-                        "outline-variant": "#424754",
-                        "on-primary-container": "#00285d",
-                        "inverse-surface": "#dce2f7",
-                        "surface": "#0c1322",
-                        "surface-variant": "#2e3545",
-                        "secondary-container": "#00a572",
-                        "on-primary-fixed": "#001a42",
-                        "on-surface-variant": "#c2c6d6",
-                        "on-tertiary": "#472a00",
-                        "background": "#0c1322",
-                        "on-error": "#690005",
-                        "secondary-fixed": "#6ffbbe",
-                        "on-secondary-fixed": "#002113",
-                        "on-tertiary-fixed-variant": "#653e00",
-                        "tertiary": "#ffb95f",
-                        "surface-bright": "#323949",
-                        "tertiary-fixed": "#ffddb8",
-                        "error": "#ffb4ab",
-                        "primary-fixed": "#d8e2ff",
-                        "on-background": "#dce2f7",
-                        "primary-container": "#4d8eff",
-                        "on-secondary-fixed-variant": "#005236",
-                        "surface-container": "#191f2f",
-                        "outline": "#8c909f",
-                        "primary-fixed-dim": "#adc6ff",
-                        "surface-dim": "#0c1322",
-                        "on-secondary-container": "#00311f",
-                        "tertiary-container": "#ca8100",
-                        "surface-container-low": "#141b2b",
-                        "tertiary-fixed-dim": "#ffb95f",
-                        "on-surface": "#dce2f7",
-                        "inverse-on-surface": "#293040",
-                        "on-secondary": "#003824",
-                        "secondary-fixed-dim": "#4edea3",
-                        "surface-container-lowest": "#070e1d",
-                        "surface-container-high": "#232a3a",
-                        "primary": "#adc6ff",
-                        "secondary": "#4edea3",
-                        "on-tertiary-fixed": "#2a1700"
+                        "surface": "var(--color-surface)",
+                        "surface-dim": "var(--color-surface-dim)",
+                        "surface-bright": "var(--color-surface-bright)",
+                        "surface-container-lowest": "var(--color-surface-container-lowest)",
+                        "surface-container-low": "var(--color-surface-container-low)",
+                        "surface-container": "var(--color-surface-container)",
+                        "surface-container-high": "var(--color-surface-container-high)",
+                        "surface-container-highest": "var(--color-surface-container-highest)",
+                        "surface-variant": "var(--color-surface-container-highest)",
+                        "surface-tint": "var(--color-primary)",
+
+                        "on-surface": "var(--color-on-surface)",
+                        "on-surface-variant": "var(--color-on-surface-variant)",
+                        "outline": "var(--color-outline)",
+                        "outline-variant": "var(--color-outline-variant)",
+
+                        "background": "var(--color-surface-dim)",
+                        "on-background": "var(--color-on-surface)",
+
+                        "primary": "var(--color-primary)",
+                        "primary-container": "var(--color-primary-container)",
+                        "on-primary": "var(--color-on-primary)",
+                        "on-primary-container": "var(--color-on-primary-container)",
+                        "primary-fixed": "var(--color-primary-fixed)",
+                        "primary-fixed-dim": "var(--color-primary)",
+                        "on-primary-fixed": "var(--color-on-primary-container)",
+                        "on-primary-fixed-variant": "var(--color-on-primary-container)",
+
+                        "secondary": "var(--color-secondary)",
+                        "secondary-container": "var(--color-secondary-container)",
+                        "on-secondary": "var(--color-on-secondary)",
+                        "on-secondary-container": "var(--color-on-secondary-container)",
+                        "secondary-fixed": "var(--color-secondary)",
+                        "secondary-fixed-dim": "var(--color-secondary)",
+                        "on-secondary-fixed": "var(--color-on-secondary-container)",
+                        "on-secondary-fixed-variant": "var(--color-on-secondary-container)",
+
+                        "tertiary": "var(--color-tertiary)",
+                        "tertiary-container": "var(--color-tertiary-container)",
+                        "on-tertiary": "var(--color-on-tertiary)",
+                        "on-tertiary-container": "var(--color-on-tertiary-container)",
+                        "tertiary-fixed": "var(--color-tertiary-container)",
+                        "tertiary-fixed-dim": "var(--color-tertiary)",
+                        "on-tertiary-fixed": "var(--color-on-tertiary-container)",
+                        "on-tertiary-fixed-variant": "var(--color-on-tertiary-container)",
+
+                        "error": "var(--color-error)",
+                        "error-container": "var(--color-error-container)",
+                        "on-error": "var(--color-on-error)",
+                        "on-error-container": "var(--color-on-error-container)",
+
+                        "inverse-surface": "var(--color-on-surface)",
+                        "inverse-on-surface": "var(--color-surface)",
+                        "inverse-primary": "var(--color-primary)"
                     },
                     borderRadius: {
                         "DEFAULT": "0.25rem",
@@ -108,7 +118,7 @@
     <!-- Google Fonts & Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 
     <!-- Leaflet CSS -->
@@ -127,7 +137,7 @@
                 <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
             </div>
             <h1 class="text-2xl font-bold text-primary tracking-tight">Lumina <span class="text-secondary">Transit</span></h1>
-            <p class="text-xs text-on-surface-variant mt-1">Real-Time Crowd Intelligence</p>
+            <p class="text-xs text-on-surface-variant mt-1" id="loading-subtitle">Real-Time Crowd Intelligence</p>
             <div class="loading-bar mt-4">
                 <div class="loading-bar-fill"></div>
             </div>
@@ -140,21 +150,44 @@
     <!-- App Shell -->
     <div id="app" class="flex flex-col min-h-screen" style="display:none;">
 
-        <!-- TopAppBar (Stitch Lumina Transit Header) -->
-        <header id="app-header" class="fixed top-0 w-full flex justify-between items-center px-container-margin h-16 z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10">
+        <!-- TopAppBar (Lumina Transit Header with Theme Toggle & Notifications) -->
+        <header id="app-header" class="fixed top-0 w-full flex justify-between items-center px-container-margin h-16 z-50 bg-surface/90 backdrop-blur-xl border-b border-white/10 shadow-sm transition-colors duration-200">
             <button aria-label="Location" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -ml-2 flex items-center justify-center" onclick="if(window.HomeView && window.HomeView.detectGPSLocation){window.HomeView.detectGPSLocation();}else{app.navigate('home');}">
                 <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
             </button>
             <div class="flex items-center gap-2 cursor-pointer" onclick="app.navigate('home')">
-                <div class="w-7 h-7 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center">
+                <div class="w-7 h-7 rounded-lg bg-primary-container/40 border border-primary/30 flex items-center justify-center">
                     <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
                 </div>
-                <h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight font-bold">Lumina Transit</h1>
+                <h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight font-bold" id="app-title-header">Lumina Transit</h1>
             </div>
-            <div class="flex items-center gap-1">
-                <button aria-label="Notifications" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -mr-2 relative flex items-center justify-center" onclick="app.navigate('profile')">
+            <div class="flex items-center gap-1.5">
+                <!-- Language Toggle Button (EN / ಕನ್ನಡ / हिन्दी) -->
+                <button 
+                    aria-label="Toggle Language" 
+                    id="lang-toggle-btn"
+                    class="text-primary hover:opacity-80 transition-all active:scale-90 px-2 py-1 flex items-center justify-center gap-1 rounded-xl hover:bg-primary-container/20 border border-primary/30 font-bold text-xs cursor-pointer"
+                    onclick="app.cycleLanguage()"
+                    title="Change Language (English / ಕನ್ನಡ / हिन्दी)"
+                >
+                    <span class="material-symbols-outlined text-base">translate</span>
+                    <span id="lang-toggle-label">EN</span>
+                </button>
+
+                <!-- Theme Toggle Button (Google Maps Light / Dark HUD) -->
+                <button 
+                    aria-label="Toggle Theme" 
+                    class="text-primary hover:opacity-80 transition-all active:scale-90 p-2 flex items-center justify-center rounded-xl hover:bg-primary-container/20 cursor-pointer"
+                    onclick="ThemeUtils.toggleTheme()"
+                    title="Toggle Google Maps Light / Dark HUD Mode"
+                >
+                    <span class="material-symbols-outlined text-2xl theme-toggle-icon">dark_mode</span>
+                </button>
+
+                <!-- Notifications Button -->
+                <button aria-label="Notifications" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -mr-2 relative flex items-center justify-center cursor-pointer" onclick="app.navigate('profile')">
                     <span class="material-symbols-outlined text-2xl">notifications</span>
-                    <span id="notification-badge" class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-tertiary shadow-[0_0_8px_rgba(255,185,95,0.8)]" style="display:none;"></span>
+                    <span id="notification-badge" class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-tertiary shadow-[0_0_8px_rgba(234,134,0,0.8)]" style="display:none;"></span>
                 </button>
             </div>
         </header>
@@ -164,32 +197,32 @@
             <!-- Rendered dynamically by view controllers -->
         </main>
 
-        <!-- Bottom Navigation Bar (Stitch BottomNavBar) -->
-        <nav id="bottom-nav" class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/85 backdrop-blur-xl rounded-t-2xl border-t border-white/10 shadow-2xl">
+        <!-- Bottom Navigation Bar (BottomNavBar) -->
+        <nav id="bottom-nav" class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/90 backdrop-blur-xl rounded-t-2xl border-t border-white/10 shadow-2xl transition-colors duration-200">
             <!-- Home -->
-            <button class="nav-item flex flex-col items-center justify-center text-primary bg-primary-container/20 rounded-xl px-4 py-1 active:scale-90 transition-all w-16" data-view="home" onclick="app.navigate('home')">
+            <button class="nav-item flex flex-col items-center justify-center text-primary bg-primary-container/30 rounded-xl px-4 py-1 active:scale-90 transition-all w-16" data-view="home" onclick="app.navigate('home')">
                 <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">home</span>
-                <span class="font-label-sm text-[11px] mt-0.5 font-medium">Home</span>
+                <span class="font-label-sm text-[11px] mt-0.5 font-medium" id="nav-label-home">Home</span>
             </button>
             <!-- Trips -->
             <button class="nav-item flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1 w-16" data-view="trips" onclick="app.navigate('trips')">
                 <span class="material-symbols-outlined text-2xl">route</span>
-                <span class="font-label-sm text-[11px] mt-0.5">Trips</span>
+                <span class="font-label-sm text-[11px] mt-0.5" id="nav-label-trips">Trips</span>
             </button>
             <!-- Ranks -->
             <button class="nav-item flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1 w-16" data-view="gamification" onclick="app.navigate('gamification')">
                 <span class="material-symbols-outlined text-2xl">military_tech</span>
-                <span class="font-label-sm text-[11px] mt-0.5">Ranks</span>
+                <span class="font-label-sm text-[11px] mt-0.5" id="nav-label-ranks">Ranks</span>
             </button>
             <!-- Report -->
             <button class="nav-item flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1 w-16" data-view="complaints" onclick="app.navigate('complaints')">
                 <span class="material-symbols-outlined text-2xl">report_problem</span>
-                <span class="font-label-sm text-[11px] mt-0.5">Report</span>
+                <span class="font-label-sm text-[11px] mt-0.5" id="nav-label-report">Report</span>
             </button>
             <!-- Profile -->
             <button class="nav-item flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors active:scale-90 transition-transform px-4 py-1 w-16" data-view="profile" onclick="app.navigate('profile')">
                 <span class="material-symbols-outlined text-2xl">person</span>
-                <span class="font-label-sm text-[11px] mt-0.5">Profile</span>
+                <span class="font-label-sm text-[11px] mt-0.5" id="nav-label-profile">Profile</span>
             </button>
         </nav>
     </div>
@@ -204,16 +237,54 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/js/utils/api.js"></script>
-    <script src="/js/utils/map.js"></script>
-    <script src="/js/utils/gps.js"></script>
-    <script src="/js/utils/notifications.js"></script>
-    <script src="/js/views/auth.js"></script>
-    <script src="/js/views/home.js"></script>
-    <script src="/js/views/trips.js"></script>
-    <script src="/js/views/gamification.js"></script>
-    <script src="/js/views/complaints.js"></script>
-    <script src="/js/views/profile.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="/js/utils/theme.js?v=5"></script>
+    <script src="/js/utils/i18n.js?v=5"></script>
+    <script src="/js/utils/api.js?v=5"></script>
+    <script src="/js/utils/map.js?v=5"></script>
+    <script src="/js/utils/gps.js?v=5"></script>
+    <script src="/js/utils/notifications.js?v=5"></script>
+    <script src="/js/views/auth.js?v=5"></script>
+    <script src="/js/views/home.js?v=5"></script>
+    <script src="/js/views/trips.js?v=5"></script>
+    <script src="/js/views/gamification.js?v=5"></script>
+    <script src="/js/views/complaints.js?v=5"></script>
+    <script src="/js/views/profile.js?v=5"></script>
+    <script src="/js/app.js?v=5"></script>
+
+    <!-- Global language switcher (inline - cannot be cached) -->
+    <script>
+    window.switchLang = function(lang) {
+        alert('Switching language to: ' + lang);
+        
+        // 1. Set language on I18n
+        if (window.I18n) {
+            I18n.currentLang = lang;
+            localStorage.setItem('lumina_lang', lang);
+        }
+        
+        // 2. Update bottom nav labels
+        var labels = {
+            en: { home: 'Home', trips: 'Trips', ranks: 'Ranks', report: 'Report', profile: 'Profile', title: 'Lumina Transit' },
+            kn: { home: 'ಮುಖಪುಟ', trips: 'ಪ್ರಯಾಣ', ranks: 'ಶ್ರೇಣಿ', report: 'ದೂರು', profile: 'ಪ್ರೊಫೈಲ್', title: 'ಲುಮಿನಾ ಟ್ರಾನ್ಸಿಟ್' },
+            hi: { home: 'होम', trips: 'यात्रा', ranks: 'रैंक', report: 'रिपोर्ट', profile: 'प्रोफ़ाइल', title: 'लुमिना ट्रांज़िट' }
+        };
+        var l = labels[lang] || labels.en;
+        
+        var el;
+        el = document.getElementById('nav-label-home'); if (el) el.textContent = l.home;
+        el = document.getElementById('nav-label-trips'); if (el) el.textContent = l.trips;
+        el = document.getElementById('nav-label-ranks'); if (el) el.textContent = l.ranks;
+        el = document.getElementById('nav-label-report'); if (el) el.textContent = l.report;
+        el = document.getElementById('nav-label-profile'); if (el) el.textContent = l.profile;
+        el = document.getElementById('app-title-header'); if (el) el.textContent = l.title;
+        el = document.getElementById('lang-toggle-label'); if (el) el.textContent = (lang === 'kn' ? 'ಕನ್ನಡ' : lang === 'hi' ? 'हिन्दी' : 'EN');
+        
+        // 3. Re-render current view
+        if (window.app && window.app.currentView) {
+            app.navigate(app.currentView, app.currentParams);
+        }
+    };
+    </script>
 </body>
 </html>
+
