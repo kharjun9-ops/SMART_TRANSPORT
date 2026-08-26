@@ -372,7 +372,7 @@ const TripsView = {
             <!-- Next Stop Arrival & Bus Crowd / Passengers Bar -->
             <div class="flex justify-between items-end pt-1 pb-2 border-b border-white/10">
                 <div>
-                    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5">Next Stop Arrival</p>
+                    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5">${I18n.t('trips.next_stop_arrival') || 'Next Stop Arrival'}</p>
                     <div class="flex items-baseline gap-1.5">
                         <span class="text-3xl font-extrabold text-white tracking-tight" id="drawer-eta-value">
                             ${etaDisplayText.toLowerCase().includes('min') ? etaDisplayText : `${etaValue} mins`}
@@ -382,11 +382,11 @@ const TripsView = {
                 <div class="flex flex-col items-end gap-1">
                     <div class="flex items-center gap-1.5 text-xs font-bold ${crowdTextColor}">
                         <span class="w-2.5 h-2.5 rounded-full ${crowdDotColor}"></span>
-                        <span>BUS CROWD: ${crowdLabel}</span>
+                        <span>${I18n.t('trips.bus_crowd') || 'BUS CROWD:'} ${crowdLabel}</span>
                     </div>
                     <p class="text-[11px] text-gray-300 font-medium flex items-center gap-1">
                         <span>🚌</span>
-                        <span>Bus Passengers: ${passengers}/${capacity} (${loadPercentage}% load)</span>
+                        <span>${I18n.t('trips.bus_passengers') || 'Bus Passengers:'} ${passengers}/${capacity} (${loadPercentage}% load)</span>
                     </p>
                 </div>
             </div>
@@ -399,15 +399,15 @@ const TripsView = {
                             <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">timer</span>
                         </div>
                         <div>
-                            <div class="text-xs font-bold text-secondary">You are on the Waiting List</div>
-                            <div class="text-[10px] text-gray-300">Registered for this bus at Stop</div>
+                            <div class="text-xs font-bold text-secondary">${I18n.t('trips.you_are_waiting') || 'You are on the Waiting List'}</div>
+                            <div class="text-[10px] text-gray-300">Registered for this bus at ${I18n.translateStop(this.userWaitlist.stop_name || 'Stop')}</div>
                         </div>
                     </div>
                     <button 
                         class="px-2.5 py-1 rounded-lg bg-secondary/20 hover:bg-secondary/30 text-secondary text-[11px] font-bold border border-secondary/30 transition-all cursor-pointer"
                         onclick="TripsView.handleLeaveWaitlist('${this.userWaitlist.stop_id}')"
                     >
-                        Leave Queue
+                        ${I18n.t('trips.leave_queue') || 'Leave Queue'}
                     </button>
                 </div>
             ` : ''}
@@ -417,7 +417,7 @@ const TripsView = {
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">groups</span>
                     <h3 class="text-xs font-bold text-white uppercase tracking-wider">
-                        LIVE CROWD INTELLIGENCE BREAKDOWN
+                        ${I18n.t('trips.live_crowd_breakdown') || 'LIVE CROWD INTELLIGENCE BREAKDOWN'}
                     </h3>
                 </div>
                 ${!this.userWaitlist ? `
@@ -425,7 +425,7 @@ const TripsView = {
                     class="text-xs text-white font-semibold flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/20 transition-all cursor-pointer active:scale-95"
                     onclick="TripsView.openJoinWaitlistModal()"
                 >
-                    <span class="material-symbols-outlined text-xs">add</span> Join Stop Queue
+                    <span class="material-symbols-outlined text-xs">add</span> ${I18n.t('trips.join_stop_queue') || 'Join Stop Queue'}
                 </button>
                 ` : ''}
             </div>
@@ -438,11 +438,11 @@ const TripsView = {
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-white flex items-center gap-1.5">
                                 <span>🚌</span>
-                                <span>1. People In The Bus</span>
+                                <span>${I18n.t('trips.people_in_bus') || '1. People In The Bus'}</span>
                             </span>
                         </div>
                         <span class="border border-white/20 bg-white/5 px-2.5 py-0.5 rounded-full text-xs text-white font-semibold">
-                            ${passengers} On-Board
+                            ${passengers} ${I18n.t('trips.onboard_label') || 'On-Board'}
                         </span>
                     </div>
 
@@ -472,7 +472,7 @@ const TripsView = {
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-white flex items-center gap-1.5">
                                 <span>🚶</span>
-                                <span>2. People Waiting At Stop</span>
+                                <span>${I18n.t('trips.people_waiting_stop') || '2. People Waiting At Stop'}</span>
                             </span>
                         </div>
                         <span class="border border-secondary/30 bg-secondary/15 text-secondary px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
@@ -499,7 +499,7 @@ const TripsView = {
 
                             return `
                                 <div class="flex justify-between items-center py-0.5">
-                                    <span class="text-gray-200 truncate max-w-[180px] font-medium">${s.stop_name || s.name}</span>
+                                    <span class="text-gray-200 truncate max-w-[180px] font-medium">${I18n.translateStop(s.stop_name || s.name)}</span>
                                     <span class="flex items-center gap-1.5 font-bold ${stopTextColor} text-[11px]">
                                         <span class="w-2 h-2 rounded-full ${stopDotColor}"></span>
                                         <span>${stopCrowdText}</span>
@@ -524,16 +524,16 @@ const TripsView = {
             <div class="bg-[#10141d]/70 border border-white/10 rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm">
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
-                    <span class="text-xs text-gray-300 font-medium truncate">Deboard Alarm</span>
+                    <span class="text-xs text-gray-300 font-medium truncate">${I18n.t('trips.deboard_alarm') || 'Deboard Alarm'}</span>
                 </div>
                 <select 
                     class="bg-surface-container-high text-white text-xs rounded-lg px-2 py-1 border border-white/10 focus:outline-none focus:ring-1 focus:ring-primary max-w-[180px]"
                     onchange="TripsView.setDestination(this.value)"
                 >
-                    <option value="">-- Choose Stop --</option>
+                    <option value="">${I18n.t('trips.choose_stop') || '-- Choose Stop --'}</option>
                     ${stops.filter((s, idx) => idx > currentIdx).map(s => `
                         <option value="${s.stop_id}" ${this.selectedDestinationStopId === s.stop_id ? 'selected' : ''}>
-                            ${s.stop_name}
+                            ${I18n.translateStop(s.stop_name)}
                         </option>
                     `).join('')}
                 </select>
@@ -546,7 +546,7 @@ const TripsView = {
                     onclick="TripsView.handleBoarding()"
                 >
                     <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                    ${this.isOnBoard ? 'Boarded ✓' : "I'm Boarding"}
+                    ${this.isOnBoard ? (I18n.t('trips.boarded') || 'Boarded ✓') : (I18n.t('trips.im_boarding') || "I'm Boarding")}
                 </button>
 
                 <button 
@@ -601,7 +601,7 @@ const TripsView = {
                         <select id="waitlist-stop-select" class="w-full bg-surface-container-high text-on-surface text-xs rounded-xl p-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary">
                             ${upcomingStops.map(s => `
                                 <option value="${s.stop_id}">
-                                    ${s.stop_name} (${s.is_major ? 'Major Hub' : 'Stop'} • ~${s.eta ? s.eta.eta_minutes : 5}m away)
+                                    ${I18n.translateStop(s.stop_name)} (${s.is_major ? 'Major Hub' : 'Stop'} • ~${s.eta ? s.eta.eta_minutes : 5}m away)
                                 </option>
                             `).join('')}
                         </select>

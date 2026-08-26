@@ -60,27 +60,6 @@ const I18n = {
             kn: 'ಮಾರ್ಗ ${num} ಲಭ್ಯವಿದೆ',
             hi: 'मार्ग ${num} उपलब्ध'
         },
-        'home.available_buses_to': {
-            en: 'Available BMTC Buses to ${dest}',
-            kn: '${dest} ಗೆ ಲಭ್ಯವಿರುವ BMTC ಬಸ್‌ಗಳು',
-            hi: '${dest} के लिए उपलब्ध BMTC बसें'
-        },
-        'home.routes_found': {
-            en: '${count} routes found',
-            kn: '${count} ಮಾರ್ಗಗಳು ಕಂಡುಬಂದಿವೆ',
-            hi: '${count} मार्ग मिले'
-        },
-        'home.change': { en: 'Change', kn: 'ಬದಲಿಸಿ', hi: 'बदलें' },
-        'home.arriving_in': {
-            en: 'Arriving in ${mins} mins',
-            kn: '${mins} ನಿಮಿಷಗಳಲ್ಲಿ ಆಗಮನ',
-            hi: '${mins} मिनट में आगमन'
-        },
-        'home.min_trip': {
-            en: '~${mins} min trip',
-            kn: '~${mins} ನಿಮಿಷ ಪ್ರಯಾಣ',
-            hi: '~${mins} मिनट यात्रा'
-        },
         'home.track_join': {
             en: 'Track & Join Queue',
             kn: 'ಟ್ರ್ಯಾಕ್ ಮತ್ತು ಸರದಿ ಸೇರಿ',
@@ -113,6 +92,68 @@ const I18n = {
             kn: 'ಮಾರ್ಗ ಲೆಕ್ಕ ಹಾಕಲಾಗಿದೆ',
             hi: 'मार्ग गणना की गई'
         },
+        'home.all_corridor_stops': {
+            en: 'All Route 378 Corridor Stops (${count})',
+            kn: 'ಎಲ್ಲಾ ಮಾರ್ಗ 378 ಕಾರಿಡಾರ್ ನಿಲ್ದಾಣಗಳು (${count})',
+            hi: 'सभी रूट 378 कॉरिडोर स्टॉप्स (${count})'
+        },
+        'home.tap_any_stop': {
+            en: 'Tap any stop',
+            kn: 'ಯಾವುದೇ ನಿಲ್ದಾಣವನ್ನು ಒತ್ತಿ',
+            hi: 'किसी भी स्टॉप पर टैप करें'
+        },
+        'home.matching_stops': {
+            en: 'Matching Route Stops (${count})',
+            kn: 'ಹೊಂದಿಕೆಯಾಗುವ ಮಾರ್ಗ ನಿಲ್ದಾಣಗಳು (${count})',
+            hi: 'मैचिंग रूट स्टॉप्स (${count})'
+        },
+        'home.tap_to_choose': {
+            en: 'Tap to choose',
+            kn: 'ಆಯ್ಕೆ ಮಾಡಲು ಒತ್ತಿ',
+            hi: 'चुनने के लिए टैप करें'
+        },
+        'home.route_direct': {
+            en: 'Route 378 Direct',
+            kn: 'ಮಾರ್ಗ 378 ನೇರ',
+            hi: 'रूट 378 डायरेक्ट'
+        },
+        'home.hub': {
+            en: 'HUB',
+            kn: 'ಹಬ್',
+            hi: 'हब'
+        },
+        'home.major_hub': {
+            en: 'Major Hub',
+            kn: 'ಪ್ರಮುಖ ಹಬ್',
+            hi: 'प्रमुख हब'
+        },
+        'home.change_stop': {
+            en: 'Change Stop',
+            kn: 'ನಿಲ್ದಾಣ ಬದಲಿಸಿ',
+            hi: 'स्टॉप बदलें'
+        },
+        'home.buses_active': {
+            en: '${count} Route 378 buses active',
+            kn: '${count} ಮಾರ್ಗ 378 ಬಸ್‌ಗಳು ಸಕ್ರಿಯವಾಗಿವೆ',
+            hi: '${count} रूट 378 बसें सक्रिय हैं'
+        },
+        'home.min_trip_clean': {
+            en: '${mins} min trip',
+            kn: '${mins} ನಿಮಿಷ ಪ್ರಯಾಣ',
+            hi: '${mins} मिनट यात्रा'
+        },
+        'home.no_matching_stops': {
+            en: 'No stops matching "${query}"',
+            kn: '"${query}" ಗೆ ಹೊಂದಿಕೆಯಾಗುವ ನಿಲ್ದಾಣಗಳಿಲ್ಲ',
+            hi: '"${query}" से मेल खाता कोई स्टॉप नहीं मिला'
+        },
+        'home.try_searching_hint': {
+            en: 'Try searching for stops along Route 378 like "Kengeri", "Hosa Road", "Uttarahalli", "PES", or "Silk Institute".',
+            kn: 'ಮಾರ್ಗ 378 ರ ನಿಲ್ದಾಣಗಳನ್ನು ಹುಡುಕಿ: "ಕೆಂಗೇರಿ", "ಹೊಸ ರಸ್ತೆ", "ಉತ್ತರಹಳ್ಳಿ", "ಪಿಇಎಸ್", ಅಥವಾ "ಸಿಲ್ಕ್ ಇನ್ಸ್ಟಿಟ್ಯೂಟ್".',
+            hi: 'रूट 378 पर स्टॉप खोजें जैसे "केंगेरी", "होसा रोड", "उत्तराहल्ली", "पीईएस", या "सिल्क इंस्टीट्यूट"।'
+        },
+        'dest.electronic_city': { en: 'Electronic City', kn: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಸಿಟಿ', hi: 'इलेक्ट्रॉनिक सिटी' },
+        'dest.kengeri_satellite': { en: 'Kengeri Satellite Town', kn: 'ಕೆಂಗೇರಿ ಸ್ಯಾಟಲೈಟ್ ಟೌನ್', hi: 'केंगेरी सैटेलाइट टाउन' },
         'home.next_stop_waitlist': {
             en: 'Next Stop Waitlist:',
             kn: 'ಮುಂದಿನ ನಿಲ್ದಾಣ ಕಾಯುವ ಪಟ್ಟಿ:',
@@ -235,6 +276,21 @@ const I18n = {
             hi: 'सक्रिय यात्राएं लोड करने में असमर्थ'
         },
         'trips.next': { en: 'Next:', kn: 'ಮುಂದಿನ:', hi: 'अगला:' },
+        'trips.next_stop_arrival': { en: 'Next Stop Arrival', kn: 'ಮುಂದಿನ ನಿಲ್ದಾಣ ಆಗಮನ', hi: 'अगले स्टॉप आगमन' },
+        'trips.bus_crowd': { en: 'BUS CROWD:', kn: 'ಬಸ್ ಜನಸಂದಣಿ:', hi: 'बस भीड़:' },
+        'trips.bus_passengers': { en: 'Bus Passengers:', kn: 'ಬಸ್ ಪ್ರಯಾಣಿಕರು:', hi: 'बस यात्री:' },
+        'trips.you_are_waiting': { en: 'You are on the Waiting List', kn: 'ನೀವು ಕಾಯುವ ಪಟ್ಟಿಯಲ್ಲಿದ್ದೀರಿ', hi: 'आप प्रतीक्षा सूची में हैं' },
+        'trips.leave_queue': { en: 'Leave Queue', kn: 'ಸರದಿ ಬಿಡಿ', hi: 'कतार छोड़ें' },
+        'trips.live_crowd_breakdown': { en: 'LIVE CROWD INTELLIGENCE BREAKDOWN', kn: 'ಲೈವ್ ಜನಸಂದಣಿ ಬುದ್ಧಿಮತ್ತೆ ವಿವರ', hi: 'लाइव भीड़ बुद्धिमत्ता विवरण' },
+        'trips.join_stop_queue': { en: 'Join Stop Queue', kn: 'ನಿಲ್ದಾಣ ಸರದಿ ಸೇರಿ', hi: 'स्टॉप कतार में शामिल हों' },
+        'trips.people_in_bus': { en: '1. People In The Bus', kn: '1. ಬಸ್‌ನಲ್ಲಿರುವ ಜನರು', hi: '1. बस में लोग' },
+        'trips.onboard_label': { en: 'On-Board', kn: 'ಒಳಗೆ', hi: 'सवार' },
+        'trips.people_waiting_stop': { en: '2. People Waiting At Stop', kn: '2. ನಿಲ್ದಾಣದಲ್ಲಿ ಕಾಯುತ್ತಿರುವ ಜನರು', hi: '2. स्टॉप पर प्रतीक्षा कर रहे लोग' },
+        'trips.deboard_alarm': { en: 'Deboard Alarm', kn: 'ಇಳಿಯುವ ಎಚ್ಚರಿಕೆ', hi: 'उतरने का अलार्म' },
+        'trips.choose_stop': { en: '-- Choose Stop --', kn: '-- ನಿಲ್ದಾಣ ಆಯ್ಕೆಮಾಡಿ --', hi: '-- स्टॉप चुनें --' },
+        'trips.im_boarding': { en: "I'm Boarding", kn: 'ನಾನು ಹತ್ತುತ್ತಿದ್ದೇನೆ', hi: 'मैं चढ़ रहा हूँ' },
+        'trips.boarded': { en: 'Boarded ✓', kn: 'ಹತ್ತಲಾಗಿದೆ ✓', hi: 'चढ़ गए ✓' },
+        'trips.at_stop': { en: 'AT STOP', kn: 'ನಿಲ್ದಾಣದಲ್ಲಿದೆ', hi: 'स्टॉप पर' },
         'trips.waiting': {
             en: '${count} waiting',
             kn: '${count} ಕಾಯುತ್ತಿದ್ದಾರೆ',
@@ -615,6 +671,58 @@ const I18n = {
         }
 
         return text;
+    },
+
+    stopTranslations: {
+        'Bangalore University Gate': { kn: 'ಬೆಂಗಳೂರು ವಿಶ್ವವಿದ್ಯಾಲಯ ಗೇಟ್', hi: 'बैंगलोर विश्वविद्यालय गेट' },
+        'Electronic City Toll Gate / Phase 1': { kn: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಸಿಟಿ ಟೋಲ್ ಗೇಟ್ / ಹಂತ 1', hi: 'इलेक्ट्रॉनिक सिटी टोल गेट / फेज 1' },
+        'Electronic City Toll Gate': { kn: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಸಿಟಿ ಟೋಲ್ ಗೇಟ್', hi: 'इलेक्ट्रॉनिक सिटी टोल गेट' },
+        'Electronic City Wipro Gate': { kn: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಸಿಟಿ ವಿಪ್ರೋ ಗೇಟ್', hi: 'इलेक्ट्रॉनिक सिटी विप्रो गेट' },
+        'Electronic City': { kn: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಸಿಟಿ', hi: 'इलेक्ट्रॉनिक सिटी' },
+        'Gottigere (Bannerghatta Rd)': { kn: 'ಗೊಟ್ಟಿಗೆರೆ (ಬನ್ನೇರುಘಟ್ಟ ರಸ್ತೆ)', hi: 'गोट्टीगेरे (बन्नेरघट्टा रोड)' },
+        'Gottigere': { kn: 'ಗೊಟ್ಟಿಗೆರೆ', hi: 'गोट्टीगेरे' },
+        'Hosa Road Junction': { kn: 'ಹೊಸ ರಸ್ತೆ ಜಂಕ್ಷನ್', hi: 'होसा रोड जंक्शन' },
+        'Hosa Road': { kn: 'ಹೊಸ ರಸ್ತೆ', hi: 'होसा रोड' },
+        'Kengeri Satellite Town': { kn: 'ಕೆಂಗೇರಿ ಸ್ಯಾಟಲೈಟ್ ಟೌನ್', hi: 'केंगेरी सैटेलाइट टाउन' },
+        'Kengeri TTMC / Bus Terminal': { kn: 'ಕೆಂಗೇರಿ TTMC / ಬಸ್ ನಿಲ್ದಾಣ', hi: 'केंगेरी TTMC / बस टर्मिनल' },
+        'Kengeri TTMC': { kn: 'ಕೆಂಗೇರಿ TTMC', hi: 'केंगेरी TTMC' },
+        'Kengeri': { kn: 'ಕೆಂಗೇರಿ', hi: 'केंगेरी' },
+        'Konanakunte Cross': { kn: 'ಕೋಣನಕುಂಟೆ ಕ್ರಾಸ್', hi: 'कोनानकुंटे क्रॉस' },
+        'Konappana Agrahara': { kn: 'ಕೋಣಪ್ಪನ ಅಗ್ರಹಾರ', hi: 'कोनप्पना अग्रहारा' },
+        'PES University (Ring Road)': { kn: 'ಪಿಇಎಸ್ ವಿಶ್ವವಿದ್ಯಾಲಯ (ರಿಂಗ್ ರಸ್ತೆ)', hi: 'पीईएस विश्वविद्यालय (रिंग रोड)' },
+        'PES University': { kn: 'ಪಿಇಎಸ್ ವಿಶ್ವವಿದ್ಯಾಲಯ', hi: 'पीईएस विश्वविद्यालय' },
+        'Rajarajeshwari Nagar Gate': { kn: 'ರಾಜರಾಜೇಶ್ವರಿ ನಗರ ಗೇಟ್', hi: 'राजारामेश्वरी नगर गेट' },
+        'RR Nagar Gate': { kn: 'ಆರ್.ಆರ್. ನಗರ ಗೇಟ್', hi: 'आर.ಆರ್. नगर गेट' },
+        'Silk Institute (Kanakapura Rd)': { kn: 'ಸಿಲ್ಕ್ ಇನ್ಸ್ಟಿಟ್ಯೂಟ್ (ಕನಕಪುರ ರಸ್ತೆ)', hi: 'सिल्क इंस्टीट्यूट (कनकपुरा रोड)' },
+        'Silk Institute': { kn: 'ಸಿಲ್ಕ್ ಇನ್ಸ್ಟಿಟ್ಯೂಟ್', hi: 'सिल्क इंस्टीट्यूट' },
+        'Uttarahalli / Channasandra': { kn: 'ಉತ್ತರಹಳ್ಳಿ / ಚನ್ನಸಂದ್ರ', hi: 'उत्तराहल्ली / चन्नसंद्रा' },
+        'Uttarahalli': { kn: 'ಉತ್ತರಹಳ್ಳಿ', hi: 'उत्तराहल्ली' },
+        'Banashankari Bus Station': { kn: 'ಬನಶಂಕರಿ ಬಸ್ ನಿಲ್ದಾಣ', hi: 'बनशंकरी बस स्टैंड' },
+        'Banashankari': { kn: 'ಬನಶಂಕರಿ', hi: 'बनशंकरी' },
+        'Jayanagar 4th Block': { kn: 'ಜಯನಗರ 4ನೇ ಬ್ಲಾಕ್', hi: 'जयनगर 4th ब्लॉक' },
+        'BTM Layout Water Tank': { kn: 'ಬಿಟಿಎಂ ಲೇಔಟ್ ವಾಟರ್ ಟ್ಯಾಂಕ್', hi: 'बीटीएम लेआउट वाटर टैंक' },
+        'Silk Board Junction': { kn: 'ಸಿಲ್ಕ್ ಬೋರ್ಡ್ ಜಂಕ್ಷನ್', hi: 'सिल्क बोर्ड जंक्शन' },
+        'Majestic (Kempegowda Bus Station)': { kn: 'ಮೆಜೆಸ್ಟಿಕ್ (ಕೆಂಪೇಗೌಡ ಬಸ್ ನಿಲ್ದಾಣ)', hi: 'मैजेस्टिक (केम्पेगौड़ा बस स्टेशन)' },
+        'Kempegowda Bus Station (Majestic)': { kn: 'ಕೆಂಪೇಗೌಡ ಬಸ್ ನಿಲ್ದಾಣ (ಮೆಜೆಸ್ಟಿಕ್)', hi: 'केम्पेगौड़ा बस स्टेशन (मैजेस्टिक)' }
+    },
+
+    translateStop(name) {
+        if (!name) return '';
+        if (this.currentLang === 'en') return name;
+
+        // Exact match
+        if (this.stopTranslations[name] && this.stopTranslations[name][this.currentLang]) {
+            return this.stopTranslations[name][this.currentLang];
+        }
+
+        // Partial match
+        for (const [enName, trans] of Object.entries(this.stopTranslations)) {
+            if (name.toLowerCase().includes(enName.toLowerCase()) || enName.toLowerCase().includes(name.toLowerCase())) {
+                if (trans[this.currentLang]) return trans[this.currentLang];
+            }
+        }
+
+        return name;
     },
 
     setLang(langCode) {

@@ -4,6 +4,7 @@
  * 1. Clean map showing Bengaluru current location
  * 2. User searches/taps destination without autofill
  * 3. Shows available BMTC buses with arrival ETAs, fares & crowd levels
+ * 4. Fully internationalized: English, Kannada (ಕನ್ನಡ), Hindi (हिन्दी)
  */
 const HomeView = {
     routes: [],
@@ -43,7 +44,7 @@ const HomeView = {
                             <div class="flex items-center justify-between bg-surface-container/60 rounded-xl px-3 py-2 border border-white/5">
                                 <span class="text-xs text-on-surface font-medium truncate flex items-center gap-1.5" id="origin-label">
                                     <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">my_location</span>
-                                    ${this.userLocation.name}
+                                    ${I18n.translateStop(this.userLocation.name)}
                                 </span>
                                 <button onclick="HomeView.detectGPSLocation()" class="text-[10px] text-primary hover:underline font-semibold flex items-center gap-0.5 cursor-pointer">
                                     GPS
@@ -56,7 +57,7 @@ const HomeView = {
                                     class="w-full px-3.5 py-2.5 bg-surface-container-high rounded-xl text-xs text-on-surface placeholder:text-outline border border-white/10 focus:outline-none focus:ring-2 focus:ring-primary font-medium"
                                     placeholder="${I18n.t('home.search_placeholder') || 'Type destination stop name...'}"
                                     type="text"
-                                    value="${this.destination ? this.destination.name : this.searchQuery}"
+                                    value="${this.destination ? (I18n.translateStop(this.destination.name) || this.destination.name) : this.searchQuery}"
                                     onkeydown="if(event.key==='Enter') HomeView.handleSearchSubmit(this.value)"
                                     oninput="HomeView.handleSearchInput(this.value)"
                                     autocomplete="off"
@@ -117,7 +118,12 @@ const HomeView = {
         const q = query.toLowerCase().trim();
 
         return this.stops
-            .filter(s => s.name.toLowerCase().includes(q))
+            .filter(s => {
+                const enMatch = s.name.toLowerCase().includes(q);
+                const translated = I18n.translateStop(s.name);
+                const transMatch = translated.toLowerCase().includes(q);
+                return enMatch || transMatch;
+            })
             .sort((a, b) => {
                 const aName = a.name.toLowerCase();
                 const bName = b.name.toLowerCase();
@@ -147,13 +153,15 @@ const HomeView = {
     renderDestinationOrSuggestions() {
         // State 1: When user has explicitly chosen a destination stop
         if (this.destination) {
+            const destDisplayName = I18n.translateStop(this.destination.name);
+
             if (this.matchedTransitOptions.length === 0) {
                 return `
                     <div class="glass-panel rounded-2xl p-6 text-center shadow-lg">
                         <span class="material-symbols-outlined text-3xl text-outline mb-1">directions_bus</span>
-                        <h4 class="font-bold text-sm text-on-surface">No Direct Buses Found</h4>
-                        <p class="text-xs text-on-surface-variant mt-1">Try selecting another stop along Route 378.</p>
-                        <button class="mt-3 px-4 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold cursor-pointer" onclick="HomeView.clearDestination()">Choose Other Stop</button>
+                        <h4 class="font-bold text-sm text-on-surface">${I18n.t('home.no_buses') || 'No Direct Buses Found'}</h4>
+                        <p class="text-xs text-on-surface-variant mt-1">${I18n.t('home.try_nearby') || 'Try selecting another stop along Route 378.'}</p>
+                        <button class="mt-3 px-4 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold cursor-pointer" onclick="HomeView.clearDestination()">${I18n.t('home.choose_other') || 'Choose Other Stop'}</button>
                     </div>
                 `;
             }
@@ -162,11 +170,11 @@ const HomeView = {
                 <div class="space-y-2.5">
                     <div class="flex items-center justify-between px-1">
                         <div>
-                            <h3 class="font-headline-md text-sm font-bold text-on-surface">Available Buses to ${this.destination.name}</h3>
-                            <p class="text-[11px] text-on-surface-variant">${this.matchedTransitOptions.length} Route 378 buses active</p>
+                            <h3 class="font-headline-md text-sm font-bold text-on-surface">${I18n.t('home.available_buses_to', { dest: destDisplayName }) || `Available Buses to ${destDisplayName}`}</h3>
+                            <p class="text-[11px] text-on-surface-variant">${I18n.t('home.buses_active', { count: this.matchedTransitOptions.length }) || `${this.matchedTransitOptions.length} Route 378 buses active`}</p>
                         </div>
                         <button onclick="HomeView.clearDestination()" class="text-xs text-primary font-semibold hover:underline cursor-pointer">
-                            Change Stop
+                            ${I18n.t('home.change_stop') || 'Change Stop'}
                         </button>
                     </div>
 
@@ -175,18 +183,18 @@ const HomeView = {
                             const crowdLevel = opt.trip?.crowd_level || 'low';
                             let crowdBadge = '';
                             if (crowdLevel === 'low') {
-                                crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">Plenty of Seats</span>`;
+                                crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.plenty_seats') || 'Plenty of Seats'}</span>`;
                             } else if (crowdLevel === 'medium') {
-                                crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">Standing Room</span>`;
+                                crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.standing_room') || 'Standing Room'}</span>`;
                             } else {
-                                crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">Very Crowded</span>`;
+                                crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.very_crowded') || 'Very Crowded'}</span>`;
                             }
 
                             const durationMins = opt.route?.avg_duration_minutes || 30;
                             const fare = opt.route?.fare_lkr || 25;
                             const nextStopForecast = opt.trip?.next_stop_forecast;
                             const nextEta = opt.trip?.next_stop_eta || (nextStopForecast ? { eta_minutes: nextStopForecast.wait_time_minutes, display_text: nextStopForecast.display_text } : null);
-                            const arrivingText = nextEta ? nextEta.display_text || `${nextEta.eta_minutes} mins` : '3 mins';
+                            const arrivingText = nextEta ? (nextEta.eta_minutes !== undefined ? I18n.t('home.arriving_in', { mins: nextEta.eta_minutes }) : nextEta.display_text) : I18n.t('home.arriving_in', { mins: 3 });
                             const isAtStop = opt.trip?.state === 'at_stop' || opt.trip?.current_speed_kmh === 0;
 
                             return `
@@ -198,9 +206,9 @@ const HomeView = {
                                             </div>
                                             <div>
                                                 <div class="flex items-center gap-2">
-                                                    <h4 class="font-bold text-sm text-on-surface">${opt.route?.name || 'Electronic City - Kengeri TTMC'}</h4>
+                                                    <h4 class="font-bold text-sm text-on-surface">${opt.route?.name ? opt.route.name.split(' - ').map(s => I18n.translateStop(s)).join(' - ') : 'Electronic City - Kengeri TTMC'}</h4>
                                                     ${isAtStop ? `
-                                                        <span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">AT STOP</span>
+                                                        <span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${I18n.t('trips.at_stop') || 'AT STOP'}</span>
                                                     ` : `
                                                         <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 30} km/h</span>
                                                     `}
@@ -208,10 +216,10 @@ const HomeView = {
                                                 <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
                                                     <span class="text-primary font-bold flex items-center gap-1">
                                                         <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-tertiary' : 'bg-primary'}"></span>
-                                                        ${arrivingText.toLowerCase().includes('arriving') || arrivingText.toLowerCase().includes('stop') ? arrivingText : `Arriving in ${nextEta?.eta_minutes || 3} mins`}
+                                                        ${arrivingText}
                                                     </span>
                                                     <span>•</span>
-                                                    <span>${durationMins} min trip</span>
+                                                    <span>${I18n.t('home.min_trip_clean', { mins: durationMins }) || `${durationMins} min trip`}</span>
                                                     <span>•</span>
                                                     <span>₹${fare}</span>
                                                 </div>
@@ -225,7 +233,7 @@ const HomeView = {
                                             class="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary-fixed active:scale-95 transition-all shadow-md cursor-pointer"
                                             onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
                                         >
-                                            <span>Track Bus & Join</span>
+                                            <span>${I18n.t('home.track_join') || 'Track Bus & Join'}</span>
                                             <span class="material-symbols-outlined text-sm">arrow_forward</span>
                                         </button>
                                     </div>
@@ -245,8 +253,8 @@ const HomeView = {
                 return `
                     <div class="glass-panel rounded-2xl p-5 text-center shadow-md space-y-2">
                         <span class="material-symbols-outlined text-2xl text-outline">search_off</span>
-                        <p class="text-xs text-on-surface font-semibold">No stops matching "${this.searchQuery}"</p>
-                        <p class="text-[11px] text-on-surface-variant">Try searching for stops along Route 378 like "Kengeri", "Hosa Road", "Uttarahalli", "PES", or "Silk Institute".</p>
+                        <p class="text-xs text-on-surface font-semibold">${I18n.t('home.no_matching_stops', { query: this.searchQuery }) || `No stops matching "${this.searchQuery}"`}</p>
+                        <p class="text-[11px] text-on-surface-variant">${I18n.t('home.try_searching_hint') || 'Try searching for stops along Route 378 like "Kengeri", "Hosa Road", "Uttarahalli", "PES", or "Silk Institute".'}</p>
                     </div>
                 `;
             }
@@ -255,34 +263,37 @@ const HomeView = {
                 <div class="space-y-2">
                     <div class="flex justify-between items-center px-1">
                         <h3 class="font-headline-md text-xs font-bold text-on-surface uppercase tracking-wider">
-                            Matching Route Stops (${matches.length})
+                            ${I18n.t('home.matching_stops', { count: matches.length }) || `Matching Route Stops (${matches.length})`}
                         </h3>
-                        <span class="text-[10px] text-on-surface-variant">Tap to choose</span>
+                        <span class="text-[10px] text-on-surface-variant">${I18n.t('home.tap_to_choose') || 'Tap to choose'}</span>
                     </div>
 
                     <div class="space-y-1.5 max-h-[300px] overflow-y-auto pr-1">
-                        ${matches.map(s => `
-                            <button 
-                                class="w-full glass-panel rounded-xl p-3 text-left hover:bg-surface-container-high active:scale-[0.99] transition-all flex items-center justify-between group shadow-sm cursor-pointer border border-white/5"
-                                onclick="HomeView.selectDestination('${s.name.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')"
-                            >
-                                <div class="flex items-center gap-2.5 min-w-0 pr-2">
-                                    <div class="w-8 h-8 rounded-lg ${s.is_major ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-surface-container-highest text-on-surface-variant'} flex items-center justify-center flex-shrink-0">
-                                        <span class="material-symbols-outlined text-base">${s.is_major ? 'hub' : 'place'}</span>
-                                    </div>
-                                    <div class="truncate">
-                                        <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">
-                                            ${this.highlightMatch(s.name, this.searchQuery)}
+                        ${matches.map(s => {
+                            const translatedName = I18n.translateStop(s.name);
+                            return `
+                                <button 
+                                    class="w-full glass-panel rounded-xl p-3 text-left hover:bg-surface-container-high active:scale-[0.99] transition-all flex items-center justify-between group shadow-sm cursor-pointer border border-white/5"
+                                    onclick="HomeView.selectDestination('${s.name.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')"
+                                >
+                                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                        <div class="w-8 h-8 rounded-lg ${s.is_major ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-surface-container-highest text-on-surface-variant'} flex items-center justify-center flex-shrink-0">
+                                            <span class="material-symbols-outlined text-base">${s.is_major ? 'hub' : 'place'}</span>
                                         </div>
-                                        <div class="text-[10px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
-                                            <span class="text-primary font-semibold">Route 378</span>
-                                            ${s.is_major ? '<span>•</span><span class="text-secondary font-semibold">Major Hub</span>' : ''}
+                                        <div class="truncate">
+                                            <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">
+                                                ${this.highlightMatch(translatedName, this.searchQuery)}
+                                            </div>
+                                            <div class="text-[10px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+                                                <span class="text-primary font-semibold">${I18n.t('home.route_direct') || 'Route 378 Direct'}</span>
+                                                ${s.is_major ? `<span>•</span><span class="text-secondary font-semibold">${I18n.t('home.major_hub') || 'Major Hub'}</span>` : ''}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-sm flex-shrink-0">arrow_forward</span>
-                            </button>
-                        `).join('')}
+                                    <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-sm flex-shrink-0">arrow_forward</span>
+                                </button>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
@@ -293,24 +304,27 @@ const HomeView = {
             <div class="space-y-4 pt-1">
                 <div>
                     <h3 class="font-headline-md text-xs font-bold text-on-surface mb-2.5 px-1 flex items-center justify-between">
-                        <span>Popular Destinations</span>
-                        <span class="text-[11px] text-on-surface-variant font-normal">Tap to view buses</span>
+                        <span>${I18n.t('home.popular_destinations') || 'Popular Destinations'}</span>
+                        <span class="text-[11px] text-on-surface-variant font-normal">${I18n.t('home.tap_to_find') || 'Tap to view buses'}</span>
                     </h3>
                     <div class="grid grid-cols-2 gap-2">
-                        ${this.popularDestinations.map(p => `
-                            <button 
-                                class="glass-panel rounded-2xl p-3 text-left hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-between group shadow-md cursor-pointer"
-                                onclick="HomeView.selectDestination('${p.name}', '${p.query}')"
-                            >
-                                <div class="min-w-0 pr-2">
-                                    <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">${p.name}</div>
-                                    <div class="text-[10px] text-on-surface-variant mt-0.5 font-medium">Route 378 Direct</div>
-                                </div>
-                                <div class="w-7 h-7 rounded-lg bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary flex-shrink-0">
-                                    <span class="material-symbols-outlined text-sm">directions_bus</span>
-                                </div>
-                            </button>
-                        `).join('')}
+                        ${this.popularDestinations.map(p => {
+                            const translatedDestName = I18n.t(p.key) || I18n.translateStop(p.name);
+                            return `
+                                <button 
+                                    class="glass-panel rounded-2xl p-3 text-left hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-between group shadow-md cursor-pointer"
+                                    onclick="HomeView.selectDestination('${p.name}', '${p.query}')"
+                                >
+                                    <div class="min-w-0 pr-2">
+                                        <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">${translatedDestName}</div>
+                                        <div class="text-[10px] text-on-surface-variant mt-0.5 font-medium">${I18n.t('home.route_direct') || 'Route 378 Direct'}</div>
+                                    </div>
+                                    <div class="w-7 h-7 rounded-lg bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary flex-shrink-0">
+                                        <span class="material-symbols-outlined text-sm">directions_bus</span>
+                                    </div>
+                                </button>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
 
@@ -319,24 +333,27 @@ const HomeView = {
                     <div class="space-y-2 pt-1">
                         <div class="flex justify-between items-center px-1">
                             <h3 class="font-headline-md text-xs font-bold text-on-surface uppercase tracking-wider">
-                                All Route 378 Corridor Stops (${this.stops.length})
+                                ${I18n.t('home.all_corridor_stops', { count: this.stops.length }) || `All Route 378 Corridor Stops (${this.stops.length})`}
                             </h3>
-                            <span class="text-[10px] text-on-surface-variant">Tap any stop</span>
+                            <span class="text-[10px] text-on-surface-variant">${I18n.t('home.tap_any_stop') || 'Tap any stop'}</span>
                         </div>
                         <div class="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                            ${this.stops.map((s, idx) => `
-                                <button 
-                                    class="w-full glass-panel rounded-xl px-3 py-2 text-left hover:bg-surface-container-high active:scale-[0.99] transition-all flex items-center justify-between group shadow-sm cursor-pointer border border-white/5"
-                                    onclick="HomeView.selectDestination('${s.name.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')"
-                                >
-                                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
-                                        <span class="text-[10px] font-bold text-on-surface-variant w-4 text-center">${idx + 1}</span>
-                                        <span class="font-medium text-xs text-on-surface group-hover:text-primary transition-colors truncate">${s.name}</span>
-                                        ${s.is_major ? '<span class="bg-primary/20 text-primary text-[9px] font-bold px-1.5 py-0.2 rounded-full">HUB</span>' : ''}
-                                    </div>
-                                    <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-xs flex-shrink-0">arrow_forward</span>
-                                </button>
-                            `).join('')}
+                            ${this.stops.map((s, idx) => {
+                                const translatedStopName = I18n.translateStop(s.name);
+                                return `
+                                    <button 
+                                        class="w-full glass-panel rounded-xl px-3 py-2 text-left hover:bg-surface-container-high active:scale-[0.99] transition-all flex items-center justify-between group shadow-sm cursor-pointer border border-white/5"
+                                        onclick="HomeView.selectDestination('${s.name.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')"
+                                    >
+                                        <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                            <span class="text-[10px] font-bold text-on-surface-variant w-4 text-center">${idx + 1}</span>
+                                            <span class="font-medium text-xs text-on-surface group-hover:text-primary transition-colors truncate">${translatedStopName}</span>
+                                            ${s.is_major ? `<span class="bg-primary/20 text-primary text-[9px] font-bold px-1.5 py-0.2 rounded-full">${I18n.t('home.hub') || 'HUB'}</span>` : ''}
+                                        </div>
+                                        <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-xs flex-shrink-0">arrow_forward</span>
+                                    </button>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
                 ` : ''}
@@ -488,7 +505,7 @@ const HomeView = {
     async selectDestination(destName, query) {
         this.searchQuery = '';
         const destInput = document.getElementById('destination-input');
-        if (destInput) destInput.value = destName;
+        if (destInput) destInput.value = I18n.translateStop(destName) || destName;
 
         const clearBtn = document.getElementById('dest-clear-btn');
         if (clearBtn) clearBtn.classList.remove('hidden');
@@ -526,7 +543,7 @@ const HomeView = {
         // Update Map: Draw Route Line and Destination Pin
         MapUtils.clearRoutesAndBuses();
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
-        MapUtils.addDestinationMarker(this.destination.lat, this.destination.lng, destName);
+        MapUtils.addDestinationMarker(this.destination.lat, this.destination.lng, I18n.translateStop(destName) || destName);
 
         // Draw Route Line
         if (this.stops && this.stops.length > 0) {
@@ -542,7 +559,7 @@ const HomeView = {
         }
 
         const mapLabel = document.getElementById('map-status-label');
-        if (mapLabel) mapLabel.textContent = `Route to ${destName}`;
+        if (mapLabel) mapLabel.textContent = `${I18n.t('home.route_calculated') || 'Route to'} ${I18n.translateStop(destName) || destName}`;
     },
 
     clearDestination() {
@@ -575,7 +592,7 @@ const HomeView = {
         }
 
         const mapLabel = document.getElementById('map-status-label');
-        if (mapLabel) mapLabel.textContent = 'Bengaluru Location';
+        if (mapLabel) mapLabel.textContent = I18n.t('home.map_label') || 'Bengaluru Location';
     },
 
     startJourney(tripId) {
@@ -605,7 +622,7 @@ const HomeView = {
                 };
                 MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
                 const label = document.getElementById('origin-label');
-                if (label) label.innerHTML = `<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">my_location</span> My GPS Location`;
+                if (label) label.innerHTML = `<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">my_location</span> ${I18n.translateStop(this.userLocation.name)}`;
                 NotificationUtils.showToast('GPS Active', 'Location updated', 'success');
                 if (this.destination) {
                     this.selectDestination(this.destination.name, this.destination.name);
