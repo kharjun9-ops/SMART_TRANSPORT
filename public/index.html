@@ -262,22 +262,32 @@
     <script src="/js/views/profile.js?v=8"></script>
     <script src="/js/app.js?v=8"></script>
 
-    <!-- Global language switcher (inline - cannot be cached) -->
+    <!-- Global language switcher & failsafe auto-dismiss -->
     <script>
     window.switchLang = function(lang) {
         if (!lang) return;
-        
-        // Save to localStorage — I18n.init() reads this on page load
         localStorage.setItem('lumina_lang', lang);
-        
-        // Force set on I18n object immediately
         if (window.I18n) {
             I18n.currentLang = lang;
         }
-        
-        // Force full page reload to re-render everything in the new language
         window.location.reload();
     };
+
+    // Failsafe auto-dismiss loading screen after 1.5s max
+    setTimeout(function() {
+        var ls = document.getElementById('loading-screen');
+        if (ls && ls.style.display !== 'none') {
+            ls.style.opacity = '0';
+            setTimeout(function() {
+                ls.style.display = 'none';
+                var appEl = document.getElementById('app');
+                if (appEl) appEl.style.display = 'flex';
+                if (window.app && !window.app.activeViewInstance) {
+                    window.app.init();
+                }
+            }, 200);
+        }
+    }, 1500);
     </script>
 </body>
 </html>

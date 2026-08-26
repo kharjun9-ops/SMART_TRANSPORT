@@ -21,32 +21,42 @@ const app = {
             ThemeUtils.init();
         }
 
-        // Hide loading screen after smooth progress animation
-        setTimeout(async () => {
+        const dismissLoading = () => {
             const loadingScreen = document.getElementById('loading-screen');
             const appContainer = document.getElementById('app');
 
-            if (loadingScreen) loadingScreen.style.display = 'none';
-            if (appContainer) appContainer.style.display = 'flex';
-
-            // First Page Rule: If not logged in, take user directly to Auth / Login screen!
-            if (!API.isAuthenticated()) {
-                this.navigate('auth');
-            } else {
-                // Validate the token is still good (DB may have been reset)
-                try {
-                    await API.getProfile();
-                    // Token is valid — connect real-time WebSocket and go home
-                    NotificationUtils.initWebSocket();
-                    NotificationUtils.updateBadge();
-                    this.navigate('home');
-                } catch (e) {
-                    // Token is stale or invalid — clear and show login
-                    API.clearAuth();
-                    this.navigate('auth');
-                }
+            if (loadingScreen && loadingScreen.style.display !== 'none') {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    if (appContainer) appContainer.style.display = 'flex';
+                }, 200);
+            } else if (appContainer) {
+                appContainer.style.display = 'flex';
             }
-        }, 600);
+        };
+
+        // First Page Rule: If not logged in, take user directly to Auth / Login screen!
+        if (!API.isAuthenticated()) {
+            dismissLoading();
+            await this.navigate('auth');
+        } else {
+            // Validate the token quickly with 2.5s timeout (prevents Render cold-start hang)
+            try {
+                const profilePromise = API.getProfile();
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500));
+                await Promise.race([profilePromise, timeoutPromise]);
+
+                dismissLoading();
+                NotificationUtils.initWebSocket();
+                NotificationUtils.updateBadge();
+                await this.navigate('home');
+            } catch (e) {
+                dismissLoading();
+                API.clearAuth();
+                await this.navigate('auth');
+            }
+        }
     },
 
     async navigate(viewName, params = {}) {

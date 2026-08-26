@@ -91,13 +91,14 @@ try {
     // Start simulation engine
     SimulationEngine.start(5000); // Tick every 5 seconds
 
-    server.listen(PORT, () => {
+    const HOST = '0.0.0.0';
+    server.listen(PORT, HOST, () => {
         console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║   🚌 Smart Transit Crowd Intelligence System             ║
 ║   ────────────────────────────────────────────────        ║
-║   Server running at http://localhost:${PORT}               ║
-║   WebSocket at ws://localhost:${PORT}/ws                   ║
+║   Server running at http://${HOST}:${PORT}               ║
+║   WebSocket at ws://${HOST}:${PORT}/ws                   ║
 ║   Simulation engine: ACTIVE                               ║
 ╚═══════════════════════════════════════════════════════════╝
         `);

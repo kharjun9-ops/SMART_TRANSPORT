@@ -55,11 +55,16 @@ const API = {
             delete headers['Content-Type'];
         }
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs || 12000);
+
         try {
             const res = await fetch(url, {
                 ...options,
-                headers
+                headers,
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             const data = await res.json().catch(() => ({}));
 
@@ -73,6 +78,7 @@ const API = {
 
             return data;
         } catch (err) {
+            clearTimeout(timeoutId);
             console.error(`API Error [${endpoint}]:`, err);
             throw err;
         }
