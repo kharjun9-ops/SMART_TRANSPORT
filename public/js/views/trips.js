@@ -86,13 +86,22 @@ const TripsView = {
                             <h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">${I18n.t('trips.select_bus')}</h2>
                             <p class="text-xs text-on-surface-variant">${I18n.t('trips.live_gps')}</p>
                         </div>
-                        <button class="font-label-bold text-xs text-primary bg-primary-container/20 px-3 py-1 rounded-full hover:bg-primary-container/30 transition-all flex items-center gap-1" onclick="TripsView.renderTripSelector()">
+                        <button class="font-label-bold text-xs text-primary bg-primary-container/20 px-3 py-1 rounded-full hover:bg-primary-container/30 transition-all flex items-center gap-1" onclick="window.app.navigate('trips')">
                             <span class="material-symbols-outlined text-xs">sync</span> ${I18n.t('trips.refresh')}
                         </button>
                     </div>
 
                     <div class="flex flex-col gap-3">
-                        ${trips.map(trip => {
+                        ${trips.length === 0 ? `
+                            <div class="glass-panel rounded-2xl p-6 text-center space-y-3">
+                                <span class="material-symbols-outlined text-4xl text-primary live-pulse">directions_bus</span>
+                                <h3 class="font-headline-md text-sm font-bold text-on-surface">Connecting to BMTC GPS Fleet...</h3>
+                                <p class="text-xs text-on-surface-variant">Live telemetry is synchronizing with Route 378 buses.</p>
+                                <button onclick="window.app.navigate('trips')" class="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-md">
+                                    Refresh Buses
+                                </button>
+                            </div>
+                        ` : trips.map(trip => {
                             const crowdLevel = trip.crowd_level || 'low';
                             let crowdPillHtml = '';
                             if (crowdLevel === 'low') {
@@ -240,28 +249,23 @@ const TripsView = {
     async pollLiveTracking() {
         if (!this.tripId || !this.tripData) return;
         try {
-            const trackRes = await API.getTripTrack(this.tripId);
-            const track = trackRes.tracking;
+            const res = await API.getTrip(this.tripId);
+            if (!res || !res.trip) return;
 
-            // Update live telemetry in data model
-            this.tripData.current_stop_index = track.current_stop_index;
-            this.tripData.current_passenger_count = track.passenger_count;
-            this.tripData.current_speed_kmh = track.speed_kmh;
-            this.tripData.current_latitude = track.latitude;
-            this.tripData.current_longitude = track.longitude;
-            this.tripData.forecast = track.forecast;
+            // Update full live trip model (stops, current_stop_index, GPS, passenger count, forecast)
+            this.tripData = res.trip;
 
-            // Update Map Marker
+            // Update Map Marker live position
             MapUtils.renderBusMarker(this.tripData);
 
-            // Re-render the drawer UI components
+            // Re-render the drawer UI components to match exact current stop
             this.renderDrawerUI();
 
             // Check arrival proximity if user on board
             if (this.isOnBoard && this.selectedDestinationStopId && this.tripData.stops) {
                 const destIdx = this.tripData.stops.findIndex(s => s.stop_id === this.selectedDestinationStopId);
                 if (destIdx !== -1) {
-                    const stopsRemaining = destIdx - track.current_stop_index;
+                    const stopsRemaining = destIdx - this.tripData.current_stop_index;
                     if (stopsRemaining === 1 && !this.alertedNear) {
                         this.alertedNear = true;
                         NotificationUtils.showToast('Destination Approaching!', 'Your target stop is next! Prepare to deboard.', 'destination_approaching', 7000);
@@ -477,12 +481,11 @@ const TripsView = {
                 </div>
 
                 <div class="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                    ${stops.map((s, idx) => {
-                        const isCurrent = idx === currentIdx;
-                        const isNext = idx === currentIdx + 1;
-                        const isNextNext = idx === currentIdx + 2;
-                        const isPassed = idx < currentIdx;
-                        const isUpcoming = idx > currentIdx;
+                    ${stops.filter((s, idx) => idx >= currentIdx).map((s, filteredIdx) => {
+                        const realIdx = currentIdx + filteredIdx;
+                        const isCurrent = realIdx === currentIdx;
+                        const isNext = realIdx === currentIdx + 1;
+                        const isNextNext = realIdx === currentIdx + 2;
 
                         let statusBadge = '';
                         if (isCurrent) {
@@ -491,15 +494,18 @@ const TripsView = {
                             statusBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-1.5 py-0.2 rounded font-bold">Next</span>`;
                         } else if (isNextNext) {
                             statusBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-1.5 py-0.2 rounded font-bold">Next+1</span>`;
-                        } else if (isPassed) {
-                            statusBadge = `<span class="text-outline-variant text-[10px]">Passed</span>`;
+                        } else {
+                            const etaMins = s.eta ? s.eta.eta_minutes : null;
+                            if (etaMins) {
+                                statusBadge = `<span class="text-on-surface-variant text-[10px]">~${etaMins}m</span>`;
+                            }
                         }
 
                         return `
                             <div class="flex items-center justify-between p-2 rounded-xl ${isCurrent ? 'bg-primary/15 border border-primary/30 font-bold' : (isNext ? 'bg-secondary/10 border border-secondary/20' : 'bg-surface-container/40')} text-xs">
                                 <div class="flex items-center gap-2 truncate">
-                                    <div class="w-2 h-2 rounded-full ${isCurrent ? 'bg-primary live-pulse' : (isNext ? 'bg-secondary' : (isPassed ? 'bg-outline-variant' : 'bg-surface-variant'))}"></div>
-                                    <span class="truncate ${isPassed ? 'text-on-surface-variant opacity-60' : 'text-on-surface'}">${s.stop_name}</span>
+                                    <div class="w-2 h-2 rounded-full ${isCurrent ? 'bg-primary live-pulse' : (isNext ? 'bg-secondary' : 'bg-surface-variant')}"></div>
+                                    <span class="truncate text-on-surface">${s.stop_name}</span>
                                 </div>
                                 <div class="flex items-center gap-2 flex-shrink-0">
                                     ${statusBadge}
@@ -526,7 +532,7 @@ const TripsView = {
                     onchange="TripsView.setDestination(this.value)"
                 >
                     <option value="">-- Choose Stop --</option>
-                    ${stops.map(s => `
+                    ${stops.filter((s, idx) => idx > currentIdx).map(s => `
                         <option value="${s.stop_id}" ${this.selectedDestinationStopId === s.stop_id ? 'selected' : ''}>
                             ${s.stop_name}
                         </option>

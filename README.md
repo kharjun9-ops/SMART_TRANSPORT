@@ -16,10 +16,10 @@
 - **1-Click Quick Demo Login** (`karthik@demo.in`) pre-loaded with contributor badges and points.
 - Instant fallback validation preventing stale token lockouts.
 
-### 2. 🗺️ Intelligent Route Search & Live Bengaluru Map
-- Interactive Leaflet dark-matter HUD map centered on Bengaluru's transit hub (Majestic).
+### 2. 🗺️ Intelligent Route Search & Live Google Map (Route 378)
+- Interactive Google Maps centered on Route 378 (Electronic City to Kengeri TTMC).
 - Real-time GPS location detection.
-- One-tap quick destinations (Silk Institute, Kengeri TTMC, Yeshwanthpur TTMC, Electronic City, Whitefield, etc.).
+- One-tap quick destinations along Route 378 (Electronic City, Hosa Road, Gottigere, Silk Institute, Konanakunte Cross, Uttarahalli, RR Nagar Gate, Kengeri TTMC).
 - Dynamic route polyline rendering with arrival ETAs, fares, and crowd level indicators:
   - 🟢 **Low Crowd** (Plenty of Seats)
   - 🟡 **Medium Crowd** (Standing Room)

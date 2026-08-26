@@ -9,17 +9,19 @@ const HomeView = {
     routes: [],
     activeTrips: [],
     stops: [],
-    userLocation: { lat: 12.8465, lng: 77.5342, name: 'Silk Institute (Kanakapura Rd)' },
+    userLocation: { lat: 12.8452, lng: 77.6602, name: 'Electronic City Wipro Gate' },
     destination: null,
     matchedTransitOptions: [],
 
     popularDestinations: [
         { key: 'dest.kengeri_ttmc', name: 'Kengeri TTMC', query: 'Kengeri', routeNum: '378', stopName: 'Kengeri TTMC / Bus Terminal' },
-        { key: 'dest.konanakunte_cross', name: 'Konanakunte Cross', query: 'Konanakunte', routeNum: '378', stopName: 'Konanakunte Cross' },
-        { key: 'dest.banashankari_ttmc', name: 'Banashankari TTMC', query: 'Banashankari', routeNum: '378', stopName: 'Banashankari TTMC' },
         { key: 'dest.rr_nagar_gate', name: 'RR Nagar Gate', query: 'Rajarajeshwari', routeNum: '378', stopName: 'Rajarajeshwari Nagar Gate' },
+        { key: 'dest.uttarahalli', name: 'Uttarahalli', query: 'Uttarahalli', routeNum: '378', stopName: 'Uttarahalli / Channasandra' },
+        { key: 'dest.konanakunte_cross', name: 'Konanakunte Cross', query: 'Konanakunte', routeNum: '378', stopName: 'Konanakunte Cross' },
         { key: 'dest.silk_institute', name: 'Silk Institute', query: 'Silk Institute', routeNum: '378', stopName: 'Silk Institute (Kanakapura Rd)' },
-        { key: 'dest.kengeri_satellite', name: 'Kengeri Satellite Town', query: 'Kengeri Satellite', routeNum: '378', stopName: 'Kengeri Satellite Town' }
+        { key: 'dest.gottigere', name: 'Gottigere', query: 'Gottigere', routeNum: '378', stopName: 'Gottigere (Bannerghatta Rd)' },
+        { key: 'dest.hosa_road', name: 'Hosa Road', query: 'Hosa Road', routeNum: '378', stopName: 'Hosa Road Junction' },
+        { key: 'dest.electronic_city', name: 'Electronic City', query: 'Electronic City', routeNum: '378', stopName: 'Electronic City Wipro Gate' }
     ],
 
     async render() {
@@ -236,6 +238,30 @@ const HomeView = {
         // Initialize Clean Map with Bengaluru User Location Pin
         MapUtils.initMap('home-map', [this.userLocation.lat, this.userLocation.lng], 13, { hideZoom: true });
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
+
+        setTimeout(() => {
+            if (MapUtils.map) MapUtils.map.invalidateSize();
+        }, 150);
+    },
+
+    toggleMapType() {
+        const nextType = MapUtils.currentMapType === 'satellite' ? 'roadmap' : 'satellite';
+        MapUtils.applyTileLayer(nextType);
+
+        const btnLabel = document.getElementById('map-type-label');
+        if (btnLabel) {
+            btnLabel.textContent = nextType === 'satellite' ? 
+                (I18n.t('home.roadmap') || 'Map') : 
+                (I18n.t('home.satellite') || 'Satellite');
+        }
+
+        if (window.NotificationUtils && typeof window.NotificationUtils.showToast === 'function') {
+            NotificationUtils.showToast(
+                nextType === 'satellite' ? '🛰️ Google Satellite View' : '🗺️ Google Maps Roadmap',
+                'info',
+                1200
+            );
+        }
     },
 
     async fetchInitialData() {
@@ -250,13 +276,13 @@ const HomeView = {
             this.activeTrips = tripsRes.trips || [];
             this.stops = stopsRes.stops || [];
 
-            // Set user default location to Kempegowda Bus Station (Majestic)
-            const majesticStop = this.stops.find(s => s.id === 'stop_blr_06' || s.name.includes('Majestic'));
-            if (majesticStop) {
+            // Set user default location to Electronic City Wipro Gate (Route 378 Origin)
+            const originStop = this.stops.find(s => s.id === 'stop_blr_01' || s.name.includes('Electronic City'));
+            if (originStop) {
                 this.userLocation = {
-                    lat: majesticStop.latitude,
-                    lng: majesticStop.longitude,
-                    name: 'Kempegowda Bus Station (Majestic)'
+                    lat: originStop.latitude,
+                    lng: originStop.longitude,
+                    name: originStop.name
                 };
             }
         } catch (e) {
@@ -271,7 +297,7 @@ const HomeView = {
             return;
         }
 
-        if (query.length >= 3) {
+        if (query.length >= 2) {
             const matchedStop = this.stops.find(s => s.name.toLowerCase().includes(query));
             const matchedRoute = this.routes.find(r => r.name.toLowerCase().includes(query) || r.route_number.toLowerCase() === query);
             
@@ -294,30 +320,32 @@ const HomeView = {
         const destInput = document.getElementById('destination-input');
         if (destInput) destInput.value = destName;
 
-        // Find destination coordinates in Bengaluru
+        // Find destination coordinates along Route 378
         const foundStop = this.stops.find(s => s.name.toLowerCase().includes(destName.toLowerCase())) ||
                           this.stops.find(s => s.name.toLowerCase().includes(query.toLowerCase()));
 
-        let destLat = 12.8465;
-        let destLng = 77.5342;
+        let destLat = 12.9081;
+        let destLng = 77.4835;
 
         if (foundStop) {
             destLat = foundStop.latitude;
             destLng = foundStop.longitude;
-        } else if (destName.toLowerCase().includes('silk')) {
-            destLat = 12.8465; destLng = 77.5342;
         } else if (destName.toLowerCase().includes('kengeri')) {
             destLat = 12.9081; destLng = 77.4835;
-        } else if (destName.toLowerCase().includes('yeshwanthpur')) {
-            destLat = 13.0238; destLng = 77.5503;
-        } else if (destName.toLowerCase().includes('jayanagar')) {
-            destLat = 12.9299; destLng = 77.5824;
-        } else if (destName.toLowerCase().includes('banashankari')) {
-            destLat = 12.9177; destLng = 77.5739;
+        } else if (destName.toLowerCase().includes('rajarajeshwari') || destName.toLowerCase().includes('rr nagar')) {
+            destLat = 12.9288; destLng = 77.5188;
+        } else if (destName.toLowerCase().includes('uttarahalli')) {
+            destLat = 12.9050; destLng = 77.5250;
+        } else if (destName.toLowerCase().includes('konanakunte')) {
+            destLat = 12.8895; destLng = 77.5738;
+        } else if (destName.toLowerCase().includes('silk')) {
+            destLat = 12.8465; destLng = 77.5342;
+        } else if (destName.toLowerCase().includes('gottigere')) {
+            destLat = 12.8582; destLng = 77.5850;
+        } else if (destName.toLowerCase().includes('hosa')) {
+            destLat = 12.8710; destLng = 77.6650;
         } else if (destName.toLowerCase().includes('electronic')) {
             destLat = 12.8452; destLng = 77.6602;
-        } else if (destName.toLowerCase().includes('whitefield')) {
-            destLat = 12.9698; destLng = 77.7499;
         }
 
         this.destination = {
@@ -326,41 +354,47 @@ const HomeView = {
             lng: destLng
         };
 
-        // Find matching BMTC routes
-        let matchingRoutes = this.routes.filter(r => 
-            (r.name && r.name.toLowerCase().includes(destName.toLowerCase())) ||
-            (r.name && r.name.toLowerCase().includes(query.toLowerCase())) ||
-            (r.route_number && r.route_number.toLowerCase() === query.toLowerCase())
-        );
+        // Match Route 378
+        const route378 = this.routes.find(r => r.route_number === '378') || this.routes[0];
+        this.matchedTransitOptions = this.activeTrips.map(trip => ({
+            route: route378,
+            trip: trip
+        }));
 
-        if (matchingRoutes.length === 0) {
-            matchingRoutes = this.routes.slice(0, 3);
+        if (this.matchedTransitOptions.length === 0 && route378) {
+            this.matchedTransitOptions = [{ route: route378, trip: this.activeTrips[0] || null }];
         }
-
-        this.matchedTransitOptions = matchingRoutes.map(r => {
-            const activeTrip = this.activeTrips.find(t => t.route_id === r.id) || this.activeTrips[0];
-            return {
-                route: r,
-                trip: activeTrip
-            };
-        });
 
         // Update Map: Draw Route Line and Destination Pin
         MapUtils.clearRoutesAndBuses();
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
         MapUtils.addDestinationMarker(this.destination.lat, this.destination.lng, destName);
 
-        // Draw polyline connecting user to destination
-        const midLat = (this.userLocation.lat + this.destination.lat) / 2 + 0.003;
-        const midLng = (this.userLocation.lng + this.destination.lng) / 2 - 0.003;
-
-        const routeStops = [
+        // Build route polyline through actual Route 378 stops
+        let routeStops = [
             { latitude: this.userLocation.lat, longitude: this.userLocation.lng },
-            { latitude: midLat, longitude: midLng },
             { latitude: this.destination.lat, longitude: this.destination.lng }
         ];
 
-        MapUtils.drawRoute('dest_route', routeStops, '#adc6ff');
+        if (this.stops && this.stops.length > 0) {
+            const originIdx = this.stops.findIndex(s => 
+                (Math.abs(s.latitude - this.userLocation.lat) < 0.01 && Math.abs(s.longitude - this.userLocation.lng) < 0.01) ||
+                s.name.toLowerCase().includes(this.userLocation.name.toLowerCase())
+            );
+            const destIdx = this.stops.findIndex(s => s.name.toLowerCase().includes(destName.toLowerCase()));
+
+            if (originIdx !== -1 && destIdx !== -1 && originIdx !== destIdx) {
+                const start = Math.min(originIdx, destIdx);
+                const end = Math.max(originIdx, destIdx);
+                const slice = this.stops.slice(start, end + 1);
+                routeStops = originIdx < destIdx ? slice : [...slice].reverse();
+            } else {
+                routeStops = this.stops;
+            }
+        }
+
+        MapUtils.drawRoute('dest_route', routeStops, '#1a73e8');
+        MapUtils.renderStops(routeStops);
         MapUtils.fitBounds([
             [this.userLocation.lat, this.userLocation.lng],
             [this.destination.lat, this.destination.lng]

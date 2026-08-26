@@ -26,12 +26,15 @@ router.get('/active', (req, res) => {
     const enrichedTrips = trips.map(trip => {
         const percentage = trip.capacity > 0 ? trip.current_passenger_count / trip.capacity : 0;
 
-        // Get current stop name
-        const currentStop = db.prepare(`
+        // Get current stop name (direction-aware)
+        const allRouteStops = db.prepare(`
             SELECT s.name FROM route_stops rs
             JOIN stops s ON rs.stop_id = s.id
-            WHERE rs.route_id = ? AND rs.sequence_order = ?
-        `).get(trip.route_id, trip.current_stop_index);
+            WHERE rs.route_id = ?
+            ORDER BY rs.sequence_order
+        `).all(trip.route_id);
+        const orderedStops = trip.direction === 'inbound' ? [...allRouteStops].reverse() : allRouteStops;
+        const currentStop = orderedStops[trip.current_stop_index] || null;
 
         // Get multi-stop forecast summary
         const forecast = CrowdIntelligenceEngine.calculateMultiStopCrowdForecast(trip.id);
@@ -161,14 +164,16 @@ router.get('/:id', (req, res) => {
         return res.status(404).json({ error: 'Trip not found' });
     }
 
-    // Get route stops with ETAs
-    const routeStops = db.prepare(`
+    // Get route stops with ETAs (direction-aware ordering)
+    const rawRouteStops = db.prepare(`
         SELECT rs.*, s.name as stop_name, s.latitude, s.longitude, s.is_major
         FROM route_stops rs
         JOIN stops s ON rs.stop_id = s.id
         WHERE rs.route_id = ?
         ORDER BY rs.sequence_order
     `).all(trip.route_id);
+
+    const routeStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
 
     const percentage = trip.capacity > 0 ? trip.current_passenger_count / trip.capacity : 0;
 
@@ -228,12 +233,17 @@ router.get('/:id/track', (req, res) => {
 
     const percentage = trip.capacity > 0 ? trip.current_passenger_count / trip.capacity : 0;
 
-    // Get current stop
-    const currentStop = db.prepare(`
-        SELECT s.* FROM route_stops rs
+    // Get direction-aware current stop
+    const rawRouteStops = db.prepare(`
+        SELECT rs.*, s.name as stop_name, s.latitude, s.longitude, s.is_major, s.zone
+        FROM route_stops rs
         JOIN stops s ON rs.stop_id = s.id
-        WHERE rs.route_id = ? AND rs.sequence_order = ?
-    `).get(trip.route_id, trip.current_stop_index);
+        WHERE rs.route_id = ?
+        ORDER BY rs.sequence_order
+    `).all(trip.route_id);
+
+    const orderedStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
+    const currentStop = orderedStops[trip.current_stop_index] || orderedStops[0];
 
     // Get delay info
     const delay = ETAEngine.detectDelay(trip.id);

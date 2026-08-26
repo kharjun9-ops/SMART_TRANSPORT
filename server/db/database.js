@@ -487,14 +487,18 @@ class MemoryDatabase {
             return { changes: 1 };
         }
         if (lower.includes("update trips set status = 'active'")) {
-            const t = this.tables.trips.find(x => x.id === (params[1] || params[0]));
+            const tripId = params[params.length - 1] || params[0];
+            const t = this.tables.trips.find(x => x.id === tripId);
             if (t) {
                 t.status = 'active';
                 t.current_stop_index = 0;
-                t.current_passenger_count = params[0] || 10;
+                t.current_passenger_count = (typeof params[0] === 'number') ? params[0] : 25;
                 t.delay_minutes = 0;
                 t.actual_start = new Date().toISOString();
-                t.direction = t.direction === 'outbound' ? 'inbound' : 'outbound';
+                t.actual_end = null;
+                if (params.length >= 3 && typeof params[1] === 'string') {
+                    t.direction = params[1];
+                }
             }
             return { changes: 1 };
         }
@@ -737,8 +741,8 @@ function initializeDatabase() {
     const db = getDb();
     const loaded = db.loadFromDisk();
 
-    // Seed Data - Only Route 378 (Silk Institute to Kengeri)
-    if (!loaded || !db.tables.routes || db.tables.routes.length === 0 || db.tables.routes[0].route_number !== '378') {
+    // Seed Data - Single Route 378 (Electronic City to Kengeri TTMC)
+    if (!loaded || !db.tables.routes || db.tables.routes.length === 0 || db.tables.routes[0].route_number !== '378' || !db.tables.routes[0].name.includes('Electronic City')) {
         const bcrypt = require('bcryptjs');
         const demoHash = bcrypt.hashSync('password123', 10);
 
@@ -750,45 +754,53 @@ function initializeDatabase() {
         ];
 
         db.tables.stops = [
-            { id: 'stop_blr_01', name: 'Silk Institute (Kanakapura Rd)', latitude: 12.8465, longitude: 77.5342, zone: 'South Terminal', is_major: 1 },
-            { id: 'stop_blr_02', name: 'Thalaghattapura', latitude: 12.8550, longitude: 77.5390, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_03', name: 'Vajrahalli', latitude: 12.8645, longitude: 77.5448, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_04', name: 'Doddakallasandra', latitude: 12.8765, longitude: 77.5615, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_05', name: 'Konanakunte Cross', latitude: 12.8895, longitude: 77.5738, zone: 'Kanakapura Corridor', is_major: 1 },
-            { id: 'stop_blr_06', name: 'Banashankari TTMC', latitude: 12.9177, longitude: 77.5739, zone: 'South Hub', is_major: 1 },
-            { id: 'stop_blr_07', name: 'Rajarajeshwari Nagar Gate', latitude: 12.9288, longitude: 77.5188, zone: 'Mysore Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_08', name: 'Bangalore University Gate', latitude: 12.9185, longitude: 77.5020, zone: 'Mysore Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_09', name: 'Kengeri TTMC / Bus Terminal', latitude: 12.9081, longitude: 77.4835, zone: 'West Terminal', is_major: 1 },
-            { id: 'stop_blr_10', name: 'Kengeri Satellite Town', latitude: 12.8985, longitude: 77.4780, zone: 'West Terminal', is_major: 0 }
+            { id: 'stop_blr_01', name: 'Electronic City Wipro Gate', latitude: 12.8452, longitude: 77.6602, zone: 'Electronic City Hub', is_major: 1 },
+            { id: 'stop_blr_02', name: 'Electronic City Toll Gate / Phase 1', latitude: 12.8498, longitude: 77.6705, zone: 'Electronic City Corridor', is_major: 0 },
+            { id: 'stop_blr_03', name: 'Konappana Agrahara', latitude: 12.8580, longitude: 77.6750, zone: 'Hosur Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_04', name: 'Hosa Road Junction', latitude: 12.8710, longitude: 77.6650, zone: 'Hosur Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_05', name: 'Gottigere (Bannerghatta Rd)', latitude: 12.8582, longitude: 77.5850, zone: 'NICE Corridor', is_major: 0 },
+            { id: 'stop_blr_06', name: 'Silk Institute (Kanakapura Rd)', latitude: 12.8465, longitude: 77.5342, zone: 'Kanakapura Corridor', is_major: 1 },
+            { id: 'stop_blr_07', name: 'Thalaghattapura', latitude: 12.8550, longitude: 77.5390, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_08', name: 'Vajrahalli', latitude: 12.8645, longitude: 77.5448, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_09', name: 'Konanakunte Cross', latitude: 12.8895, longitude: 77.5738, zone: 'South Hub', is_major: 1 },
+            { id: 'stop_blr_10', name: 'Uttarahalli / Channasandra', latitude: 12.9050, longitude: 77.5250, zone: 'Uttarahalli Corridor', is_major: 0 },
+            { id: 'stop_blr_11', name: 'Rajarajeshwari Nagar Gate', latitude: 12.9288, longitude: 77.5188, zone: 'Mysore Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_12', name: 'Bangalore University Gate', latitude: 12.9185, longitude: 77.5020, zone: 'Mysore Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_13', name: 'Kengeri TTMC / Bus Terminal', latitude: 12.9081, longitude: 77.4835, zone: 'West Terminal', is_major: 1 },
+            { id: 'stop_blr_14', name: 'Kengeri Satellite Town', latitude: 12.8985, longitude: 77.4780, zone: 'West Terminal', is_major: 0 }
         ];
 
         db.tables.routes = [
-            { id: 'route_blr_378', name: 'Silk Institute - Kengeri TTMC', route_number: '378', color: '#10B981', description: 'Direct BMTC route connecting Silk Institute to Kengeri TTMC via Kanakapura Corridor & RR Nagar', total_distance_km: 21.5, avg_duration_minutes: 55, fare_lkr: 35, status: 'active' }
+            { id: 'route_blr_378', name: 'Electronic City - Kengeri TTMC', route_number: '378', color: '#10B981', description: 'Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via NICE Corridor, Silk Institute & RR Nagar', total_distance_km: 32.0, avg_duration_minutes: 75, fare_lkr: 45, status: 'active' }
         ];
 
         db.tables.route_stops = [
             { route_id: 'route_blr_378', stop_id: 'stop_blr_01', sequence_order: 1, distance_from_start_km: 0, avg_time_from_start_min: 0 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_02', sequence_order: 2, distance_from_start_km: 1.8, avg_time_from_start_min: 5 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_03', sequence_order: 3, distance_from_start_km: 3.5, avg_time_from_start_min: 10 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_04', sequence_order: 4, distance_from_start_km: 5.8, avg_time_from_start_min: 16 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_05', sequence_order: 5, distance_from_start_km: 8.2, avg_time_from_start_min: 23 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_06', sequence_order: 6, distance_from_start_km: 12.0, avg_time_from_start_min: 32 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_07', sequence_order: 7, distance_from_start_km: 16.5, avg_time_from_start_min: 42 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_08', sequence_order: 8, distance_from_start_km: 18.8, avg_time_from_start_min: 48 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_09', sequence_order: 9, distance_from_start_km: 21.5, avg_time_from_start_min: 55 },
-            { route_id: 'route_blr_378', stop_id: 'stop_blr_10', sequence_order: 10, distance_from_start_km: 23.0, avg_time_from_start_min: 60 }
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_02', sequence_order: 2, distance_from_start_km: 2.0, avg_time_from_start_min: 5 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_03', sequence_order: 3, distance_from_start_km: 4.2, avg_time_from_start_min: 10 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_04', sequence_order: 4, distance_from_start_km: 6.8, avg_time_from_start_min: 16 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_05', sequence_order: 5, distance_from_start_km: 13.5, avg_time_from_start_min: 30 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_06', sequence_order: 6, distance_from_start_km: 19.0, avg_time_from_start_min: 42 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_07', sequence_order: 7, distance_from_start_km: 20.8, avg_time_from_start_min: 47 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_08', sequence_order: 8, distance_from_start_km: 22.5, avg_time_from_start_min: 52 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_09', sequence_order: 9, distance_from_start_km: 25.0, avg_time_from_start_min: 58 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_10', sequence_order: 10, distance_from_start_km: 27.5, avg_time_from_start_min: 64 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_11', sequence_order: 11, distance_from_start_km: 29.5, avg_time_from_start_min: 68 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_12', sequence_order: 12, distance_from_start_km: 30.8, avg_time_from_start_min: 71 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_13', sequence_order: 13, distance_from_start_km: 32.0, avg_time_from_start_min: 75 },
+            { route_id: 'route_blr_378', stop_id: 'stop_blr_14', sequence_order: 14, distance_from_start_km: 33.5, avg_time_from_start_min: 80 }
         ];
 
         db.tables.buses = [
-            { id: 'bus_blr_01', route_id: 'route_blr_378', bus_number: 'KA-01-F-3781', capacity: 55, current_latitude: 12.8645, current_longitude: 77.5448, current_speed_kmh: 34, driver_name: 'Manjunath Gowda', status: 'in_service' },
-            { id: 'bus_blr_02', route_id: 'route_blr_378', bus_number: 'KA-57-F-3782', capacity: 55, current_latitude: 12.9185, current_longitude: 77.5020, current_speed_kmh: 30, driver_name: 'Ramesh Kumar', status: 'in_service' },
-            { id: 'bus_blr_03', route_id: 'route_blr_378', bus_number: 'KA-41-F-3783', capacity: 52, current_latitude: 12.8895, current_longitude: 77.5738, current_speed_kmh: 28, driver_name: 'Shankarappa', status: 'in_service' }
+            { id: 'bus_blr_01', route_id: 'route_blr_378', bus_number: 'KA-01-F-3781', capacity: 55, current_latitude: 12.8710, current_longitude: 77.6650, current_speed_kmh: 32, driver_name: 'Manjunath Gowda', status: 'in_service' },
+            { id: 'bus_blr_02', route_id: 'route_blr_378', bus_number: 'KA-57-F-3782', capacity: 55, current_latitude: 12.8465, current_longitude: 77.5342, current_speed_kmh: 28, driver_name: 'Ramesh Kumar', status: 'in_service' },
+            { id: 'bus_blr_03', route_id: 'route_blr_378', bus_number: 'KA-41-F-3783', capacity: 52, current_latitude: 12.9288, current_longitude: 77.5188, current_speed_kmh: 30, driver_name: 'Shankarappa', status: 'in_service' }
         ];
 
         db.tables.trips = [
-            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 15 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 26, delay_minutes: 1 },
-            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 25 * 60000).toISOString(), status: 'active', current_stop_index: 7, current_passenger_count: 38, delay_minutes: 0 },
-            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 35 * 60000).toISOString(), status: 'active', current_stop_index: 4, current_passenger_count: 32, delay_minutes: 2 }
+            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 15 * 60000).toISOString(), status: 'active', current_stop_index: 3, current_passenger_count: 28, delay_minutes: 1 },
+            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 25 * 60000).toISOString(), status: 'active', current_stop_index: 8, current_passenger_count: 36, delay_minutes: 0 },
+            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 35 * 60000).toISOString(), status: 'active', current_stop_index: 10, current_passenger_count: 31, delay_minutes: 2 }
         ];
 
         db.tables.badges = [
@@ -804,9 +816,9 @@ function initializeDatabase() {
         ];
 
         db.tables.stop_waiting_list = [
-            { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
-            { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_05', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
-            { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_07', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
+            { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
+            { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_06', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
+            { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_11', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
         ];
 
         db.tables.user_updates = [];
@@ -821,9 +833,9 @@ function initializeDatabase() {
     } else {
         if (!db.tables.stop_waiting_list) {
             db.tables.stop_waiting_list = [
-                { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
-                { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_05', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
-                { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_07', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_09', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
+                { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
+                { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_06', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
+                { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_11', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
             ];
             db.saveToDisk();
         }

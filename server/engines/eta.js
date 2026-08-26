@@ -9,7 +9,7 @@ class ETAEngine {
         const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(tripId);
         if (!trip) return null;
 
-        const routeStops = db.prepare(`
+        const rawRouteStops = db.prepare(`
             SELECT rs.*, s.name as stop_name, s.latitude, s.longitude
             FROM route_stops rs
             JOIN stops s ON rs.stop_id = s.id
@@ -17,26 +17,30 @@ class ETAEngine {
             ORDER BY rs.sequence_order
         `).all(trip.route_id);
 
+        // Direction-aware ordering (must match simulation engine)
+        const routeStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
+
         const currentStopData = routeStops[trip.current_stop_index];
-        const targetStopData = routeStops.find(rs => rs.stop_id === targetStopId);
+        const targetIndex = routeStops.findIndex(rs => rs.stop_id === targetStopId);
+        const targetStopData = targetIndex >= 0 ? routeStops[targetIndex] : null;
 
         if (!currentStopData || !targetStopData) return null;
 
-        if (targetStopData.sequence_order <= currentStopData.sequence_order) {
+        if (targetIndex <= trip.current_stop_index) {
             return { eta_minutes: 0, message: 'Bus has already passed this stop' };
         }
 
-        // Base time from route schedule
-        const baseTime = targetStopData.avg_time_from_start_min - currentStopData.avg_time_from_start_min;
+        // Base time from route schedule using absolute time differences
+        const baseTime = Math.abs(targetStopData.avg_time_from_start_min - currentStopData.avg_time_from_start_min);
 
         // Apply traffic factor based on time of day
         const trafficFactor = this.getTrafficFactor();
 
         // Apply delay factor
-        const delayFactor = trip.delay_minutes > 0 ? 1 + (trip.delay_minutes / baseTime) * 0.3 : 1;
+        const delayFactor = (trip.delay_minutes > 0 && baseTime > 0) ? 1 + (trip.delay_minutes / baseTime) * 0.3 : 1;
 
         // Calculate adjusted ETA
-        const adjustedETA = Math.round(baseTime * trafficFactor * delayFactor);
+        const adjustedETA = Math.max(1, Math.round(baseTime * trafficFactor * delayFactor));
 
         // Calculate arrival time
         const arrivalTime = new Date(Date.now() + adjustedETA * 60 * 1000);
@@ -47,8 +51,8 @@ class ETAEngine {
             base_time: baseTime,
             traffic_factor: trafficFactor,
             delay_minutes: trip.delay_minutes,
-            stops_remaining: targetStopData.sequence_order - currentStopData.sequence_order,
-            distance_remaining_km: Math.round((targetStopData.distance_from_start_km - currentStopData.distance_from_start_km) * 10) / 10
+            stops_remaining: targetIndex - trip.current_stop_index,
+            distance_remaining_km: Math.round(Math.abs(targetStopData.distance_from_start_km - currentStopData.distance_from_start_km) * 10) / 10
         };
     }
 
@@ -60,13 +64,16 @@ class ETAEngine {
         const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(tripId);
         if (!trip) return [];
 
-        const routeStops = db.prepare(`
+        const rawRouteStops = db.prepare(`
             SELECT rs.*, s.name as stop_name, s.latitude, s.longitude
             FROM route_stops rs
             JOIN stops s ON rs.stop_id = s.id
             WHERE rs.route_id = ?
             ORDER BY rs.sequence_order
         `).all(trip.route_id);
+
+        // Direction-aware ordering
+        const routeStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
 
         const etas = [];
         for (let i = trip.current_stop_index + 1; i < routeStops.length; i++) {
@@ -93,7 +100,7 @@ class ETAEngine {
         const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(tripId);
         if (!trip || trip.status !== 'active') return null;
 
-        const routeStops = db.prepare(`
+        const rawRouteStops = db.prepare(`
             SELECT rs.*, s.name as stop_name
             FROM route_stops rs
             JOIN stops s ON rs.stop_id = s.id
@@ -101,12 +108,23 @@ class ETAEngine {
             ORDER BY rs.sequence_order
         `).all(trip.route_id);
 
+        // Direction-aware ordering
+        const routeStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
+
         const currentStop = routeStops[trip.current_stop_index];
         if (!currentStop) return null;
 
         // Calculate expected time at current stop
+        // For inbound trips, compute elapsed time as the time from the inbound start to this stop
         const tripStart = new Date(trip.actual_start || trip.scheduled_start);
-        const expectedTimeAtCurrentStop = new Date(tripStart.getTime() + currentStop.avg_time_from_start_min * 60 * 1000);
+        const totalRouteTime = rawRouteStops[rawRouteStops.length - 1].avg_time_from_start_min;
+        let expectedMinutesAtCurrentStop;
+        if (trip.direction === 'inbound') {
+            expectedMinutesAtCurrentStop = Math.abs(totalRouteTime - currentStop.avg_time_from_start_min);
+        } else {
+            expectedMinutesAtCurrentStop = currentStop.avg_time_from_start_min;
+        }
+        const expectedTimeAtCurrentStop = new Date(tripStart.getTime() + expectedMinutesAtCurrentStop * 60 * 1000);
         const actualTime = new Date();
 
         const delayMinutes = Math.max(0, Math.round((actualTime - expectedTimeAtCurrentStop) / (1000 * 60)));

@@ -168,13 +168,15 @@ class CrowdIntelligenceEngine {
         const currentPassengers = trip.current_passenger_count || 0;
         const currentIndex = trip.current_stop_index || 0;
 
-        const routeStops = db.prepare(`
+        const rawRouteStops = db.prepare(`
             SELECT rs.*, s.name as stop_name, s.latitude, s.longitude, s.is_major
             FROM route_stops rs
             JOIN stops s ON rs.stop_id = s.id
             WHERE rs.route_id = ?
             ORDER BY rs.sequence_order
         `).all(trip.route_id);
+
+        const routeStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
 
         if (!routeStops || routeStops.length === 0) return null;
 
@@ -192,7 +194,7 @@ class CrowdIntelligenceEngine {
             
             // Base simulated queue for realism + live active waitlist users
             const baseQueue = nextStop.is_major ? 4 : 2;
-            const waitingCount = Math.max(waitlistUsers.length, baseQueue + (waitlistUsers.length > 0 ? waitlistUsers.length : 0));
+            const waitingCount = baseQueue + waitlistUsers.length;
             
             // Deboarding calculation at next stop (major stops have higher deboard)
             const deboardRate = nextStop.is_major ? 0.22 : 0.12;
@@ -231,7 +233,7 @@ class CrowdIntelligenceEngine {
             const waitlistUsersNextNext = this.getStopWaitlist(nextNextStop.stop_id, trip.route_id);
             
             const baseQueueNextNext = nextNextStop.is_major ? 6 : 3;
-            const waitingCountNextNext = Math.max(waitlistUsersNextNext.length, baseQueueNextNext + (waitlistUsersNextNext.length > 0 ? waitlistUsersNextNext.length : 0));
+            const waitingCountNextNext = baseQueueNextNext + waitlistUsersNextNext.length;
 
             // Expected deboarding when bus arrives at Next-Next stop
             const deboardRateNextNext = nextNextStop.is_major ? 0.25 : 0.15;
@@ -383,7 +385,7 @@ class CrowdIntelligenceEngine {
         if (!trip) return null;
 
         const capacity = this.getBusCapacity(trip.bus_id);
-        const routeStops = db.prepare(`
+        const rawRouteStops = db.prepare(`
             SELECT rs.*, s.name as stop_name 
             FROM route_stops rs 
             JOIN stops s ON rs.stop_id = s.id 
@@ -391,11 +393,13 @@ class CrowdIntelligenceEngine {
             ORDER BY rs.sequence_order
         `).all(trip.route_id);
 
-        const currentIndex = trip.current_stop_index;
-        const targetStop = routeStops.find(rs => rs.stop_id === targetStopId);
-        if (!targetStop) return null;
+        // Direction-aware ordering (must match simulation engine)
+        const routeStops = trip.direction === 'inbound' ? [...rawRouteStops].reverse() : rawRouteStops;
 
-        const targetIndex = routeStops.indexOf(targetStop);
+        const currentIndex = trip.current_stop_index;
+        const targetIndex = routeStops.findIndex(rs => rs.stop_id === targetStopId);
+        const targetStop = targetIndex >= 0 ? routeStops[targetIndex] : null;
+        if (!targetStop) return null;
 
         let predictedCount = trip.current_passenger_count;
 

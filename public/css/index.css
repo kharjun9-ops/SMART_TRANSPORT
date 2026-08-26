@@ -385,7 +385,7 @@ html.light textarea::placeholder {
 
 /* Leaflet Map Styling */
 .leaflet-container {
-    background: var(--color-surface-dim) !important;
+    background: #e5e3df !important;
     font-family: var(--font-inter) !important;
 }
 

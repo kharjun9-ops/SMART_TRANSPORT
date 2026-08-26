@@ -102,6 +102,7 @@ const I18n = {
             hi: 'अन्य चुनें'
         },
         'home.satellite': { en: 'Satellite', kn: 'ಉಪಗ್ರಹ', hi: 'उपग्रह' },
+        'home.roadmap': { en: 'Map', kn: 'ನಕ್ಷೆ', hi: 'नक्शा' },
         'home.map_label': {
             en: 'Google Maps (Bengaluru)',
             kn: 'ಗೂಗಲ್ ಮ್ಯಾಪ್ (ಬೆಂಗಳೂರು)',
@@ -128,12 +129,15 @@ const I18n = {
             hi: 'अगला+1: ${pct}% सीट मौका'
         },
 
-        // Popular Destination Names
+        // Route 378 Popular Destination Names
         'dest.kengeri_ttmc': { en: 'Kengeri TTMC', kn: 'ಕೆಂಗೇರಿ TTMC', hi: 'केंगेरी TTMC' },
-        'dest.konanakunte_cross': { en: 'Konanakunte Cross', kn: 'ಕೋಣನಕುಂಟೆ ಕ್ರಾಸ್', hi: 'कोनानकुंटे क्रॉस' },
-        'dest.banashankari_ttmc': { en: 'Banashankari TTMC', kn: 'ಬನಶಂಕರಿ TTMC', hi: 'बनशंकरी TTMC' },
         'dest.rr_nagar_gate': { en: 'RR Nagar Gate', kn: 'ಆರ್.ಆರ್. ನಗರ ಗೇಟ್', hi: 'आर.आर. नगर गेट' },
+        'dest.uttarahalli': { en: 'Uttarahalli', kn: 'ಉತ್ತರಹಳ್ಳಿ', hi: 'उत्तराहल्ली' },
+        'dest.konanakunte_cross': { en: 'Konanakunte Cross', kn: 'ಕೋಣನಕುಂಟೆ ಕ್ರಾಸ್', hi: 'कोनानकुंटे क्रॉस' },
         'dest.silk_institute': { en: 'Silk Institute', kn: 'ಸಿಲ್ಕ್ ಇನ್ಸ್ಟಿಟ್ಯೂಟ್', hi: 'सिल्क इंस्टीट्यूट' },
+        'dest.gottigere': { en: 'Gottigere (Bannerghatta Rd)', kn: 'ಗೊಟ್ಟಿಗೆರೆ (ಬನ್ನೇರುಘಟ್ಟ ರಸ್ತೆ)', hi: 'गोट्टीगेरे (बन्नेरघट्टा रोड)' },
+        'dest.hosa_road': { en: 'Hosa Road', kn: 'ಹೊಸ ರಸ್ತೆ', hi: 'होसा रोड' },
+        'dest.electronic_city': { en: 'Electronic City', kn: 'ಎಲೆಕ್ಟ್ರಾನಿಕ್ ಸಿಟಿ', hi: 'इलेक्ट्रॉनिक सिटी' },
         'dest.kengeri_satellite': { en: 'Kengeri Satellite Town', kn: 'ಕೆಂಗೇರಿ ಸ್ಯಾಟಲೈಟ್ ಟೌನ್', hi: 'केंगेरी सैटेलाइट टाउन' },
 
         // Crowd Levels
