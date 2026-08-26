@@ -351,40 +351,84 @@ const MapUtils = {
         };
 
         const dotColor = crowdColors[trip.crowd_level] || '#1a73e8';
-        const routeNum = trip.route_number || 'BMTC';
+        const routeNum = trip.route_number || '378';
+        const speed = trip.current_speed_kmh || 0;
+        const isAtStop = trip.state === 'at_stop' || speed === 0;
+        const heading = trip.heading || 0;
+        const nextStopName = trip.next_stop_name || (trip.next_stop_forecast ? trip.next_stop_forecast.stop_name : 'Next Stop');
+        const etaText = trip.next_stop_forecast ? trip.next_stop_forecast.display_text || `${trip.next_stop_forecast.wait_time_minutes}m` : (isAtStop ? 'At Stop' : `${speed} km/h`);
 
-        // Official Google Maps Styled Live Bus Pin
+        // Official Google Maps Styled Live Bus Pin with Heading & Speed Telemetry
         const customIcon = L.divIcon({
             className: 'google-maps-bus-marker',
             html: `
                 <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -100%);">
+                    <!-- Top Pill Badge -->
                     <div style="
                         background: #ffffff;
                         color: #202124;
                         font-family: 'Inter', sans-serif;
                         font-weight: 800;
                         font-size: 11px;
-                        padding: 3px 9px;
+                        padding: 3px 8px;
                         border-radius: 999px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
                         white-space: nowrap;
-                        margin-bottom: 3px;
-                        border: 2px solid #1a73e8;
+                        margin-bottom: 2px;
+                        border: 2px solid ${isAtStop ? '#ea8600' : '#1a73e8'};
                         display: flex;
                         align-items: center;
                         gap: 4px;
                     ">
                         <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: ${dotColor};"></span>
-                        <span>${routeNum}</span>
+                        <span style="letter-spacing: -0.2px;">${routeNum}</span>
+                        <span style="color: ${isAtStop ? '#ea8600' : '#1a73e8'}; font-size: 9.5px; font-weight: 700; border-left: 1px solid rgba(0,0,0,0.12); padding-left: 4px;">
+                            ${isAtStop ? 'AT STOP' : `${speed}k`}
+                        </span>
                     </div>
-                    <div style="
-                        width: 15px;
-                        height: 15px;
-                        background: ${dotColor};
-                        border: 2.5px solid #ffffff;
-                        border-radius: 50%;
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-                    "></div>
+
+                    <!-- Center Vehicle Marker with Heading Pointer & Pulse Radar -->
+                    <div style="position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
+                        <!-- Radar Halo Pulse -->
+                        <div style="
+                            position: absolute;
+                            inset: -6px;
+                            border-radius: 50%;
+                            background: ${isAtStop ? 'rgba(234, 134, 0, 0.25)' : 'rgba(26, 115, 232, 0.25)'};
+                            border: 1.5px solid ${isAtStop ? 'rgba(234, 134, 0, 0.6)' : 'rgba(26, 115, 232, 0.6)'};
+                            animation: ${isAtStop ? 'busPulseAtStop 1.8s infinite' : 'busPulseMoving 2s infinite'};
+                            pointer-events: none;
+                        "></div>
+
+                        <!-- Main Vehicle Dot -->
+                        <div style="
+                            width: 16px;
+                            height: 16px;
+                            background: ${isAtStop ? '#ea8600' : '#1a73e8'};
+                            border: 2.5px solid #ffffff;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                            position: relative;
+                            z-index: 2;
+                        "></div>
+
+                        <!-- Directional Heading Pointer Arrow -->
+                        ${!isAtStop ? `
+                            <div style="
+                                position: absolute;
+                                top: -3px;
+                                width: 0;
+                                height: 0;
+                                border-left: 4px solid transparent;
+                                border-right: 4px solid transparent;
+                                border-bottom: 7px solid #1a73e8;
+                                transform: rotate(${heading}deg);
+                                transform-origin: 50% 14px;
+                                z-index: 3;
+                                filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+                            "></div>
+                        ` : ''}
+                    </div>
                 </div>
             `,
             iconSize: [0, 0],
@@ -399,11 +443,50 @@ const MapUtils = {
             marker.setIcon(customIcon);
         } else {
             const marker = L.marker(latLng, { icon: customIcon }).addTo(this.map);
+            marker.bindPopup(`
+                <div style="font-family: 'Inter', sans-serif; min-width: 170px; padding: 2px 4px; color: #202124;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <strong style="color: #1a73e8; font-size: 13px;">Route ${trip.route_number || '378'}</strong>
+                        <span style="font-size: 10px; font-weight: 700; background: ${isAtStop ? '#fef7e0' : '#e8f0fe'}; color: ${isAtStop ? '#b06000' : '#1a73e8'}; padding: 1px 6px; border-radius: 999px;">
+                            ${isAtStop ? 'Station Dwell' : `${speed} km/h`}
+                        </span>
+                    </div>
+                    <div style="font-size: 11px; color: #5f6368; margin-bottom: 3px;">
+                        ${trip.bus_number || 'BMTC Transit'} • ${trip.direction === 'outbound' ? 'Outbound' : 'Inbound'}
+                    </div>
+                    <div style="font-size: 11px; font-weight: 600; color: #202124; padding-top: 3px; border-top: 1px solid #e8eaed; display: flex; justify-content: space-between;">
+                        <span>Next Stop:</span>
+                        <span style="color: #1a73e8;">${nextStopName}</span>
+                    </div>
+                    <div style="font-size: 10px; color: #5f6368; display: flex; justify-content: space-between; margin-top: 2px;">
+                        <span>Load:</span>
+                        <span>${trip.current_passenger_count || 20}/${trip.capacity || 55} passengers</span>
+                    </div>
+                </div>
+            `);
             marker.on('click', () => {
-                if (window.app) window.app.viewTrip(trip.id);
+                if (window.app && window.app.currentView !== 'trips') {
+                    window.app.viewTrip(trip.id);
+                }
             });
             this.markers.buses.set(trip.id, marker);
         }
+    },
+
+    renderBuses(trips) {
+        if (!this.map || !trips || !Array.isArray(trips)) return;
+        const currentTripIds = new Set(trips.map(t => t.id));
+
+        // Remove old bus markers no longer active
+        this.markers.buses.forEach((marker, id) => {
+            if (!currentTripIds.has(id)) {
+                try { this.map.removeLayer(marker); } catch(e) {}
+                this.markers.buses.delete(id);
+            }
+        });
+
+        // Render / update each active bus
+        trips.forEach(trip => this.renderBusMarker(trip));
     },
 
     fitBounds(latLngs) {

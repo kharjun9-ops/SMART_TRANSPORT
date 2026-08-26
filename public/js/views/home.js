@@ -75,7 +75,7 @@ const HomeView = {
                         
                         <!-- HUD Status Badge -->
                         <div class="absolute bottom-3 left-3 glass-panel px-3 py-1 rounded-full flex items-center gap-2 shadow-lg pointer-events-none z-[400]">
-                            <div class="w-2 h-2 rounded-full ${this.destination ? 'bg-primary' : 'bg-secondary'} live-pulse"></div>
+                            <div class="w-2 h-2 rounded-full ${this.destination ? 'bg-primary' : 'bg-secondary'}"></div>
                             <span class="font-label-sm text-[11px] text-on-surface font-medium" id="map-status-label">
                                 ${this.destination ? I18n.t('home.route_calculated') : I18n.t('home.map_label')}
                             </span>
@@ -176,12 +176,15 @@ const HomeView = {
                             crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-[0_0_8px_rgba(255,180,171,0.3)]">${I18n.t('crowd.very_crowded')}</span>`;
                         }
 
-                        const arrivingMins = Math.max(2, (opt.trip?.delay_minutes || 0) + (idx === 0 ? 3 : (idx + 1) * 6));
                         const durationMins = opt.route?.avg_duration_minutes || 30;
                         const fare = opt.route?.fare_lkr || 25;
 
                         const nextStopForecast = opt.trip?.next_stop_forecast;
                         const nextNextForecast = opt.trip?.next_next_stop_forecast;
+                        const nextEta = opt.trip?.next_stop_eta || (nextStopForecast ? { eta_minutes: nextStopForecast.wait_time_minutes, display_text: nextStopForecast.display_text } : null);
+
+                        const arrivingText = nextEta ? nextEta.display_text || `${nextEta.eta_minutes} mins` : '3 mins';
+                        const isAtStop = opt.trip?.state === 'at_stop' || opt.trip?.current_speed_kmh === 0;
 
                         return `
                             <div class="glass-panel rounded-2xl p-4 shadow-xl border ${idx === 0 ? 'border-primary/40 glow-inner' : 'border-white/10'} hover:bg-surface-container-high transition-all">
@@ -191,9 +194,19 @@ const HomeView = {
                                             ${opt.route?.route_number || '378'}
                                         </div>
                                         <div>
-                                            <h4 class="font-bold text-sm text-on-surface">${opt.route?.name || 'BMTC Transit Route'}</h4>
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-bold text-sm text-on-surface">${opt.route?.name || 'BMTC Transit Route'}</h4>
+                                                ${isAtStop ? `
+                                                    <span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">AT STOP</span>
+                                                ` : `
+                                                    <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 30} km/h</span>
+                                                `}
+                                            </div>
                                             <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
-                                                <span class="text-primary font-bold">${I18n.t('home.arriving_in', { mins: arrivingMins })}</span>
+                                                <span class="text-primary font-bold flex items-center gap-1">
+                                                    <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-tertiary' : 'bg-primary'}"></span>
+                                                    ${arrivingText.toLowerCase().includes('arriving') || arrivingText.toLowerCase().includes('stop') ? arrivingText : I18n.t('home.arriving_in', { mins: nextEta?.eta_minutes || 3 })}
+                                                </span>
                                                 <span>•</span>
                                                 <span>${I18n.t('home.min_trip', { mins: durationMins })}</span>
                                                 <span>•</span>
@@ -205,11 +218,12 @@ const HomeView = {
 
                                 <!-- Downstream Stop Intelligence Strip -->
                                 <div class="bg-surface-container/60 rounded-xl px-3 py-1.5 mb-2.5 flex items-center justify-between text-[10px] border border-white/5">
-                                    <div class="flex items-center gap-1 text-on-surface-variant">
+                                    <div class="flex items-center gap-1 text-on-surface-variant truncate">
                                         <span class="material-symbols-outlined text-secondary text-xs">hail</span>
-                                        <span>${I18n.t('home.next_stop_waitlist')} <strong class="text-on-surface">${I18n.t('home.waiting', { count: nextStopForecast ? nextStopForecast.waiting_passengers_count : 3 })}</strong></span>
+                                        <span class="truncate">${I18n.t('home.next_stop_waitlist')} <strong class="text-on-surface">${opt.trip?.next_stop_name || (nextStopForecast ? nextStopForecast.stop_name : 'Next Stop')}</strong></span>
+                                        <span class="bg-secondary/15 text-secondary px-1.5 py-0.2 rounded font-semibold text-[9.5px]">${I18n.t('home.waiting', { count: nextStopForecast ? nextStopForecast.waiting_passengers_count : 3 })}</span>
                                     </div>
-                                    <div class="font-bold ${nextNextForecast && nextNextForecast.boarding_probability_percentage < 50 ? 'text-error' : 'text-secondary'}">
+                                    <div class="font-bold ${nextNextForecast && nextNextForecast.boarding_probability_percentage < 50 ? 'text-error' : 'text-secondary'} flex-shrink-0 ml-1">
                                         ${I18n.t('home.seat_chance', { pct: nextNextForecast ? nextNextForecast.boarding_probability_percentage : 85 })}
                                     </div>
                                 </div>
@@ -217,7 +231,7 @@ const HomeView = {
                                 <div class="flex items-center justify-between pt-2 border-t border-white/10">
                                     ${crowdBadge}
                                     <button 
-                                        class="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary-fixed active:scale-95 transition-all shadow-md"
+                                        class="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary-fixed active:scale-95 transition-all shadow-md cursor-pointer"
                                         onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
                                     >
                                         <span>${I18n.t('home.track_join')}</span>
@@ -232,6 +246,8 @@ const HomeView = {
         `;
     },
 
+    livePollInterval: null,
+
     async init() {
         await this.fetchInitialData();
 
@@ -239,9 +255,58 @@ const HomeView = {
         MapUtils.initMap('home-map', [this.userLocation.lat, this.userLocation.lng], 13, { hideZoom: true });
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
 
+        // Draw Route 378 and render active live buses
+        if (this.stops && this.stops.length > 1) {
+            MapUtils.drawRoute('route_blr_378', this.stops, '#1a73e8');
+            MapUtils.renderStops(this.stops);
+        }
+        if (this.activeTrips && this.activeTrips.length > 0) {
+            MapUtils.renderBuses(this.activeTrips);
+        }
+
+        // Live polling every 2.5s for real-time bus motion & synced ETAs
+        if (this.livePollInterval) clearInterval(this.livePollInterval);
+        this.livePollInterval = setInterval(async () => {
+            if (window.app && window.app.currentView === 'home') {
+                await this.pollLiveActiveTrips();
+            }
+        }, 2500);
+
         setTimeout(() => {
             if (MapUtils.map) MapUtils.map.invalidateSize();
         }, 150);
+    },
+
+    destroy() {
+        if (this.livePollInterval) {
+            clearInterval(this.livePollInterval);
+            this.livePollInterval = null;
+        }
+    },
+
+    async pollLiveActiveTrips() {
+        try {
+            const tripsRes = await API.getActiveTrips();
+            if (!tripsRes || !tripsRes.trips) return;
+            this.activeTrips = tripsRes.trips;
+
+            // Render/update live moving bus markers on map
+            MapUtils.renderBuses(this.activeTrips);
+
+            // If destination is chosen, update transit options
+            if (this.destination) {
+                const route378 = this.routes.find(r => r.route_number === '378') || this.routes[0];
+                this.matchedTransitOptions = this.activeTrips.map(trip => ({
+                    route: route378,
+                    trip: trip
+                }));
+
+                const resultsEl = document.getElementById('transit-results-section');
+                if (resultsEl) {
+                    resultsEl.innerHTML = this.renderDestinationOrSuggestions();
+                }
+            }
+        } catch (e) {}
     },
 
     toggleMapType() {
@@ -395,6 +460,7 @@ const HomeView = {
 
         MapUtils.drawRoute('dest_route', routeStops, '#1a73e8');
         MapUtils.renderStops(routeStops);
+        MapUtils.renderBuses(this.activeTrips);
         MapUtils.fitBounds([
             [this.userLocation.lat, this.userLocation.lng],
             [this.destination.lat, this.destination.lng]
@@ -420,6 +486,11 @@ const HomeView = {
         // Reset clean map
         MapUtils.clearRoutesAndBuses();
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
+        if (this.stops && this.stops.length > 1) {
+            MapUtils.drawRoute('route_blr_378', this.stops, '#1a73e8');
+            MapUtils.renderStops(this.stops);
+        }
+        MapUtils.renderBuses(this.activeTrips);
 
         const resultsEl = document.getElementById('transit-results-section');
         if (resultsEl) {

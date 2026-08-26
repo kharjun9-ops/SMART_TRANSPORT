@@ -2,7 +2,7 @@
  * Lumina Transit - Theme Management System
  * Supports Google Maps Style Light Mode & Lumina Dark HUD
  */
-const ThemeUtils = {
+var ThemeUtils = window.ThemeUtils = {
     STORAGE_KEY: 'lumina_theme',
 
     init() {

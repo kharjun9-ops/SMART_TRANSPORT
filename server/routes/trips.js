@@ -15,7 +15,7 @@ router.get('/active', (req, res) => {
 
     const trips = db.prepare(`
         SELECT t.*, b.bus_number, b.capacity, b.current_latitude, b.current_longitude,
-               b.current_speed_kmh, r.name as route_name, r.route_number, r.color as route_color
+               b.current_speed_kmh, b.heading, r.name as route_name, r.route_number, r.color as route_color
         FROM trips t
         JOIN buses b ON t.bus_id = b.id
         JOIN routes r ON t.route_id = r.id
@@ -26,15 +26,19 @@ router.get('/active', (req, res) => {
     const enrichedTrips = trips.map(trip => {
         const percentage = trip.capacity > 0 ? trip.current_passenger_count / trip.capacity : 0;
 
-        // Get current stop name (direction-aware)
+        // Get route stops (direction-aware)
         const allRouteStops = db.prepare(`
-            SELECT s.name FROM route_stops rs
+            SELECT rs.*, s.name, s.latitude, s.longitude, s.is_major FROM route_stops rs
             JOIN stops s ON rs.stop_id = s.id
             WHERE rs.route_id = ?
             ORDER BY rs.sequence_order
         `).all(trip.route_id);
         const orderedStops = trip.direction === 'inbound' ? [...allRouteStops].reverse() : allRouteStops;
         const currentStop = orderedStops[trip.current_stop_index] || null;
+        const nextStop = orderedStops[trip.current_stop_index + 1] || null;
+
+        // Next stop ETA calculation
+        const nextStopEta = nextStop ? ETAEngine.calculateETA(trip.id, nextStop.stop_id) : null;
 
         // Get multi-stop forecast summary
         const forecast = CrowdIntelligenceEngine.calculateMultiStopCrowdForecast(trip.id);
@@ -44,6 +48,8 @@ router.get('/active', (req, res) => {
             crowd_level: percentage <= 0.4 ? 'low' : (percentage <= 0.7 ? 'medium' : 'high'),
             crowd_percentage: Math.round(percentage * 100),
             current_stop_name: currentStop ? currentStop.name : 'Starting',
+            next_stop_name: nextStop ? nextStop.name : (currentStop ? currentStop.name : 'Terminus'),
+            next_stop_eta: nextStopEta,
             next_stop_forecast: forecast ? forecast.next_stop_forecast : null,
             next_next_stop_forecast: forecast ? forecast.next_next_stop_forecast : null
         };
@@ -152,7 +158,7 @@ router.get('/:id', (req, res) => {
 
     const trip = db.prepare(`
         SELECT t.*, b.bus_number, b.capacity, b.current_latitude, b.current_longitude,
-               b.current_speed_kmh, b.driver_name,
+               b.current_speed_kmh, b.heading, b.driver_name,
                r.name as route_name, r.route_number, r.color as route_color, r.fare_lkr
         FROM trips t
         JOIN buses b ON t.bus_id = b.id
@@ -180,12 +186,12 @@ router.get('/:id', (req, res) => {
     // Calculate multi-stop downstream crowd & waitlist forecast
     const multiStopForecast = CrowdIntelligenceEngine.calculateMultiStopCrowdForecast(trip.id);
 
-    // Calculate ETAs for upcoming stops
+    // Calculate ETAs for upcoming and current stops
     const stopsWithETAs = routeStops.map((stop, index) => {
         let eta = null;
         let crowdPrediction = null;
 
-        if (index > trip.current_stop_index) {
+        if (index >= trip.current_stop_index) {
             eta = ETAEngine.calculateETA(trip.id, stop.stop_id);
             crowdPrediction = CrowdIntelligenceEngine.predictCrowdAtStop(trip.id, stop.stop_id);
         }
@@ -220,7 +226,7 @@ router.get('/:id/track', (req, res) => {
 
     const trip = db.prepare(`
         SELECT t.*, b.current_latitude, b.current_longitude, b.current_speed_kmh,
-               b.capacity, r.name as route_name, r.route_number
+               b.heading, b.capacity, r.name as route_name, r.route_number
         FROM trips t
         JOIN buses b ON t.bus_id = b.id
         JOIN routes r ON t.route_id = r.id
@@ -257,6 +263,10 @@ router.get('/:id/track', (req, res) => {
             latitude: trip.current_latitude,
             longitude: trip.current_longitude,
             speed_kmh: trip.current_speed_kmh,
+            heading: trip.heading || 0,
+            state: trip.state || 'in_transit',
+            dwell_seconds: trip.dwell_seconds || 0,
+            segment_progress: trip.segment_progress !== undefined ? trip.segment_progress : 0.0,
             current_stop_index: trip.current_stop_index,
             current_stop: currentStop,
             passenger_count: trip.current_passenger_count,

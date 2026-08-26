@@ -198,7 +198,11 @@ class MemoryDatabase {
                         capacity: b.capacity || 50,
                         current_latitude: b.current_latitude,
                         current_longitude: b.current_longitude,
-                        current_speed_kmh: b.current_speed_kmh,
+                        current_speed_kmh: b.current_speed_kmh || 0,
+                        heading: b.heading || 0,
+                        segment_progress: t.segment_progress !== undefined ? t.segment_progress : 0.0,
+                        state: t.state || 'in_transit',
+                        dwell_seconds: t.dwell_seconds || 0,
                         route_name: r.name,
                         route_number: r.route_number,
                         route_color: r.color
@@ -210,7 +214,17 @@ class MemoryDatabase {
                 .filter(t => t.route_id === params[0] && ['active', 'scheduled'].includes(t.status))
                 .map(t => {
                     const b = this.tables.buses.find(x => x.id === t.bus_id) || {};
-                    return { ...t, bus_number: b.bus_number, capacity: b.capacity || 50 };
+                    return {
+                        ...t,
+                        bus_number: b.bus_number,
+                        capacity: b.capacity || 50,
+                        current_latitude: b.current_latitude,
+                        current_longitude: b.current_longitude,
+                        current_speed_kmh: b.current_speed_kmh || 0,
+                        heading: b.heading || 0,
+                        segment_progress: t.segment_progress !== undefined ? t.segment_progress : 0.0,
+                        state: t.state || 'in_transit'
+                    };
                 });
         }
         if (lower.includes('from trips t') && lower.includes('where t.id = ?')) {
@@ -224,7 +238,11 @@ class MemoryDatabase {
                 capacity: b.capacity || 50,
                 current_latitude: b.current_latitude,
                 current_longitude: b.current_longitude,
-                current_speed_kmh: b.current_speed_kmh,
+                current_speed_kmh: b.current_speed_kmh || 0,
+                heading: b.heading || 0,
+                segment_progress: t.segment_progress !== undefined ? t.segment_progress : 0.0,
+                state: t.state || 'in_transit',
+                dwell_seconds: t.dwell_seconds || 0,
                 driver_name: b.driver_name,
                 route_name: r.name,
                 route_number: r.route_number,
@@ -236,6 +254,14 @@ class MemoryDatabase {
             const t = this.tables.trips.find(x => x.id === params[0]);
             return t ? [{ ...t }] : [];
         }
+        if (lower === "select * from trips where status = 'active'" || lower.includes("from trips where status = 'active'")) {
+            return this.tables.trips.filter(t => t.status === 'active').map(t => ({
+                ...t,
+                segment_progress: t.segment_progress !== undefined ? t.segment_progress : 0.0,
+                state: t.state || 'in_transit',
+                dwell_seconds: t.dwell_seconds || 0
+            }));
+        }
         if (lower.includes("from trips where status = 'completed'")) {
             return this.tables.trips.filter(t => t.status === 'completed').map(t => ({ ...t }));
         }
@@ -246,12 +272,23 @@ class MemoryDatabase {
             return this.tables.trips.filter(t => t.status === 'active').map(t => {
                 const b = this.tables.buses.find(x => x.id === t.bus_id) || {};
                 const r = this.tables.routes.find(x => x.id === t.route_id) || {};
-                return { ...t, capacity: b.capacity || 50, bus_id: b.id, route_name: r.name };
+                return {
+                    ...t,
+                    capacity: b.capacity || 50,
+                    bus_id: b.id,
+                    heading: b.heading || 0,
+                    current_latitude: b.current_latitude,
+                    current_longitude: b.current_longitude,
+                    current_speed_kmh: b.current_speed_kmh || 0,
+                    segment_progress: t.segment_progress !== undefined ? t.segment_progress : 0.0,
+                    state: t.state || 'in_transit',
+                    route_name: r.name
+                };
             });
         }
 
         // 6. Buses
-        if (lower.startsWith('select * from buses where id = ?') || lower.startsWith('select capacity from buses where id = ?')) {
+        if (lower.includes('from buses where id = ?') || lower.includes('from buses b where b.id = ?')) {
             const b = this.tables.buses.find(x => x.id === params[0]);
             return b ? [{ ...b }] : [];
         }
@@ -469,12 +506,54 @@ class MemoryDatabase {
             if (t) t.delay_minutes = params[0];
             return { changes: 1 };
         }
-        if (lower.includes('update trips set current_stop_index = ?, current_passenger_count = ?, delay_minutes = ? where id = ?')) {
+        if (lower.includes('update trips set segment_progress = ?, state = ?, dwell_seconds = ? where id = ?')) {
             const t = this.tables.trips.find(x => x.id === params[3]);
+            if (t) {
+                t.segment_progress = params[0];
+                t.state = params[1];
+                t.dwell_seconds = params[2];
+            }
+            return { changes: 1 };
+        }
+        if (lower.includes('update trips set segment_progress = ?, state =') || lower.includes('update trips set segment_progress = ?')) {
+            const tripId = params[params.length - 1];
+            const t = this.tables.trips.find(x => x.id === tripId);
+            if (t) {
+                t.segment_progress = params[0];
+                if (lower.includes("state = 'at_stop'")) t.state = 'at_stop';
+                else if (lower.includes("state = 'in_transit'")) t.state = 'in_transit';
+                if (lower.includes("dwell_seconds = 0")) t.dwell_seconds = 0;
+                else if (params.length > 2 && typeof params[1] === 'number') t.dwell_seconds = params[1];
+            }
+            return { changes: 1 };
+        }
+        if (lower.includes('update trips set current_stop_index = ?, current_passenger_count = ?, delay_minutes = ?, segment_progress = ?, state = ?, dwell_seconds = ? where id = ?')) {
+            const tripId = params[6];
+            const t = this.tables.trips.find(x => x.id === tripId);
             if (t) {
                 t.current_stop_index = params[0];
                 t.current_passenger_count = params[1];
                 t.delay_minutes = params[2];
+                t.segment_progress = params[3];
+                t.state = params[4];
+                t.dwell_seconds = params[5];
+            }
+            return { changes: 1 };
+        }
+        if (lower.includes('update trips set current_stop_index')) {
+            const tripId = params[params.length - 1];
+            const t = this.tables.trips.find(x => x.id === tripId);
+            if (t) {
+                t.current_stop_index = params[0];
+                if (params.length >= 3) {
+                    t.current_passenger_count = params[1];
+                    t.delay_minutes = params[2];
+                }
+                if (lower.includes("state = 'at_stop'")) t.state = 'at_stop';
+                if (lower.includes("segment_progress = 0")) t.segment_progress = 0.0;
+                if (params.length === 5) {
+                    t.dwell_seconds = params[3];
+                }
             }
             return { changes: 1 };
         }
@@ -494,6 +573,9 @@ class MemoryDatabase {
                 t.current_stop_index = 0;
                 t.current_passenger_count = (typeof params[0] === 'number') ? params[0] : 25;
                 t.delay_minutes = 0;
+                t.segment_progress = 0.0;
+                t.state = 'in_transit';
+                t.dwell_seconds = 0;
                 t.actual_start = new Date().toISOString();
                 t.actual_end = null;
                 if (params.length >= 3 && typeof params[1] === 'string') {
@@ -504,6 +586,16 @@ class MemoryDatabase {
         }
 
         // 3. Buses
+        if (lower.includes('update buses set current_latitude = ?, current_longitude = ?, current_speed_kmh = ?, heading = ? where id = ?')) {
+            const b = this.tables.buses.find(x => x.id === params[4]);
+            if (b) {
+                b.current_latitude = params[0];
+                b.current_longitude = params[1];
+                b.current_speed_kmh = params[2];
+                b.heading = params[3];
+            }
+            return { changes: 1 };
+        }
         if (lower.includes('update buses set current_latitude = ?, current_longitude = ?, current_speed_kmh = ? where id = ?')) {
             const b = this.tables.buses.find(x => x.id === params[3]);
             if (b) {
@@ -792,15 +884,17 @@ function initializeDatabase() {
         ];
 
         db.tables.buses = [
-            { id: 'bus_blr_01', route_id: 'route_blr_378', bus_number: 'KA-01-F-3781', capacity: 55, current_latitude: 12.8710, current_longitude: 77.6650, current_speed_kmh: 32, driver_name: 'Manjunath Gowda', status: 'in_service' },
-            { id: 'bus_blr_02', route_id: 'route_blr_378', bus_number: 'KA-57-F-3782', capacity: 55, current_latitude: 12.8465, current_longitude: 77.5342, current_speed_kmh: 28, driver_name: 'Ramesh Kumar', status: 'in_service' },
-            { id: 'bus_blr_03', route_id: 'route_blr_378', bus_number: 'KA-41-F-3783', capacity: 52, current_latitude: 12.9288, current_longitude: 77.5188, current_speed_kmh: 30, driver_name: 'Shankarappa', status: 'in_service' }
+            { id: 'bus_blr_01', route_id: 'route_blr_378', bus_number: 'KA-01-F-3781', capacity: 55, current_latitude: 12.8518, current_longitude: 77.6716, current_speed_kmh: 34, driver_name: 'Manjunath Gowda', status: 'in_service', heading: 323 },
+            { id: 'bus_blr_02', route_id: 'route_blr_378', bus_number: 'KA-57-F-3782', capacity: 55, current_latitude: 12.8637, current_longitude: 77.5500, current_speed_kmh: 42, driver_name: 'Ramesh Kumar', status: 'in_service', heading: 40 },
+            { id: 'bus_blr_03', route_id: 'route_blr_378', bus_number: 'KA-41-F-3783', capacity: 52, current_latitude: 12.9117, current_longitude: 77.4899, current_speed_kmh: 38, driver_name: 'Shankarappa', status: 'in_service', heading: 60 },
+            { id: 'bus_blr_04', route_id: 'route_blr_378', bus_number: 'KA-05-AF-3784', capacity: 55, current_latitude: 12.8972, current_longitude: 77.5494, current_speed_kmh: 40, driver_name: 'Venkatesh Murthy', status: 'in_service', heading: 115 }
         ];
 
         db.tables.trips = [
-            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 15 * 60000).toISOString(), status: 'active', current_stop_index: 3, current_passenger_count: 28, delay_minutes: 1 },
-            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 25 * 60000).toISOString(), status: 'active', current_stop_index: 8, current_passenger_count: 36, delay_minutes: 0 },
-            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 35 * 60000).toISOString(), status: 'active', current_stop_index: 10, current_passenger_count: 31, delay_minutes: 2 }
+            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 5 * 60000).toISOString(), status: 'active', current_stop_index: 1, current_passenger_count: 24, delay_minutes: 0, segment_progress: 0.25, state: 'in_transit', dwell_seconds: 0 },
+            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 28 * 60000).toISOString(), status: 'active', current_stop_index: 5, current_passenger_count: 38, delay_minutes: 1, segment_progress: 0.40, state: 'in_transit', dwell_seconds: 0 },
+            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 12 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 29, delay_minutes: 0, segment_progress: 0.35, state: 'in_transit', dwell_seconds: 0 },
+            { id: 'trip_blr_04', bus_id: 'bus_blr_04', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 36 * 60000).toISOString(), status: 'active', current_stop_index: 8, current_passenger_count: 44, delay_minutes: 2, segment_progress: 0.50, state: 'in_transit', dwell_seconds: 0 }
         ];
 
         db.tables.badges = [
@@ -815,11 +909,7 @@ function initializeDatabase() {
             { id: 'badge_09', name: 'Bengaluru Transit Legend', description: 'Reach 5000 points', icon: '👑', rarity: 'legendary', requirement_type: 'points', requirement_value: 5000 }
         ];
 
-        db.tables.stop_waiting_list = [
-            { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
-            { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_06', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
-            { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_11', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
-        ];
+        db.tables.stop_waiting_list = [];
 
         db.tables.user_updates = [];
         db.tables.crowd_estimates = [];
@@ -832,11 +922,7 @@ function initializeDatabase() {
         db.saveToDisk();
     } else {
         if (!db.tables.stop_waiting_list) {
-            db.tables.stop_waiting_list = [
-                { id: 'wait_blr_01', user_id: 'usr_01', stop_id: 'stop_blr_01', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 4 * 60000).toISOString(), created_at: new Date(Date.now() - 4 * 60000).toISOString() },
-                { id: 'wait_blr_02', user_id: 'usr_02', stop_id: 'stop_blr_06', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 3 * 60000).toISOString(), created_at: new Date(Date.now() - 3 * 60000).toISOString() },
-                { id: 'wait_blr_03', user_id: 'usr_03', stop_id: 'stop_blr_11', route_id: 'route_blr_378', trip_id: 'trip_blr_01', destination_stop_id: 'stop_blr_13', status: 'waiting', joined_at: new Date(Date.now() - 2 * 60000).toISOString(), created_at: new Date(Date.now() - 2 * 60000).toISOString() }
-            ];
+            db.tables.stop_waiting_list = [];
             db.saveToDisk();
         }
     }

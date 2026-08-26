@@ -44,7 +44,8 @@ INSERT OR IGNORE INTO route_stops (route_id, stop_id, sequence_order, distance_f
 INSERT OR IGNORE INTO buses (id, route_id, bus_number, capacity, status, driver_name) VALUES
 ('bus_blr_01', 'route_blr_378', 'KA-01-F-3781', 55, 'in_service', 'Manjunath Gowda'),
 ('bus_blr_02', 'route_blr_378', 'KA-57-F-3782', 55, 'in_service', 'Ramesh Kumar'),
-('bus_blr_03', 'route_blr_378', 'KA-41-F-3783', 52, 'in_service', 'Shankarappa');
+('bus_blr_03', 'route_blr_378', 'KA-41-F-3783', 52, 'in_service', 'Shankarappa'),
+('bus_blr_04', 'route_blr_378', 'KA-05-AF-3784', 55, 'in_service', 'Venkatesh Murthy');
 
 -- Insert Badges
 INSERT OR IGNORE INTO badges (id, name, description, icon, category, requirement_type, requirement_value, rarity) VALUES
@@ -60,6 +61,7 @@ INSERT OR IGNORE INTO badges (id, name, description, icon, category, requirement
 
 -- Insert sample trips
 INSERT OR IGNORE INTO trips (id, bus_id, route_id, direction, scheduled_start, status, current_stop_index, current_passenger_count, delay_minutes) VALUES
-('trip_blr_01', 'bus_blr_01', 'route_blr_378', 'outbound', datetime('now', '-15 minutes'), 'active', 3, 28, 1),
-('trip_blr_02', 'bus_blr_02', 'route_blr_378', 'inbound', datetime('now', '-25 minutes'), 'active', 8, 36, 0),
-('trip_blr_03', 'bus_blr_03', 'route_blr_378', 'outbound', datetime('now', '-35 minutes'), 'active', 10, 31, 2);
+('trip_blr_01', 'bus_blr_01', 'route_blr_378', 'outbound', datetime('now', '-5 minutes'), 'active', 1, 24, 0),
+('trip_blr_02', 'bus_blr_02', 'route_blr_378', 'outbound', datetime('now', '-28 minutes'), 'active', 5, 38, 1),
+('trip_blr_03', 'bus_blr_03', 'route_blr_378', 'inbound', datetime('now', '-12 minutes'), 'active', 2, 29, 0),
+('trip_blr_04', 'bus_blr_04', 'route_blr_378', 'inbound', datetime('now', '-36 minutes'), 'active', 8, 44, 2);

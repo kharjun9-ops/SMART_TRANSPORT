@@ -8,7 +8,20 @@
     <title>Lumina Transit - Crowd Intelligence</title>
 
     <!-- Theme Initialization Script (Pre-render) -->
-    <script src="/js/utils/theme.js"></script>
+    <script>
+        (function() {
+            try {
+                const theme = localStorage.getItem('lumina_theme') || 'light';
+                if (theme === 'light') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.classList.add('dark');
+                }
+            } catch(e) {}
+        })();
+    </script>
 
     <!-- Tailwind CSS with Lumina Transit Adaptive Theme Configuration -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -237,19 +250,19 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/js/utils/theme.js?v=5"></script>
-    <script src="/js/utils/i18n.js?v=5"></script>
-    <script src="/js/utils/api.js?v=5"></script>
-    <script src="/js/utils/map.js?v=5"></script>
-    <script src="/js/utils/gps.js?v=5"></script>
-    <script src="/js/utils/notifications.js?v=5"></script>
-    <script src="/js/views/auth.js?v=5"></script>
-    <script src="/js/views/home.js?v=5"></script>
-    <script src="/js/views/trips.js?v=5"></script>
-    <script src="/js/views/gamification.js?v=5"></script>
-    <script src="/js/views/complaints.js?v=5"></script>
-    <script src="/js/views/profile.js?v=5"></script>
-    <script src="/js/app.js?v=5"></script>
+    <script src="/js/utils/theme.js?v=6"></script>
+    <script src="/js/utils/i18n.js?v=6"></script>
+    <script src="/js/utils/api.js?v=6"></script>
+    <script src="/js/utils/map.js?v=6"></script>
+    <script src="/js/utils/gps.js?v=6"></script>
+    <script src="/js/utils/notifications.js?v=6"></script>
+    <script src="/js/views/auth.js?v=6"></script>
+    <script src="/js/views/home.js?v=6"></script>
+    <script src="/js/views/trips.js?v=6"></script>
+    <script src="/js/views/gamification.js?v=6"></script>
+    <script src="/js/views/complaints.js?v=6"></script>
+    <script src="/js/views/profile.js?v=6"></script>
+    <script src="/js/app.js?v=6"></script>
 
     <!-- Global language switcher (inline - cannot be cached) -->
     <script>

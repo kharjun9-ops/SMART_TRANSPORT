@@ -125,7 +125,7 @@ const app = {
         const profileLabel = document.getElementById('nav-label-profile');
         const titleHeader = document.getElementById('app-title-header');
         const langToggleLabel = document.getElementById('lang-toggle-label');
-        
+
         if (homeLabel) homeLabel.textContent = I18n.t('nav.home');
         if (tripsLabel) tripsLabel.textContent = I18n.t('nav.trips');
         if (ranksLabel) ranksLabel.textContent = I18n.t('nav.ranks');
