@@ -161,6 +161,13 @@ const API = {
         return this.request('/trips/waitlist/my');
     },
 
+    async setDestinationAlarm(tripId, destinationStopId) {
+        return this.request(`/trips/${tripId}/destination-alarm`, {
+            method: 'POST',
+            body: JSON.stringify({ destinationStopId })
+        });
+    },
+
     // Updates
     async reportBoarding(tripId, stopId, lat, lng, isDemo = false) {
         return this.request('/updates/board', {

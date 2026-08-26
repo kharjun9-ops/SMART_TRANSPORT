@@ -20,51 +20,67 @@ const TripsView = {
         }
 
         return `
-            <div class="view-fade-in fixed inset-0 z-30 bg-surface flex flex-col overflow-hidden">
-                <!-- Top App Bar -->
-                <header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-container-margin h-16">
+            <div class="view-fade-in fixed inset-0 z-30 bg-[#0a0d14] flex flex-col overflow-hidden text-white">
+                <!-- Top App Bar (Pixel-matched Header) -->
+                <header class="fixed top-0 w-full z-50 bg-[#0a0d14]/90 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-4 h-14 transition-colors duration-200">
                     <button 
-                        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 active:scale-90 transition-all text-on-surface-variant hover:text-primary"
+                        class="text-primary hover:opacity-80 transition-opacity active:scale-95 p-2 -ml-2 flex items-center justify-center cursor-pointer"
                         onclick="window.app.navigate('home')"
-                        aria-label="Back"
+                        aria-label="Location / Home"
+                        title="Back to Home / Locate"
                     >
-                        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+                        <span class="material-symbols-outlined text-2xl text-primary" style="font-variation-settings: 'FILL' 1;">location_on</span>
                     </button>
 
-                    <div class="flex flex-col items-center">
-                        <h1 class="font-headline-md text-headline-md-mobile text-on-surface tracking-tight flex items-center gap-1.5 font-bold" id="live-header-title">
-                            <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                            ${this.tripData ? I18n.t('trips.tracking_route', { num: this.tripData.route_number }) : '...'}
-                        </h1>
-                        <p class="font-label-sm text-label-sm text-on-surface-variant" id="live-header-subtitle">
-                            ${this.tripData ? (this.tripData.direction === 'outbound' ? I18n.t('trips.outbound') : I18n.t('trips.inbound')) : I18n.t('trips.connecting')}
-                        </p>
+                    <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm cursor-pointer hover:bg-white/10 transition-all" onclick="window.app.navigate('home')">
+                        <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
+                        <h1 class="font-bold text-xs tracking-tight text-white">Lumina Transit</h1>
                     </div>
 
-                    <button 
-                        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 active:scale-90 transition-all text-on-surface-variant hover:text-primary"
-                        onclick="TripsView.openCrowdModal()"
-                        aria-label="More"
-                        title="Report Crowd"
-                    >
-                        <span class="material-symbols-outlined text-2xl">more_vert</span>
-                    </button>
+                    <div class="flex items-center gap-1.5">
+                        <!-- Language Selector -->
+                        <button 
+                            id="trip-lang-toggle-btn"
+                            class="text-primary hover:opacity-80 transition-all active:scale-90 px-2 py-0.5 flex items-center justify-center gap-1 rounded-lg bg-white/5 border border-white/10 font-bold text-xs cursor-pointer"
+                            onclick="window.app.cycleLanguage()"
+                            title="Change Language"
+                        >
+                            <span class="material-symbols-outlined text-sm">translate</span>
+                            <span id="trip-lang-label">EN</span>
+                        </button>
+
+                        <!-- Theme Toggle -->
+                        <button 
+                            aria-label="Toggle Theme" 
+                            class="text-primary hover:opacity-80 transition-all active:scale-90 p-1.5 flex items-center justify-center rounded-lg hover:bg-white/5 cursor-pointer"
+                            onclick="ThemeUtils.toggleTheme()"
+                            title="Toggle Theme"
+                        >
+                            <span class="material-symbols-outlined text-xl theme-toggle-icon">dark_mode</span>
+                        </button>
+
+                        <!-- Notifications -->
+                        <button aria-label="Notifications" class="text-primary hover:opacity-80 transition-opacity active:scale-95 p-1.5 -mr-1 relative flex items-center justify-center cursor-pointer" onclick="window.app.navigate('profile')">
+                            <span class="material-symbols-outlined text-xl">notifications</span>
+                            <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-tertiary"></span>
+                        </button>
+                    </div>
                 </header>
 
-                <!-- Main Map Area (Top 40-45% vh) -->
-                <div class="fixed top-0 w-full h-[42vh] min-h-[250px] max-h-[420px] z-0 pt-16">
+                <!-- Main Map Area (Top ~38% vh) -->
+                <div class="fixed top-0 w-full h-[38vh] min-h-[220px] max-h-[380px] z-0 pt-14">
                     <div id="live-trip-map" class="w-full h-full"></div>
-                    <!-- Gradient Overlay to blend with bottom sheet -->
-                    <div class="absolute bottom-0 w-full h-24 bg-gradient-to-t from-surface via-surface/60 to-transparent pointer-events-none z-[400]"></div>
+                    <!-- Smooth Gradient Overlay -->
+                    <div class="absolute bottom-0 w-full h-20 bg-gradient-to-t from-[#0a0d14] via-[#0a0d14]/75 to-transparent pointer-events-none z-[400]"></div>
                 </div>
 
-                <!-- Bottom Sheet / Drawer (Bottom 58% vh) -->
-                <main class="fixed bottom-0 w-full h-[60vh] max-h-[620px] z-20 bg-surface rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.7)] border-t border-white/10 flex flex-col pt-3 pb-[80px] transition-transform duration-300">
+                <!-- Bottom Sheet / Drawer (Bottom ~64% vh) -->
+                <main class="fixed bottom-0 w-full h-[64vh] max-h-[660px] z-20 bg-[#0a0d14] rounded-t-[28px] shadow-[0_-10px_40px_rgba(0,0,0,0.85)] border-t border-white/10 flex flex-col pt-2.5 pb-[85px] overflow-hidden">
                     <!-- Drag Handle -->
-                    <div class="w-12 h-1.5 bg-outline-variant/60 rounded-full mx-auto mb-2"></div>
+                    <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 shrink-0"></div>
 
-                    <div class="flex-1 overflow-y-auto px-container-margin flex flex-col gap-3.5" id="trip-live-drawer-content">
-                        <div class="text-center py-8 text-on-surface-variant">
+                    <div class="flex-1 overflow-y-auto px-4 flex flex-col gap-3.5" id="trip-live-drawer-content">
+                        <div class="text-center py-8 text-gray-400">
                             <span class="material-symbols-outlined animate-spin text-3xl text-primary mb-2">sync</span>
                             <p class="text-sm">${I18n.t('trips.retrieving')}</p>
                         </div>
@@ -98,73 +114,63 @@ const TripsView = {
                                 <h3 class="font-headline-md text-sm font-bold text-on-surface">Connecting to BMTC GPS Fleet...</h3>
                                 <p class="text-xs text-on-surface-variant">Live telemetry is synchronizing with Route 378 buses.</p>
                                 <button onclick="window.app.navigate('trips')" class="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-md">
-                                    Refresh Buses
+                                    ${I18n.t('trips.retry')}
                                 </button>
                             </div>
                         ` : trips.map(trip => {
-                            const crowdLevel = trip.crowd_level || 'low';
-                            let crowdPillHtml = '';
-                            if (crowdLevel === 'low') {
-                                crowdPillHtml = `<span class="bg-secondary/20 border border-secondary/30 text-secondary text-[11px] px-2 py-0.5 rounded-full font-semibold">${I18n.t('crowd.low')}</span>`;
-                            } else if (crowdLevel === 'medium') {
-                                crowdPillHtml = `<span class="bg-tertiary/20 border border-tertiary/30 text-tertiary text-[11px] px-2 py-0.5 rounded-full font-semibold">${I18n.t('crowd.medium')}</span>`;
-                            } else {
-                                crowdPillHtml = `<span class="bg-error/20 border border-error/30 text-error text-[11px] px-2 py-0.5 rounded-full font-semibold">${I18n.t('crowd.high')}</span>`;
-                            }
+                            const isAtStop = trip.state === 'at_stop';
+                            const etaText = isAtStop ? 'At Station' : (trip.next_stop_eta ? (trip.next_stop_eta.display_text || `${trip.next_stop_eta.eta_minutes}m`) : 'In Transit');
+                            const nextStopName = trip.next_stop_name || 'Upcoming Stop';
+                            const nextForecast = trip.next_stop_forecast;
+                            const nextWaitCount = nextForecast ? nextForecast.waiting_passengers_count : (trip.stops ? trip.stops[trip.current_stop_index + 1]?.waiting_passengers || 0 : 0);
+                            const nextNextForecast = trip.next_next_stop_forecast;
+                            const nextNextProb = nextNextForecast ? nextNextForecast.boarding_probability_percentage : null;
 
-                            const nextStopName = trip.next_stop_name || (trip.next_stop_forecast ? trip.next_stop_forecast.stop_name : 'Next Stop');
-                            const nextWaitCount = trip.next_stop_forecast ? trip.next_stop_forecast.waiting_passengers_count : 0;
-                            const nextNextProb = trip.next_next_stop_forecast ? trip.next_next_stop_forecast.boarding_probability_percentage : null;
-                            const isAtStop = trip.state === 'at_stop' || trip.current_speed_kmh === 0;
-                            const etaText = trip.next_stop_eta?.display_text || (trip.next_stop_forecast ? trip.next_stop_forecast.display_text : '1m');
+                            let crowdPillHtml = '';
+                            if (trip.crowd_level === 'low') {
+                                crowdPillHtml = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('home.low_crowd')}</span>`;
+                            } else if (trip.crowd_level === 'medium') {
+                                crowdPillHtml = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('home.med_crowd')}</span>`;
+                            } else {
+                                crowdPillHtml = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('home.high_crowd')}</span>`;
+                            }
 
                             return `
                                 <div 
-                                    class="glass-panel rounded-transit p-4 flex flex-col gap-2.5 hover:bg-surface-container-high active:scale-[0.98] transition-all cursor-pointer shadow-lg border border-white/10"
+                                    class="glass-panel hover:border-primary/50 transition-all rounded-2xl p-4 cursor-pointer active:scale-[0.99] space-y-3"
                                     onclick="window.app.navigate('trips', { tripId: '${trip.id}' })"
                                 >
-                                    <div class="flex items-center justify-between">
+                                    <div class="flex justify-between items-start">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-11 h-11 rounded-2xl bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary font-bold font-status-number text-base">
+                                            <div class="w-10 h-10 rounded-xl bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-base">
                                                 ${trip.route_number || '378'}
                                             </div>
                                             <div>
-                                                <div class="flex items-center gap-2">
-                                                    <h3 class="font-headline-md text-sm font-semibold text-on-surface">${trip.route_name}</h3>
-                                                    ${isAtStop ? `
-                                                        <span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">AT STOP</span>
-                                                    ` : `
-                                                        <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${trip.current_speed_kmh || 30} km/h</span>
-                                                    `}
+                                                <div class="flex items-center gap-1.5">
+                                                    <h3 class="font-headline-md text-sm font-bold text-on-surface">${trip.route_name || 'Electronic City - Kengeri TTMC'}</h3>
+                                                    <span class="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-surface-container-highest text-on-surface-variant">${trip.direction || 'outbound'}</span>
                                                 </div>
-                                                <div class="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
-                                                    <span>${trip.bus_number}</span>
-                                                    <span>•</span>
-                                                    <span class="text-primary font-medium flex items-center gap-1">
-                                                        <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-tertiary' : 'bg-primary'}"></span>
-                                                        ${etaText}
-                                                    </span>
-                                                </div>
+                                                <p class="text-xs text-on-surface-variant mt-0.5">${I18n.t('trips.driver_label')} <strong class="text-on-surface">${trip.driver_name || 'BMTC Pilot'}</strong></p>
                                             </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="font-headline-md text-xs text-primary font-bold">₹${trip.fare_lkr || 25}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-between items-center text-xs pt-1 border-t border-white/5">
+                                        <div class="flex items-center gap-2 text-on-surface-variant">
+                                            <span>${trip.bus_number}</span>
+                                            <span>•</span>
+                                            <span class="text-primary font-medium flex items-center gap-1">
+                                                <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-tertiary' : 'bg-primary'}"></span>
+                                                ${etaText}
+                                            </span>
                                         </div>
                                         <div class="flex flex-col items-end gap-1">
                                             ${crowdPillHtml}
                                             <span class="text-[10px] text-on-surface-variant">${I18n.t('trips.onboard', { count: trip.current_passenger_count, total: trip.capacity || 55 })}</span>
                                         </div>
-                                    </div>
-
-                                    <!-- Downstream Intelligence Preview Badge -->
-                                    <div class="bg-surface-container/60 rounded-xl px-3 py-1.5 flex items-center justify-between text-[11px] border border-white/5">
-                                        <div class="flex items-center gap-1.5 text-on-surface-variant truncate">
-                                            <span class="material-symbols-outlined text-secondary text-xs">hail</span>
-                                            <span class="truncate">${I18n.t('trips.next')} <strong class="text-on-surface">${nextStopName}</strong></span>
-                                            <span class="bg-secondary/15 text-secondary px-1.5 py-0.2 rounded font-semibold text-[10px]">${I18n.t('trips.waiting', { count: nextWaitCount })}</span>
-                                        </div>
-                                        ${nextNextProb !== null ? `
-                                            <div class="text-[10px] font-semibold ${nextNextProb >= 80 ? 'text-secondary' : (nextNextProb >= 50 ? 'text-tertiary' : 'text-error')} flex items-center gap-0.5 flex-shrink-0 ml-2">
-                                                <span>${I18n.t('trips.seat_chance', { pct: nextNextProb })}</span>
-                                            </div>
-                                        ` : ''}
                                     </div>
                                 </div>
                             `;
@@ -214,6 +220,11 @@ const TripsView = {
 
             // Check if current user is on waitlist for this trip
             await this.checkUserWaitlistStatus();
+
+            // Restore saved destination alarm
+            if (!this.selectedDestinationStopId && this.tripId) {
+                this.selectedDestinationStopId = localStorage.getItem('lumina_dest_' + this.tripId) || null;
+            }
 
             // Initialize Trip Map
             const centerLat = this.tripData.current_latitude || 12.9778;
@@ -273,14 +284,26 @@ const TripsView = {
             // Re-render the drawer UI components to match exact current stop
             this.renderDrawerUI();
 
-            // Check arrival proximity if user on board
-            if (this.isOnBoard && this.selectedDestinationStopId && this.tripData.stops) {
+            // Check 1-Station-Before Deboarding Proximity Alert
+            if (this.selectedDestinationStopId && this.tripData && this.tripData.stops) {
                 const destIdx = this.tripData.stops.findIndex(s => s.stop_id === this.selectedDestinationStopId);
                 if (destIdx !== -1) {
-                    const stopsRemaining = destIdx - this.tripData.current_stop_index;
+                    const currentIdx = this.tripData.current_stop_index || 0;
+                    const stopsRemaining = destIdx - currentIdx;
+
                     if (stopsRemaining === 1 && !this.alertedNear) {
                         this.alertedNear = true;
-                        NotificationUtils.showToast('Destination Approaching!', 'Your target stop is next! Prepare to deboard.', 'destination_approaching', 7000);
+                        const destStop = this.tripData.stops[destIdx];
+                        const currentStop = this.tripData.stops[currentIdx];
+                        const destName = destStop ? destStop.stop_name : 'your destination';
+                        const currName = currentStop ? currentStop.stop_name : 'Current Station';
+                        this.triggerDeboardingAlert(destName, currName);
+                    } else if (stopsRemaining <= 0 && this.alertedNear !== 'arrived') {
+                        this.alertedNear = 'arrived';
+                        const destStop = this.tripData.stops[destIdx];
+                        const destName = destStop ? destStop.stop_name : 'your destination';
+                        NotificationUtils.showToast('Arrived at Destination!', `You have reached ${destName}. Please deboard now!`, 'success', 8000);
+                        if ('vibrate' in navigator) navigator.vibrate([400, 150, 400]);
                     }
                 }
             }
@@ -292,107 +315,79 @@ const TripsView = {
         if (!container || !this.tripData) return;
 
         const trip = this.tripData;
-        const crowdLevel = trip.crowd_level || 'low';
-        const forecast = trip.forecast || {};
-        const nextForecast = forecast.next_stop_forecast;
-        const nextNextForecast = forecast.next_next_stop_forecast;
-
-        const isAtStop = trip.state === 'at_stop' || trip.current_speed_kmh === 0;
-        const speed = trip.current_speed_kmh || 0;
-
-        // Stops Timeline computation
         const currentIdx = trip.current_stop_index || 0;
         const stops = trip.stops || [];
         const currentStop = stops[currentIdx] || { stop_name: 'In Transit' };
         const nextStop = currentIdx + 1 < stops.length ? stops[currentIdx + 1] : null;
 
+        // Forecast data
+        const forecast = trip.forecast;
+        const nextForecast = forecast ? forecast.next_stop_forecast : null;
+
         // ETA & Arrival Text Calculation
-        let etaValue = 1;
-        let etaDisplayText = '1 min';
+        let etaValue = 2;
+        let etaDisplayText = '2 mins';
         if (nextForecast) {
-            etaValue = nextForecast.wait_time_minutes || 1;
+            etaValue = nextForecast.wait_time_minutes || 2;
             etaDisplayText = nextForecast.display_text || `${etaValue} mins`;
         } else if (nextStop && nextStop.eta) {
-            etaValue = nextStop.eta.eta_minutes || 1;
+            etaValue = nextStop.eta.eta_minutes || 2;
             etaDisplayText = nextStop.eta.display_text || `${etaValue} mins`;
         }
 
-        // Update Top Header
-        const headerTitle = document.getElementById('live-header-title');
-        const headerSub = document.getElementById('live-header-subtitle');
-        if (headerTitle) {
-            headerTitle.innerHTML = `
-                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                Tracking Route ${trip.route_number || '378'}
-            `;
-        }
-        if (headerSub) {
-            headerSub.textContent = `To ${trip.route_name ? (trip.route_name.split('-')[1]?.trim() || trip.route_name) : 'Destination'}`;
+        // Passenger count & Load percentage
+        const capacity = trip.capacity || 55;
+        const passengers = trip.current_passenger_count || 35;
+        const loadPercentage = Math.round((passengers / capacity) * 100);
+        
+        const crowdLevel = trip.crowd_level || (loadPercentage <= 40 ? 'low' : (loadPercentage <= 70 ? 'medium' : 'high'));
+        let crowdLabel = 'MED';
+        let crowdFullText = 'MEDIUM CROWD';
+        let crowdDotColor = 'bg-tertiary';
+        let crowdTextColor = 'text-tertiary';
+
+        if (crowdLevel === 'low') {
+            crowdLabel = 'LOW';
+            crowdFullText = 'LOW CROWD';
+            crowdDotColor = 'bg-secondary';
+            crowdTextColor = 'text-secondary';
+        } else if (crowdLevel === 'high') {
+            crowdLabel = 'HIGH';
+            crowdFullText = 'HIGH CROWD';
+            crowdDotColor = 'bg-error';
+            crowdTextColor = 'text-error';
         }
 
-        // Crowd Chip HTML
-        let crowdChip = '';
-        if (crowdLevel === 'low') {
-            crowdChip = `
-                <div class="glass-panel px-3 py-1 rounded-full flex items-center gap-1.5 border-secondary/30">
-                    <div class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(78,222,163,0.8)]"></div>
-                    <span class="font-label-sm text-[11px] text-secondary uppercase tracking-wider font-semibold">Low Crowd</span>
-                </div>
-            `;
-        } else if (crowdLevel === 'medium') {
-            crowdChip = `
-                <div class="glass-panel px-3 py-1 rounded-full flex items-center gap-1.5 border-tertiary/30">
-                    <div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(255,185,95,0.8)]"></div>
-                    <span class="font-label-sm text-[11px] text-tertiary uppercase tracking-wider font-semibold">Med Crowd</span>
-                </div>
-            `;
-        } else {
-            crowdChip = `
-                <div class="glass-panel px-3 py-1 rounded-full flex items-center gap-1.5 border-error/30">
-                    <div class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_rgba(255,180,171,0.8)]"></div>
-                    <span class="font-label-sm text-[11px] text-error uppercase tracking-wider font-semibold">High Crowd</span>
-                </div>
-            `;
+        const driverName = trip.driver_name || 'Manjunath Gowda';
+
+        // Upcoming stops for Card 2 (Show next 3 upcoming stops along the route)
+        let upcomingStops = stops.slice(currentIdx + 1, currentIdx + 4);
+        if (upcomingStops.length === 0 && stops.length > 0) {
+            upcomingStops = stops.slice(0, Math.min(3, stops.length));
         }
+
+        const nextStopWaitLevel = (nextForecast && nextForecast.waiting_passengers_count > 10) ? 'HIGH' : ((nextForecast && nextForecast.waiting_passengers_count > 5) ? 'MID' : 'LOW');
 
         container.innerHTML = `
-            <!-- Hero Stats Row -->
-            <div class="flex justify-between items-end pt-1">
+            <!-- Next Stop Arrival & Bus Crowd / Passengers Bar -->
+            <div class="flex justify-between items-end pt-1 pb-2 border-b border-white/10">
                 <div>
-                    ${isAtStop ? `
-                        <p class="font-label-sm text-label-sm text-tertiary font-bold mb-0.5 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-tertiary"></span>
-                            At Station (Boarding / Deboarding)
-                        </p>
-                        <div class="flex items-baseline gap-2 text-on-surface">
-                            <span class="font-headline-md text-base text-primary font-bold">
-                                ${currentStop.stop_name || currentStop.name}
-                            </span>
-                        </div>
-                        <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
-                            <span>Next: <strong class="text-on-surface">${nextStop ? (nextStop.stop_name || nextStop.name) : 'Terminus'}</strong></span>
-                            <span>•</span>
-                            <span class="text-tertiary font-bold">Departing in ~${trip.dwell_seconds || 5}s</span>
-                        </div>
-                    ` : `
-                        <p class="font-label-sm text-label-sm text-primary font-bold mb-0.5 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-primary"></span>
-                            In Transit to ${nextStop ? (nextStop.stop_name || nextStop.name) : 'Destination'}
-                        </p>
-                        <div class="flex items-baseline gap-2 text-primary">
-                            <span class="font-status-number text-status-number text-[38px] leading-none tracking-tighter font-bold" id="drawer-eta-value">
-                                ${etaValue}
-                            </span>
-                            <span class="font-headline-md text-sm text-primary-fixed-dim font-semibold">mins</span>
-                            <span class="text-[11px] font-bold text-secondary ml-1 bg-secondary/15 px-2 py-0.5 rounded-full border border-secondary/25">
-                                ${speed} km/h
-                            </span>
-                        </div>
-                    `}
+                    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5">Next Stop Arrival</p>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-3xl font-extrabold text-white tracking-tight" id="drawer-eta-value">
+                            ${etaDisplayText.toLowerCase().includes('min') ? etaDisplayText : `${etaValue} mins`}
+                        </span>
+                    </div>
                 </div>
                 <div class="flex flex-col items-end gap-1">
-                    ${crowdChip}
-                    <p class="font-label-sm text-[11px] text-on-surface-variant">${trip.current_passenger_count}/${trip.capacity || 55} passengers (${Math.round((trip.current_passenger_count / (trip.capacity || 55)) * 100)}% load)</p>
+                    <div class="flex items-center gap-1.5 text-xs font-bold ${crowdTextColor}">
+                        <span class="w-2.5 h-2.5 rounded-full ${crowdDotColor}"></span>
+                        <span>BUS CROWD: ${crowdLabel}</span>
+                    </div>
+                    <p class="text-[11px] text-gray-300 font-medium flex items-center gap-1">
+                        <span>🚌</span>
+                        <span>Bus Passengers: ${passengers}/${capacity} (${loadPercentage}% load)</span>
+                    </p>
                 </div>
             </div>
 
@@ -405,11 +400,11 @@ const TripsView = {
                         </div>
                         <div>
                             <div class="text-xs font-bold text-secondary">You are on the Waiting List</div>
-                            <div class="text-[10px] text-on-surface-variant">Registered for this bus at Stop</div>
+                            <div class="text-[10px] text-gray-300">Registered for this bus at Stop</div>
                         </div>
                     </div>
                     <button 
-                        class="px-2.5 py-1 rounded-lg bg-secondary/20 hover:bg-secondary/30 text-secondary text-[11px] font-bold border border-secondary/30 transition-all"
+                        class="px-2.5 py-1 rounded-lg bg-secondary/20 hover:bg-secondary/30 text-secondary text-[11px] font-bold border border-secondary/30 transition-all cursor-pointer"
                         onclick="TripsView.handleLeaveWaitlist('${this.userWaitlist.stop_id}')"
                     >
                         Leave Queue
@@ -417,172 +412,122 @@ const TripsView = {
                 </div>
             ` : ''}
 
-            <!-- 🌟 CORE FEATURE: MULTI-STOP CROWD & WAITLIST PREDICTION CARD 🌟 -->
-            <div class="glass-panel rounded-2xl p-4 border border-white/15 shadow-xl relative overflow-hidden space-y-3.5">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 rounded-full bg-primary"></div>
-                        <h3 class="font-headline-md text-xs font-bold text-on-surface uppercase tracking-wider">
-                            Multi-Stop Crowd & Waitlist Intelligence
-                        </h3>
-                    </div>
-                    ${!this.userWaitlist ? `
-                    <button 
-                        class="text-[10px] text-primary font-semibold flex items-center gap-1 bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-full border border-primary/20 transition-all"
-                        onclick="TripsView.openJoinWaitlistModal()"
-                    >
-                        <span class="material-symbols-outlined text-xs">add</span> Join Queue
-                    </button>
-                    ` : ''}
+            <!-- 🌟 LIVE CROWD INTELLIGENCE BREAKDOWN HEADER ROW 🌟 -->
+            <div class="flex items-center justify-between pt-0.5">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">groups</span>
+                    <h3 class="text-xs font-bold text-white uppercase tracking-wider">
+                        LIVE CROWD INTELLIGENCE BREAKDOWN
+                    </h3>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- 1. NEXT STOP WAITING CALCULATION -->
-                    ${nextForecast ? `
-                        <div class="bg-surface-container/70 rounded-xl p-3 border border-white/10 flex flex-col justify-between space-y-2">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Next Stop (S₁)</span>
-                                    <h4 class="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">${nextForecast.stop_name}</h4>
-                                </div>
-                                <span class="bg-secondary/20 text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                    ~${nextForecast.wait_time_minutes}m wait
-                                </span>
-                            </div>
-
-                            <div class="flex items-center justify-between text-[11px] bg-surface-container-high/60 rounded-lg p-2 border border-white/5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">groups</span>
-                                    <div>
-                                        <span class="font-bold text-on-surface text-xs">${nextForecast.waiting_passengers_count}</span>
-                                        <span class="text-on-surface-variant text-[10px]"> in waitlist</span>
-                                    </div>
-                                </div>
-                                <div class="text-right text-[10px] text-on-surface-variant">
-                                    <span class="text-secondary font-semibold">+${nextForecast.expected_boarding} Board</span> / 
-                                    <span class="text-error font-semibold">-${nextForecast.expected_deboarding} Deboard</span>
-                                </div>
-                            </div>
-
-                            <div class="text-[10px] text-on-surface-variant flex justify-between items-center">
-                                <span>Departing Occupancy:</span>
-                                <span class="font-bold text-on-surface">${nextForecast.bus_occupancy_after_departure}% (${nextForecast.seats_remaining_after_departure} seats left)</span>
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="bg-surface-container/40 rounded-xl p-3 text-center text-xs text-on-surface-variant">
-                            Bus approaching final stop.
-                        </div>
-                    `}
-
-                    <!-- 2. NEXT-NEXT STOP CROWD PROPAGATION & COMMUTER PROBABILITY -->
-                    ${nextNextForecast ? `
-                        <div class="bg-surface-container/70 rounded-xl p-3 border ${nextNextForecast.verdict_level === 'optimal' ? 'border-secondary/30' : (nextNextForecast.verdict_level === 'moderate' ? 'border-tertiary/30' : 'border-error/30')} flex flex-col justify-between space-y-2 relative overflow-hidden">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <span class="text-[10px] font-bold text-primary uppercase tracking-wider">Next+Next Stop (S₂)</span>
-                                    <h4 class="text-xs font-bold text-on-surface mt-0.5 truncate max-w-[150px]">${nextNextForecast.stop_name}</h4>
-                                </div>
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${nextNextForecast.boarding_probability_percentage >= 80 ? 'bg-secondary/20 text-secondary border border-secondary/30' : (nextNextForecast.boarding_probability_percentage >= 50 ? 'bg-tertiary/20 text-tertiary border border-tertiary/30' : 'bg-error/20 text-error border border-error/30')}">
-                                    ${nextNextForecast.boarding_probability_percentage}% Seat Chance
-                                </span>
-                            </div>
-
-                            <!-- Visual Forecast Gauge -->
-                            <div class="space-y-1">
-                                <div class="flex justify-between text-[10px]">
-                                    <span class="text-on-surface-variant font-medium">Predicted Bus Fill on Arrival:</span>
-                                    <span class="font-bold text-on-surface">${nextNextForecast.anticipated_bus_occupancy_on_arrival}% (${nextNextForecast.anticipated_crowd_level.toUpperCase()})</span>
-                                </div>
-                                <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden flex">
-                                    <div 
-                                        class="h-full ${nextNextForecast.anticipated_bus_occupancy_on_arrival > 85 ? 'bg-error' : (nextNextForecast.anticipated_bus_occupancy_on_arrival > 60 ? 'bg-tertiary' : 'bg-secondary')} transition-all duration-500 rounded-full"
-                                        style="width: ${nextNextForecast.anticipated_bus_occupancy_on_arrival}%;"
-                                    ></div>
-                                </div>
-                            </div>
-
-                            <!-- Commuter Guidance Message -->
-                            <div class="text-[10px] text-on-surface-variant bg-surface-container-high/80 rounded-lg p-2 border border-white/5 flex items-start gap-1.5">
-                                <span class="material-symbols-outlined text-xs ${nextNextForecast.verdict_level === 'optimal' ? 'text-secondary' : (nextNextForecast.verdict_level === 'moderate' ? 'text-tertiary' : 'text-error')} flex-shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">
-                                    ${nextNextForecast.verdict_level === 'optimal' ? 'verified' : (nextNextForecast.verdict_level === 'moderate' ? 'info' : 'warning')}
-                                </span>
-                                <span class="leading-tight">${nextNextForecast.commuter_advice}</span>
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="bg-surface-container/40 rounded-xl p-3 text-center text-xs text-on-surface-variant">
-                            Next stop is the terminus.
-                        </div>
-                    `}
-                </div>
+                ${!this.userWaitlist ? `
+                <button 
+                    class="text-xs text-white font-semibold flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/20 transition-all cursor-pointer active:scale-95"
+                    onclick="TripsView.openJoinWaitlistModal()"
+                >
+                    <span class="material-symbols-outlined text-xs">add</span> Join Stop Queue
+                </button>
+                ` : ''}
             </div>
 
-            <!-- Route Stops Timeline -->
-            <div class="glass-panel rounded-2xl p-3.5 flex flex-col relative shadow-lg">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-xs font-bold text-on-surface flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-primary text-sm">route</span>
-                        Route Stops & Live Progress
-                    </span>
-                    <span class="text-[10px] text-on-surface-variant">GPS Updated</span>
+            <!-- 🌟 2-CARDS GRID (Card 1: People in Bus, Card 2: People Waiting at Stop) 🌟 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Card 1: 1. People In The Bus -->
+                <div class="bg-[#10141d]/90 border border-white/10 rounded-2xl p-4 shadow-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-white flex items-center gap-1.5">
+                                <span>🚌</span>
+                                <span>1. People In The Bus</span>
+                            </span>
+                        </div>
+                        <span class="border border-white/20 bg-white/5 px-2.5 py-0.5 rounded-full text-xs text-white font-semibold">
+                            ${passengers} On-Board
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Bus Passenger Capacity:</span>
+                            <span class="font-bold text-white">${passengers}/${capacity} (${loadPercentage}%)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Bus On-Board Crowd:</span>
+                            <span class="font-bold ${crowdTextColor}">${crowdFullText}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-400">Bus Driver:</span>
+                            <span class="font-bold text-white">${driverName}</span>
+                        </div>
+                    </div>
+
+                    <p class="text-[10px] text-gray-400 italic pt-1 border-t border-white/5">
+                        * Passenger count increases ONLY when commuters click "I'm Boarding".
+                    </p>
                 </div>
 
-                <div class="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                    ${stops.filter((s, idx) => idx >= currentIdx).map((s, filteredIdx) => {
-                        const realIdx = currentIdx + filteredIdx;
-                        const isCurrent = realIdx === currentIdx;
-                        const isNext = realIdx === currentIdx + 1;
-                        const isNextNext = realIdx === currentIdx + 2;
+                <!-- Card 2: 2. People Waiting At Stop -->
+                <div class="bg-[#10141d]/90 border border-white/10 rounded-2xl p-4 shadow-xl flex flex-col justify-between space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-white flex items-center gap-1.5">
+                                <span>🚶</span>
+                                <span>2. People Waiting At Stop</span>
+                            </span>
+                        </div>
+                        <span class="border border-secondary/30 bg-secondary/15 text-secondary px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">flag</span>
+                            <span>${nextStopWaitLevel} at Next Stop</span>
+                        </span>
+                    </div>
 
-                        let statusBadge = '';
-                        if (isCurrent) {
-                            if (isAtStop) {
-                                statusBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2 py-0.5 rounded-full font-bold">At Station</span>`;
-                            } else {
-                                statusBadge = `<span class="bg-primary/20 text-primary border border-primary/30 text-[10px] px-2 py-0.5 rounded-full font-bold">Departed</span>`;
+                    <div class="space-y-2 text-xs">
+                        ${upcomingStops.map(s => {
+                            const waitCount = s.waiting_passengers || (s.eta?.is_approaching ? 2 : 1);
+                            let stopCrowdText = 'LOW';
+                            let stopDotColor = 'bg-secondary';
+                            let stopTextColor = 'text-secondary';
+                            if (waitCount > 10) {
+                                stopCrowdText = 'HIGH';
+                                stopDotColor = 'bg-error';
+                                stopTextColor = 'text-error';
+                            } else if (waitCount > 5) {
+                                stopCrowdText = 'MID';
+                                stopDotColor = 'bg-tertiary';
+                                stopTextColor = 'text-tertiary';
                             }
-                        } else if (isNext) {
-                            const etaText = s.eta ? s.eta.display_text || `${s.eta.eta_minutes}m` : (nextForecast ? nextForecast.display_text : 'Next');
-                            statusBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2 py-0.5 rounded-full font-bold">${etaText}</span>`;
-                        } else if (isNextNext) {
-                            const etaText = s.eta ? s.eta.display_text || `~${s.eta.eta_minutes}m` : (nextNextForecast ? `~${nextNextForecast.wait_time_minutes}m` : 'Next+1');
-                            statusBadge = `<span class="bg-primary/15 text-primary border border-primary/25 text-[10px] px-1.5 py-0.2 rounded font-bold">${etaText}</span>`;
-                        } else {
-                            const etaText = s.eta ? (s.eta.display_text || `~${s.eta.eta_minutes}m`) : null;
-                            if (etaText) {
-                                statusBadge = `<span class="text-on-surface-variant text-[10px] font-semibold">${etaText}</span>`;
-                            }
-                        }
 
-                        return `
-                            <div class="flex items-center justify-between p-2 rounded-xl ${isCurrent ? (isAtStop ? 'bg-tertiary/15 border border-tertiary/30 font-bold' : 'bg-primary/15 border border-primary/30 font-bold') : (isNext ? 'bg-secondary/10 border border-secondary/20 font-semibold' : 'bg-surface-container/40')} text-xs">
-                                <div class="flex items-center gap-2 truncate">
-                                    <div class="w-2 h-2 rounded-full ${isCurrent ? (isAtStop ? 'bg-tertiary' : 'bg-primary') : (isNext ? 'bg-secondary' : 'bg-surface-variant')}"></div>
-                                    <span class="truncate text-on-surface">${s.stop_name || s.name}</span>
+                            return `
+                                <div class="flex justify-between items-center py-0.5">
+                                    <span class="text-gray-200 truncate max-w-[180px] font-medium">${s.stop_name || s.name}</span>
+                                    <span class="flex items-center gap-1.5 font-bold ${stopTextColor} text-[11px]">
+                                        <span class="w-2 h-2 rounded-full ${stopDotColor}"></span>
+                                        <span>${stopCrowdText}</span>
+                                    </span>
                                 </div>
-                                <div class="flex items-center gap-2 flex-shrink-0">
-                                    ${statusBadge}
-                                    ${s.waiting_passengers > 0 ? `
-                                        <span class="text-[10px] text-on-surface-variant flex items-center gap-0.5">
-                                            <span class="material-symbols-outlined text-[11px]">group</span> ${s.waiting_passengers}
-                                        </span>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div class="flex justify-between items-center text-[10px] text-gray-400 pt-1 border-t border-white/5">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-secondary"></span> Low (1-5)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary"></span> Mid (6-10)</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-error"></span> High (10+)</span>
+                        </div>
+                        <span class="italic text-gray-400">Updates live</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Destination Notification Picker -->
-            <div class="glass-panel rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm">
+            <div class="bg-[#10141d]/70 border border-white/10 rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm">
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
-                    <span class="text-xs text-on-surface font-medium truncate">Deboard Alarm</span>
+                    <span class="text-xs text-gray-300 font-medium truncate">Deboard Alarm</span>
                 </div>
                 <select 
-                    class="bg-surface-container-high text-on-surface text-xs rounded-lg px-2 py-1 border border-white/10 focus:outline-none focus:ring-1 focus:ring-primary max-w-[180px]"
+                    class="bg-surface-container-high text-white text-xs rounded-lg px-2 py-1 border border-white/10 focus:outline-none focus:ring-1 focus:ring-primary max-w-[180px]"
                     onchange="TripsView.setDestination(this.value)"
                 >
                     <option value="">-- Choose Stop --</option>
@@ -594,10 +539,10 @@ const TripsView = {
                 </select>
             </div>
 
-            <!-- Action Grid (Exact Match with Stitch live_trip_tracking) -->
-            <div class="grid grid-cols-2 gap-stack-sm mt-auto pt-1">
+            <!-- Action Grid (Boarding & Crowd Feedback) -->
+            <div class="grid grid-cols-2 gap-2 mt-auto pt-1">
                 <button 
-                    class="${!this.isOnBoard ? 'bg-primary text-on-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]' : 'bg-surface-container-high text-on-surface-variant'} font-label-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md font-semibold"
+                    class="${!this.isOnBoard ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'} font-label-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md font-semibold cursor-pointer"
                     onclick="TripsView.handleBoarding()"
                 >
                     <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
@@ -605,7 +550,7 @@ const TripsView = {
                 </button>
 
                 <button 
-                    class="${this.isOnBoard ? 'bg-error text-on-error' : 'glass-panel text-on-surface'} font-label-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:bg-white/5 active:scale-95 transition-all shadow-md font-semibold"
+                    class="${this.isOnBoard ? 'bg-error text-on-error' : 'bg-white/5 border border-white/10 text-white'} font-label-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:bg-white/10 active:scale-95 transition-all shadow-md font-semibold cursor-pointer"
                     onclick="TripsView.handleDeboarding()"
                 >
                     <span class="material-symbols-outlined text-lg">exit_to_app</span>
@@ -613,7 +558,7 @@ const TripsView = {
                 </button>
 
                 <button 
-                    class="col-span-2 glass-panel text-tertiary font-label-bold text-xs py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 border-tertiary/30 hover:bg-tertiary/10 active:scale-95 transition-all font-semibold shadow-md"
+                    class="col-span-2 bg-white/5 border border-tertiary/30 text-tertiary font-label-bold text-xs py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-tertiary/10 active:scale-95 transition-all font-semibold shadow-md cursor-pointer"
                     onclick="TripsView.openCrowdModal()"
                 >
                     <span class="material-symbols-outlined text-lg">group</span>
@@ -732,15 +677,95 @@ const TripsView = {
     },
 
     setDestination(stopId) {
-        this.selectedDestinationStopId = stopId;
-        if (stopId && this.tripData && this.tripData.stops) {
-            const stop = this.tripData.stops.find(s => s.stop_id === stopId);
-            NotificationUtils.showToast(
-                'Alarm Set',
-                `We will alert you 1 stop before ${stop ? stop.stop_name : 'your destination'}.`,
-                'destination_approaching'
-            );
+        if (!stopId) {
+            this.selectedDestinationStopId = null;
+            this.alertedNear = false;
+            if (this.tripId) {
+                localStorage.removeItem('lumina_dest_' + this.tripId);
+            }
+            NotificationUtils.showToast('Alarm Cleared', 'Deboarding alert turned off.', 'info', 3000);
+            return;
         }
+
+        this.selectedDestinationStopId = stopId;
+        this.alertedNear = false;
+
+        if (this.tripId) {
+            localStorage.setItem('lumina_dest_' + this.tripId, stopId);
+        }
+
+        if (this.tripData && this.tripData.stops) {
+            const destIdx = this.tripData.stops.findIndex(s => s.stop_id === stopId);
+            const currentIdx = this.tripData.current_stop_index || 0;
+            const stop = this.tripData.stops[destIdx];
+            const destName = stop ? (stop.stop_name || stop.name) : 'your destination';
+            const currStop = this.tripData.stops[currentIdx];
+            const currName = currStop ? (currStop.stop_name || currStop.name) : 'Current Station';
+
+            // Sync with backend API
+            API.setDestinationAlarm(this.tripId, stopId).catch(() => {});
+
+            const stopsRemaining = destIdx - currentIdx;
+            if (stopsRemaining === 1) {
+                // Bus is already at the preceding stop right before destination -> alert now!
+                this.alertedNear = true;
+                this.triggerDeboardingAlert(destName, currName);
+            } else if (stopsRemaining > 1) {
+                NotificationUtils.showToast(
+                    'Deboard Alarm Active',
+                    `We will alert you when the bus arrives at the station before ${destName}.`,
+                    'info',
+                    4500
+                );
+            }
+        }
+    },
+
+    triggerDeboardingAlert(destStopName, currentStopName) {
+        // 1. Play Audio Chime
+        NotificationUtils.playChime();
+
+        // 2. Announce Voice Alert
+        NotificationUtils.speakAlert(`Attention: The bus is at ${currentStopName}. Your destination ${destStopName} is the next stop. Please get ready to deboard.`);
+
+        // 3. Haptic Vibration
+        if ('vibrate' in navigator) {
+            navigator.vibrate([300, 150, 300, 150, 500]);
+        }
+
+        // 4. Show Persistent Toast Banner
+        NotificationUtils.showToast(
+            '📍 Deboarding Alert: Next Stop!',
+            `Bus is at ${currentStopName}. Next Stop is ${destStopName} — get ready to deboard!`,
+            'destination_approaching',
+            10000
+        );
+
+        // 5. Present Attention Modal
+        window.app.showModal(`
+            <div class="glass-panel rounded-3xl p-6 text-center space-y-4 border-2 border-secondary shadow-[0_0_50px_rgba(78,222,163,0.35)] max-w-sm mx-auto animate-in">
+                <div class="w-16 h-16 rounded-full bg-secondary/20 border border-secondary/40 flex items-center justify-center mx-auto text-secondary shadow-lg">
+                    <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+                </div>
+                <div>
+                    <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                        Deboarding Alert
+                    </span>
+                    <h3 class="text-xl font-bold text-white mt-2">Next Stop: ${destStopName}</h3>
+                    <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+                        The bus is currently at <strong class="text-white">${currentStopName}</strong>. Your destination is the very next stop! Please prepare to deboard.
+                    </p>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button class="flex-1 py-3 rounded-xl bg-secondary text-[#003824] font-bold text-xs hover:bg-secondary-container transition-all cursor-pointer shadow-lg active:scale-95" onclick="window.app.closeModal()">
+                        I'm Ready
+                    </button>
+                    <button class="py-3 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer active:scale-95" onclick="TripsView.handleDeboarding(); window.app.closeModal();">
+                        Deboard Now
+                    </button>
+                </div>
+            </div>
+        `);
     },
 
     async handleBoarding() {

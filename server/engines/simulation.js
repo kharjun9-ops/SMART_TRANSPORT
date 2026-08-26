@@ -1,4 +1,5 @@
 const { getDb } = require('../db/database');
+const NotificationEngine = require('./notifications');
 
 class SimulationEngine {
     static simulationInterval = null;
@@ -265,6 +266,8 @@ class SimulationEngine {
                         segment_progress = ?, state = ?, dwell_seconds = ?
                     WHERE id = ?
                 `).run(nextIndex, newPassengerCount, newDelay, 0.0, 'at_stop', state.dwellTicks * 2, trip.id);
+
+                // Destination alert is managed explicitly when the user selects their target stop
             }
         } else {
             // Bus is smoothly moving between currentStop and nextStop

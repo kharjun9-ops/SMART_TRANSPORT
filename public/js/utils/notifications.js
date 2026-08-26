@@ -84,8 +84,14 @@ const NotificationUtils = {
 
         container.appendChild(toast);
 
-        // Haptic feedback if supported on mobile
-        if ('vibrate' in navigator) {
+        // Sound & Haptic Alert for Deboarding and Important notifications
+        if (type === 'destination_approaching') {
+            this.playChime();
+            this.speakAlert(message);
+            if ('vibrate' in navigator) {
+                navigator.vibrate([300, 150, 300, 150, 500]);
+            }
+        } else if ('vibrate' in navigator) {
             navigator.vibrate([40, 60, 40]);
         }
 
@@ -93,6 +99,58 @@ const NotificationUtils = {
             toast.classList.add('toast-exit');
             setTimeout(() => toast.remove(), 300);
         }, duration);
+    },
+
+    playChime() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+            const now = ctx.currentTime;
+
+            // Note 1 (E5 - 659.25 Hz)
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(659.25, now);
+            gain1.gain.setValueAtTime(0.25, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+
+            // Note 2 (A5 - 880.00 Hz)
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880.00, now + 0.2);
+            gain2.gain.setValueAtTime(0.3, now + 0.2);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.2);
+            osc2.stop(now + 0.6);
+        } catch (e) {
+            console.warn('Audio chime skipped', e);
+        }
+    },
+
+    speakAlert(text) {
+        try {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const cleanText = text.replace(/[^\w\s.,!?-]/gi, '');
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 0.95;
+                utterance.pitch = 1.05;
+                utterance.volume = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        } catch (e) {}
     },
 
     async updateBadge() {

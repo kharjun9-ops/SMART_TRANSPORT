@@ -138,6 +138,50 @@ router.get('/waitlist/my', authenticateToken, (req, res) => {
     }
 });
 
+// POST /api/trips/:id/destination-alarm - Register a deboarding alarm for 1 station before
+router.post('/:id/destination-alarm', optionalAuth, (req, res) => {
+    try {
+        const { destinationStopId } = req.body;
+        const tripId = req.params.id;
+        const userId = req.user ? req.user.id : 'usr_01';
+
+        if (!destinationStopId) {
+            return res.status(400).json({ error: 'destinationStopId is required' });
+        }
+
+        const db = getDb();
+        const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(tripId);
+        if (!trip) {
+            return res.status(404).json({ error: 'Trip not found' });
+        }
+
+        const stop = db.prepare('SELECT * FROM stops WHERE id = ?').get(destinationStopId);
+
+        // Register in active global destination alarms
+        if (!global.destinationAlarms) {
+            global.destinationAlarms = new Map();
+        }
+        const key = `${userId}_${tripId}`;
+        global.destinationAlarms.set(key, {
+            userId,
+            tripId,
+            destinationStopId,
+            destinationStopName: stop ? stop.name : 'Target Stop',
+            createdAt: new Date().toISOString()
+        });
+
+        res.json({
+            success: true,
+            message: `Alarm set for 1 station before ${stop ? stop.name : 'destination'}`,
+            destinationStopId,
+            destinationStopName: stop ? stop.name : 'Target Stop'
+        });
+    } catch (e) {
+        console.error('Destination alarm error:', e);
+        res.status(500).json({ error: 'Failed to set destination alarm' });
+    }
+});
+
 // GET /api/trips/:id/waitlist-forecast - Get comprehensive multi-stop crowd & waitlist forecast
 router.get('/:id/waitlist-forecast', (req, res) => {
     try {

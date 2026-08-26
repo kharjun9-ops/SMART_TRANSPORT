@@ -5,10 +5,10 @@
       "name": "Karthik Rao",
       "email": "karthik@demo.in",
       "password_hash": "$2a$10$HEJKONqOytrTRyVtSKUHwuWxfqHae5EahMIC6/5nxmHAfOkcTfSLa",
-      "points": 1730,
+      "points": 1765,
       "level": "Contributor",
       "reliability_score": 0.96,
-      "total_contributions": 25,
+      "total_contributions": 28,
       "streak_days": 1,
       "last_contribution_date": "2026-08-26"
     },
@@ -279,48 +279,48 @@
       "route_id": "route_blr_378",
       "bus_number": "KA-01-F-3781",
       "capacity": 55,
-      "current_latitude": 12.928285,
-      "current_longitude": 77.51796,
-      "current_speed_kmh": 25,
+      "current_latitude": 12.847085,
+      "current_longitude": 77.53674,
+      "current_speed_kmh": 24,
       "driver_name": "Manjunath Gowda",
       "status": "in_service",
-      "heading": 58
+      "heading": 257
     },
     {
       "id": "bus_blr_02",
       "route_id": "route_blr_378",
       "bus_number": "KA-57-F-3782",
       "capacity": 55,
-      "current_latitude": 12.851999000000001,
-      "current_longitude": 77.558076,
-      "current_speed_kmh": 47,
+      "current_latitude": 12.919015,
+      "current_longitude": 77.50283999999999,
+      "current_speed_kmh": 25,
       "driver_name": "Ramesh Kumar",
       "status": "in_service",
-      "heading": 77
+      "heading": 238
     },
     {
       "id": "bus_blr_03",
       "route_id": "route_blr_378",
       "bus_number": "KA-41-F-3783",
       "capacity": 52,
-      "current_latitude": 12.865752,
-      "current_longitude": 77.6322,
-      "current_speed_kmh": 44,
+      "current_latitude": 12.847435,
+      "current_longitude": 77.534728,
+      "current_speed_kmh": 27,
       "driver_name": "Shankarappa",
       "status": "in_service",
-      "heading": 261
+      "heading": 209
     },
     {
       "id": "bus_blr_04",
       "route_id": "route_blr_378",
       "bus_number": "KA-05-AF-3784",
       "capacity": 55,
-      "current_latitude": 12.893891666666667,
-      "current_longitude": 77.55997333333335,
-      "current_speed_kmh": 41,
+      "current_latitude": 12.846994,
+      "current_longitude": 77.66421700000001,
+      "current_speed_kmh": 46,
       "driver_name": "Venkatesh Murthy",
       "status": "in_service",
-      "heading": 288
+      "heading": 245
     }
   ],
   "trips": [
@@ -328,64 +328,64 @@
       "id": "trip_blr_01",
       "bus_id": "bus_blr_01",
       "route_id": "route_blr_378",
-      "direction": "inbound",
+      "direction": "outbound",
       "scheduled_start": "2026-08-26T16:05:06.364Z",
       "status": "active",
-      "current_stop_index": 3,
-      "current_passenger_count": 26,
-      "delay_minutes": 0,
+      "current_stop_index": 5,
+      "current_passenger_count": 17,
+      "delay_minutes": 2,
       "segment_progress": 0,
       "state": "at_stop",
-      "dwell_seconds": 2,
-      "actual_start": "2026-08-26T16:44:29.905Z",
+      "dwell_seconds": 4,
+      "actual_start": "2026-08-26T17:45:27.311Z",
       "actual_end": null
     },
     {
       "id": "trip_blr_02",
       "bus_id": "bus_blr_02",
       "route_id": "route_blr_378",
-      "direction": "inbound",
+      "direction": "outbound",
       "scheduled_start": "2026-08-26T15:42:06.367Z",
       "status": "active",
-      "current_stop_index": 8,
+      "current_stop_index": 11,
       "current_passenger_count": 30,
-      "delay_minutes": 1,
-      "segment_progress": 0.47,
-      "state": "in_transit",
-      "dwell_seconds": 0,
-      "actual_start": "2026-08-26T16:39:39.398Z",
+      "delay_minutes": 2,
+      "segment_progress": 0,
+      "state": "at_stop",
+      "dwell_seconds": 4,
+      "actual_start": "2026-08-26T17:40:13.308Z",
       "actual_end": null
     },
     {
       "id": "trip_blr_03",
       "bus_id": "bus_blr_03",
       "route_id": "route_blr_378",
-      "direction": "outbound",
+      "direction": "inbound",
       "scheduled_start": "2026-08-26T15:58:06.367Z",
       "status": "active",
-      "current_stop_index": 3,
-      "current_passenger_count": 24,
+      "current_stop_index": 8,
+      "current_passenger_count": 35,
       "delay_minutes": 0,
-      "segment_progress": 0.41,
-      "state": "in_transit",
-      "dwell_seconds": 0,
-      "actual_start": "2026-08-26T16:43:39.829Z",
+      "segment_progress": 0,
+      "state": "at_stop",
+      "dwell_seconds": 2,
+      "actual_start": "2026-08-26T17:44:13.702Z",
       "actual_end": null
     },
     {
       "id": "trip_blr_04",
       "bus_id": "bus_blr_04",
       "route_id": "route_blr_378",
-      "direction": "outbound",
+      "direction": "inbound",
       "scheduled_start": "2026-08-26T15:34:06.367Z",
       "status": "active",
-      "current_stop_index": 8,
-      "current_passenger_count": 26,
+      "current_stop_index": 12,
+      "current_passenger_count": 35,
       "delay_minutes": 0,
-      "segment_progress": 0.2833333333333333,
+      "segment_progress": 0.61,
       "state": "in_transit",
       "dwell_seconds": 0,
-      "actual_start": "2026-08-26T16:38:24.281Z",
+      "actual_start": "2026-08-26T17:38:58.192Z",
       "actual_end": null
     }
   ],
@@ -417,6 +417,48 @@
       "verification_status": "verified",
       "confidence_score": 0.85,
       "timestamp": "2026-08-26T16:46:54.846Z"
+    },
+    {
+      "id": "72aa355c-11a0-4e6c-b77c-74f316830d82",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_05",
+      "update_type": 12.977986713774499,
+      "crowd_level": null,
+      "latitude": 77.57257884203698,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-26T17:41:36.950Z"
+    },
+    {
+      "id": "c3d45d61-3fc9-4493-8d33-653dbab69ab3",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_04",
+      "update_type": 12.977608531119476,
+      "crowd_level": null,
+      "latitude": 77.57254832530138,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-26T17:48:01.341Z"
+    },
+    {
+      "id": "821d0a27-f87c-4376-8487-ae9afdb446eb",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_06",
+      "update_type": 12.977601940697628,
+      "crowd_level": null,
+      "latitude": 77.5727181591767,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-26T17:51:04.275Z"
     }
   ],
   "crowd_estimates": [
@@ -424,21 +466,21 @@
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_11",
       "estimated_level": "medium",
-      "estimated_count": 26,
-      "capacity_percentage": 0.5,
+      "estimated_count": 29,
+      "capacity_percentage": 0.5576923076923077,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:34:03.894Z"
+      "updated_at": "2026-08-26T17:46:47.452Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_07",
       "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5272727272727272,
+      "estimated_count": 32,
+      "capacity_percentage": 0.5818181818181818,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:45:14.987Z"
+      "updated_at": "2026-08-26T17:47:02.481Z"
     },
     {
       "trip_id": "trip_blr_01",
@@ -448,37 +490,37 @@
       "capacity_percentage": 0.36363636363636365,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:34:13.920Z"
+      "updated_at": "2026-08-26T17:47:02.481Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_05",
       "estimated_level": "medium",
-      "estimated_count": 26,
-      "capacity_percentage": 0.4727272727272727,
+      "estimated_count": 31,
+      "capacity_percentage": 0.5636363636363636,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:42:24.661Z"
+      "updated_at": "2026-08-26T17:47:22.509Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_10",
       "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.4807692307692308,
+      "estimated_count": 29,
+      "capacity_percentage": 0.5576923076923077,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:34:43.959Z"
+      "updated_at": "2026-08-26T17:47:27.518Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_08",
       "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.509090909090909,
+      "estimated_count": 31,
+      "capacity_percentage": 0.5636363636363636,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:44:29.905Z"
+      "updated_at": "2026-08-26T17:47:47.542Z"
     },
     {
       "trip_id": "trip_blr_01",
@@ -488,137 +530,137 @@
       "capacity_percentage": 0.36363636363636365,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:35:08.995Z"
+      "updated_at": "2026-08-26T17:48:01.349Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_09",
       "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.46153846153846156,
+      "estimated_count": 31,
+      "capacity_percentage": 0.5961538461538461,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:35:39.022Z"
+      "updated_at": "2026-08-26T17:48:22.564Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_09",
       "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5272727272727272,
+      "estimated_count": 30,
+      "capacity_percentage": 0.5454545454545454,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:43:29.821Z"
+      "updated_at": "2026-08-26T17:48:42.615Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_04",
       "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.45454545454545453,
+      "estimated_count": 33,
+      "capacity_percentage": 0.6,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:40:54.508Z"
+      "updated_at": "2026-08-26T17:48:52.632Z"
     },
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_05",
-      "estimated_level": "low",
-      "estimated_count": 21,
-      "capacity_percentage": 0.38181818181818183,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:36:39.085Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_08",
-      "estimated_level": "medium",
-      "estimated_count": 26,
-      "capacity_percentage": 0.5,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:36:39.086Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_10",
-      "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5272727272727272,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:42:34.691Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_03",
-      "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.45454545454545453,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:39:59.421Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_07",
-      "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.5192307692307693,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:37:24.169Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_11",
-      "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.509090909090909,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:41:54.611Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_02",
-      "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.45454545454545453,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:39:14.372Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_06",
       "estimated_level": "low",
       "estimated_count": 19,
       "capacity_percentage": 0.34545454545454546,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:38:09.258Z"
+      "updated_at": "2026-08-26T17:49:27.713Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_08",
+      "estimated_level": "medium",
+      "estimated_count": 32,
+      "capacity_percentage": 0.6153846153846154,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:49:22.702Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_10",
+      "estimated_level": "medium",
+      "estimated_count": 30,
+      "capacity_percentage": 0.5454545454545454,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:49:42.735Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_03",
+      "estimated_level": "medium",
+      "estimated_count": 34,
+      "capacity_percentage": 0.6181818181818182,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:49:47.744Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_07",
+      "estimated_level": "medium",
+      "estimated_count": 32,
+      "capacity_percentage": 0.6153846153846154,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:50:07.775Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_11",
+      "estimated_level": "medium",
+      "estimated_count": 30,
+      "capacity_percentage": 0.5454545454545454,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:50:22.813Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_02",
+      "estimated_level": "medium",
+      "estimated_count": 35,
+      "capacity_percentage": 0.6363636363636364,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:50:32.824Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_06",
+      "estimated_level": "low",
+      "estimated_count": 17,
+      "capacity_percentage": 0.3090909090909091,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:51:04.282Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_12",
       "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5272727272727272,
+      "estimated_count": 30,
+      "capacity_percentage": 0.5454545454545454,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:41:14.511Z"
+      "updated_at": "2026-08-26T17:51:02.865Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_06",
       "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.5384615384615384,
+      "estimated_count": 35,
+      "capacity_percentage": 0.6730769230769231,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:38:09.258Z"
+      "updated_at": "2026-08-26T17:50:52.862Z"
     },
     {
       "trip_id": "trip_blr_04",
@@ -643,12 +685,12 @@
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_07",
-      "estimated_level": "low",
-      "estimated_count": 21,
-      "capacity_percentage": 0.38181818181818183,
+      "estimated_level": "medium",
+      "estimated_count": 26,
+      "capacity_percentage": 0.4727272727272727,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:38:59.351Z"
+      "updated_at": "2026-08-26T17:38:48.163Z"
     },
     {
       "trip_id": "trip_blr_02",
@@ -663,32 +705,32 @@
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_08",
-      "estimated_level": "low",
-      "estimated_count": 22,
-      "capacity_percentage": 0.4,
+      "estimated_level": "medium",
+      "estimated_count": 25,
+      "capacity_percentage": 0.45454545454545453,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:39:44.402Z"
+      "updated_at": "2026-08-26T17:38:03.094Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_05",
       "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5576923076923077,
+      "estimated_count": 26,
+      "capacity_percentage": 0.5,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:39:44.402Z"
+      "updated_at": "2026-08-26T17:36:22.902Z"
     },
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_09",
-      "estimated_level": "low",
-      "estimated_count": 20,
-      "capacity_percentage": 0.36363636363636365,
+      "estimated_level": "medium",
+      "estimated_count": 24,
+      "capacity_percentage": 0.43636363636363634,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:40:39.492Z"
+      "updated_at": "2026-08-26T17:37:02.976Z"
     },
     {
       "trip_id": "trip_blr_03",
@@ -703,12 +745,12 @@
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_10",
-      "estimated_level": "low",
-      "estimated_count": 19,
-      "capacity_percentage": 0.34545454545454546,
+      "estimated_level": "medium",
+      "estimated_count": 25,
+      "capacity_percentage": 0.45454545454545453,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:41:39.560Z"
+      "updated_at": "2026-08-26T17:36:07.888Z"
     },
     {
       "trip_id": "trip_blr_03",
@@ -774,11 +816,11 @@
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_06",
       "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.4909090909090909,
+      "estimated_count": 29,
+      "capacity_percentage": 0.5272727272727272,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:43:54.851Z"
+      "updated_at": "2026-08-26T17:45:47.343Z"
     },
     {
       "trip_id": "trip_blr_01",
@@ -794,21 +836,21 @@
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_07",
       "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.4909090909090909,
+      "estimated_count": 26,
+      "capacity_percentage": 0.4727272727272727,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:44:44.919Z"
+      "updated_at": "2026-08-26T17:45:02.256Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_08",
       "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.4909090909090909,
+      "estimated_count": 24,
+      "capacity_percentage": 0.43636363636363634,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:45:30.021Z"
+      "updated_at": "2026-08-26T17:43:48.649Z"
     },
     {
       "trip_id": "trip_blr_02",
@@ -818,147 +860,147 @@
       "capacity_percentage": 0.5454545454545454,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:46:00.084Z"
+      "updated_at": "2026-08-26T17:46:12.397Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_09",
       "estimated_level": "medium",
-      "estimated_count": 26,
-      "capacity_percentage": 0.4727272727272727,
+      "estimated_count": 25,
+      "capacity_percentage": 0.45454545454545453,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:46:25.123Z"
+      "updated_at": "2026-08-26T17:42:48.584Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_10",
-      "estimated_level": "medium",
-      "estimated_count": 31,
-      "capacity_percentage": 0.5636363636363636,
+      "estimated_level": "low",
+      "estimated_count": 22,
+      "capacity_percentage": 0.4,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:29:28.430Z"
+      "updated_at": "2026-08-26T17:41:53.483Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_05",
       "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.45454545454545453,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:31:48.692Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_11",
-      "estimated_level": "medium",
       "estimated_count": 31,
       "capacity_percentage": 0.5636363636363636,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:28:48.387Z"
+      "updated_at": "2026-08-26T17:44:13.696Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_11",
+      "estimated_level": "low",
+      "estimated_count": 22,
+      "capacity_percentage": 0.4,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:41:13.423Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_12",
-      "estimated_level": "medium",
-      "estimated_count": 30,
-      "capacity_percentage": 0.5454545454545454,
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:28:08.317Z"
+      "updated_at": "2026-08-26T17:40:33.337Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_04",
       "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-26T16:30:18.521Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_13",
-      "estimated_level": "medium",
       "estimated_count": 30,
       "capacity_percentage": 0.5454545454545454,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:27:23.197Z"
+      "updated_at": "2026-08-26T17:42:43.570Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_13",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-26T17:39:48.251Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_03",
       "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
+      "estimated_count": 31,
+      "capacity_percentage": 0.5636363636363636,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:29:23.425Z"
+      "updated_at": "2026-08-26T17:41:48.476Z"
     },
     {
       "trip_id": "trip_blr_04",
       "stop_id": "stop_blr_14",
       "estimated_level": "medium",
-      "estimated_count": 37,
-      "capacity_percentage": 0.6727272727272727,
+      "estimated_count": 24,
+      "capacity_percentage": 0.43636363636363634,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:26:33.092Z"
+      "updated_at": "2026-08-26T17:38:58.191Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_02",
       "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
+      "estimated_count": 29,
+      "capacity_percentage": 0.5272727272727272,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:28:38.367Z"
+      "updated_at": "2026-08-26T17:41:03.399Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_01",
       "estimated_level": "medium",
-      "estimated_count": 32,
-      "capacity_percentage": 0.5818181818181818,
+      "estimated_count": 33,
+      "capacity_percentage": 0.6,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:27:48.257Z"
+      "updated_at": "2026-08-26T17:40:13.308Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_12",
       "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.4807692307692308,
+      "estimated_count": 28,
+      "capacity_percentage": 0.5384615384615384,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:33:23.824Z"
+      "updated_at": "2026-08-26T17:46:07.388Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_13",
       "estimated_level": "medium",
-      "estimated_count": 23,
-      "capacity_percentage": 0.4423076923076923,
+      "estimated_count": 27,
+      "capacity_percentage": 0.5192307692307693,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:32:38.764Z"
+      "updated_at": "2026-08-26T17:45:22.296Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_14",
       "estimated_level": "medium",
-      "estimated_count": 33,
-      "capacity_percentage": 0.6346153846153846,
+      "estimated_count": 34,
+      "capacity_percentage": 0.6538461538461539,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:31:48.692Z"
+      "updated_at": "2026-08-26T17:44:13.702Z"
     },
     {
       "trip_id": "trip_blr_01",
@@ -968,17 +1010,17 @@
       "capacity_percentage": 0.34545454545454546,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:33:28.829Z"
+      "updated_at": "2026-08-26T17:46:17.405Z"
     },
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_01",
       "estimated_level": "medium",
-      "estimated_count": 36,
-      "capacity_percentage": 0.6545454545454545,
+      "estimated_count": 30,
+      "capacity_percentage": 0.5454545454545454,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-26T16:32:38.764Z"
+      "updated_at": "2026-08-26T17:45:27.311Z"
     }
   ],
   "badges": [
@@ -1117,6 +1159,386 @@
       "data": "{\"points\":15,\"reason\":\"verified boarding confirmation\"}",
       "is_read": 0,
       "created_at": "2026-08-26T16:46:44.800Z"
+    },
+    {
+      "id": "78fd0c33-5fec-4540-8f28-6420011345e5",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Konanakunte Cross is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Konanakunte Cross\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:36:07.889Z"
+    },
+    {
+      "id": "6f927995-4e60-425c-9e19-f705340b4f80",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Rajarajeshwari Nagar Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Rajarajeshwari Nagar Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:36:07.893Z"
+    },
+    {
+      "id": "201c702c-985a-45f9-b6a3-aef6ca02801a",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Hosa Road Junction is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Hosa Road Junction\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:36:17.899Z"
+    },
+    {
+      "id": "4081ac92-e4ad-4a0c-869a-7a922ef1e412",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Silk Institute (Kanakapura Rd) is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Silk Institute (Kanakapura Rd)\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:36:22.902Z"
+    },
+    {
+      "id": "56c7efae-c3d9-4f1d-a9ae-35ba3a21e02e",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Bangalore University Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Bangalore University Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:36:47.960Z"
+    },
+    {
+      "id": "9b6674e5-3d2b-47c2-8ee3-5c9f165bd0fb",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Vajrahalli is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Vajrahalli\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:37:02.976Z"
+    },
+    {
+      "id": "74acc08b-d075-4489-9ee8-02d6964101d6",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Kengeri TTMC / Bus Terminal is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Kengeri TTMC / Bus Terminal\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:37:28.027Z"
+    },
+    {
+      "id": "a87718c4-c0f7-4940-a115-cd89f6e0b6fe",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Konappana Agrahara is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Konappana Agrahara\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:37:48.058Z"
+    },
+    {
+      "id": "c0569725-3875-4f2e-9d99-c2b8ead95e78",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Thalaghattapura is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Thalaghattapura\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:37:53.066Z"
+    },
+    {
+      "id": "cd90933f-bd84-4fe6-97e0-81477112f9d8",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Thalaghattapura is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Thalaghattapura\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:38:03.094Z"
+    },
+    {
+      "id": "e5622c5d-b5ef-4e53-a760-bf4b5ef58fc2",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Kengeri Satellite Town is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Kengeri Satellite Town\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:38:08.107Z"
+    },
+    {
+      "id": "cf991324-9b4f-429a-ab98-4a8ba082decb",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Electronic City Toll Gate / Phase 1 is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Electronic City Toll Gate / Phase 1\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:38:43.153Z"
+    },
+    {
+      "id": "756a84dc-f487-40ef-a413-38addcaef779",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Vajrahalli is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Vajrahalli\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:38:43.156Z"
+    },
+    {
+      "id": "903bc724-f385-4ff7-96af-03a2e5d16783",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Silk Institute (Kanakapura Rd) is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Silk Institute (Kanakapura Rd)\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:38:48.163Z"
+    },
+    {
+      "id": "c9ba6d17-ef27-4781-a544-5a89295cb87b",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Electronic City Wipro Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Electronic City Wipro Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:39:28.236Z"
+    },
+    {
+      "id": "4dfc1edf-a688-4fa1-8d29-ec036f6661f9",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Konanakunte Cross is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Konanakunte Cross\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:39:28.239Z"
+    },
+    {
+      "id": "01866050-e40c-496b-98f8-0d84faa87ed8",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Gottigere (Bannerghatta Rd) is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Gottigere (Bannerghatta Rd)\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:39:33.241Z"
+    },
+    {
+      "id": "466dc907-9276-4f97-b33f-f3ff1267bdef",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Bangalore University Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Bangalore University Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:39:48.252Z"
+    },
+    {
+      "id": "76f94eeb-fa6e-49ca-94d8-c54af9e1a6f4",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Uttarahalli / Channasandra is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Uttarahalli / Channasandra\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:40:23.316Z"
+    },
+    {
+      "id": "9685c292-66da-4bf1-a4e5-62aef6d1cdf3",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Rajarajeshwari Nagar Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Rajarajeshwari Nagar Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:40:33.337Z"
+    },
+    {
+      "id": "516e3364-bd9a-4045-9ffa-cb55b59f1976",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Konappana Agrahara is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Konappana Agrahara\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:03.399Z"
+    },
+    {
+      "id": "e08e2950-a412-4b11-9e95-f75194e9c1bc",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Hosa Road Junction is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Hosa Road Junction\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:08.407Z"
+    },
+    {
+      "id": "03a0954b-ff0c-499e-a896-4ec5c2d715f8",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Hosa Road Junction is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Hosa Road Junction\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:08.411Z"
+    },
+    {
+      "id": "853143e0-243d-4c21-aa6f-4425856156bf",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Uttarahalli / Channasandra is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Uttarahalli / Channasandra\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:13.423Z"
+    },
+    {
+      "id": "809245c0-cd0d-44b8-83e0-ce08041fa9f6",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Rajarajeshwari Nagar Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Rajarajeshwari Nagar Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:23.438Z"
+    },
+    {
+      "id": "722a10c3-a849-4d7e-ae58-8d3e05697c4d",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Hosa Road Junction is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Hosa Road Junction\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:48.476Z"
+    },
+    {
+      "id": "1b43a6fb-b663-4ae9-a21d-5367bbcf1d34",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Konanakunte Cross is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Konanakunte Cross\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:41:53.484Z"
+    },
+    {
+      "id": "ebd66908-ec9e-4d78-824b-d6cb461e878a",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Bangalore University Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Bangalore University Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:42:03.514Z"
+    },
+    {
+      "id": "bdc42169-943b-41cb-a29f-ad0307d4b210",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Konappana Agrahara is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Konappana Agrahara\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:42:38.554Z"
+    },
+    {
+      "id": "63994f33-ec2d-444f-aca5-314d0945af4e",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Gottigere (Bannerghatta Rd) is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Gottigere (Bannerghatta Rd)\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:42:43.570Z"
+    },
+    {
+      "id": "e9a099a1-5999-4151-85e3-aa401abd18fb",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Kengeri TTMC / Bus Terminal is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Kengeri TTMC / Bus Terminal\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:42:43.575Z"
+    },
+    {
+      "id": "ac4a3347-b005-4972-aafb-9bdde7421f3d",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Vajrahalli is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Vajrahalli\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:42:48.584Z"
+    },
+    {
+      "id": "2e1f5358-b803-4e69-843d-0660daf99bf8",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Kengeri Satellite Town is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_03\",\"stopName\":\"Kengeri Satellite Town\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:43:23.624Z"
+    },
+    {
+      "id": "c6a3f851-96b5-4ef0-9af3-c6f28466498b",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Electronic City Toll Gate / Phase 1 is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Electronic City Toll Gate / Phase 1\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:43:33.638Z"
+    },
+    {
+      "id": "9b793954-1ec9-4531-9acf-d836fb972d72",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Thalaghattapura is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_04\",\"stopName\":\"Thalaghattapura\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:43:48.649Z"
+    },
+    {
+      "id": "d75cb670-d07b-447c-990a-b34d88dac0a8",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Silk Institute (Kanakapura Rd) is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_02\",\"stopName\":\"Silk Institute (Kanakapura Rd)\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:44:13.696Z"
+    },
+    {
+      "id": "42e9ca6f-877d-4409-ad31-bc691092847e",
+      "user_id": "usr_01",
+      "type": "destination_approaching",
+      "title": "📍 Destination Approaching!",
+      "message": "Electronic City Wipro Gate is 1 stop away. Get ready to deboard!",
+      "data": "{\"tripId\":\"trip_blr_01\",\"stopName\":\"Electronic City Wipro Gate\",\"stopsRemaining\":1}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:44:18.716Z"
+    },
+    {
+      "id": "0c86929a-d647-4719-8e84-f89bbe01f4f3",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 15 points for verified boarding confirmation.",
+      "data": "{\"points\":15,\"reason\":\"verified boarding confirmation\"}",
+      "is_read": 0,
+      "created_at": "2026-08-26T17:48:01.366Z"
     }
   ],
   "point_transactions": [
@@ -1149,6 +1571,36 @@
       "is_verified": 0,
       "is_permanent": 0,
       "created_at": "2026-08-26T16:46:54.855Z"
+    },
+    {
+      "id": "836c6c57-1f18-4a87-8d7f-33ac998fcf20",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "deboard [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "72aa355c-11a0-4e6c-b77c-74f316830d82",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-26T17:41:36.961Z"
+    },
+    {
+      "id": "8caac403-a249-4705-bc7f-e88a3580bfb3",
+      "user_id": "usr_01",
+      "amount": 15,
+      "reason": "board [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "c3d45d61-3fc9-4493-8d33-653dbab69ab3",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-26T17:48:01.354Z"
+    },
+    {
+      "id": "247d3c55-60a5-45d1-b570-01632ab1b505",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "deboard [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "821d0a27-f87c-4376-8487-ae9afdb446eb",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-26T17:51:04.287Z"
     }
   ],
   "user_journeys": [
@@ -1161,6 +1613,16 @@
       "status": "completed",
       "deboard_stop_id": "stop_blr_11",
       "deboarded_at": "2026-08-26T16:46:54.851Z"
+    },
+    {
+      "id": "719abce6-ef35-42e7-8668-69e4cc8db21d",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "board_stop_id": "stop_blr_04",
+      "boarded_at": "2026-08-26T17:48:01.350Z",
+      "status": "completed",
+      "deboard_stop_id": "stop_blr_06",
+      "deboarded_at": "2026-08-26T17:51:04.282Z"
     }
   ],
   "stop_waiting_list": [
