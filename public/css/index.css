@@ -344,14 +344,14 @@ html.light textarea::placeholder {
 }
 
 .toast {
-    background: var(--color-surface-container);
+    background: var(--color-surface);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--panel-border);
     color: var(--color-on-surface);
     padding: 12px 16px;
     border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), 0 2px 8px rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -359,17 +359,40 @@ html.light textarea::placeholder {
     animation: toastSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+html.light .toast {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 3px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.toast .toast-title {
+    color: var(--color-on-surface) !important;
+    font-weight: 700;
+}
+
+html.light .toast .toast-title {
+    color: #111827 !important;
+}
+
+.toast .toast-message {
+    color: var(--color-on-surface-variant) !important;
+}
+
+html.light .toast .toast-message {
+    color: #4b5563 !important;
+}
+
 .toast.toast-success {
-    border-left: 4px solid var(--color-secondary);
+    border-left: 4px solid var(--color-secondary) !important;
 }
 .toast.toast-warning, .toast.toast-destination_approaching {
-    border-left: 4px solid var(--color-tertiary);
+    border-left: 4px solid var(--color-tertiary) !important;
 }
 .toast.toast-error {
-    border-left: 4px solid var(--color-error);
+    border-left: 4px solid var(--color-error) !important;
 }
 .toast.toast-info, .toast.toast-points_earned {
-    border-left: 4px solid var(--color-primary);
+    border-left: 4px solid var(--color-primary) !important;
 }
 
 @keyframes toastSlide {
@@ -381,6 +404,29 @@ html.light textarea::placeholder {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+}
+
+/* Universal Select & Form Elements High Legibility */
+select {
+    color: #ffffff !important;
+    background-color: #1e2638 !important;
+    font-weight: 500;
+}
+
+select option {
+    background-color: #151b28 !important;
+    color: #ffffff !important;
+    padding: 8px 12px;
+}
+
+html.light select {
+    color: #111827 !important;
+    background-color: #f3f4f6 !important;
+}
+
+html.light select option {
+    background-color: #ffffff !important;
+    color: #1f2937 !important;
 }
 
 /* Leaflet Map Styling */

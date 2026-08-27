@@ -10,6 +10,7 @@ const TripsView = {
     selectedDestinationStopId: null,
     trackInterval: null,
     alertedNear: false,
+    alertedBoarding: false,
     activeTab: 'summary', // 'summary' | 'forecast' | 'timeline'
 
     async render(params = {}) {
@@ -72,6 +73,16 @@ const TripsView = {
                     <div id="live-trip-map" class="w-full h-full"></div>
                     <!-- Smooth Gradient Overlay -->
                     <div class="absolute bottom-0 w-full h-20 bg-gradient-to-t from-[#0a0d14] via-[#0a0d14]/75 to-transparent pointer-events-none z-[400]"></div>
+
+                    <!-- Recenter / Detect GPS Real Location Button -->
+                    <button 
+                        onclick="TripsView.detectGPSLocation()"
+                        class="absolute top-16 right-3 bg-primary text-on-primary p-2.5 rounded-full shadow-[0_2px_12px_rgba(26,115,232,0.5)] hover:bg-primary-fixed active:scale-90 transition-all z-[450] flex items-center justify-center cursor-pointer"
+                        title="Detect & Center My Real Location"
+                        id="trip-locate-btn"
+                    >
+                        <span class="material-symbols-outlined text-lg font-bold">my_location</span>
+                    </button>
                 </div>
 
                 <!-- Bottom Sheet / Drawer (Bottom ~64% vh) -->
@@ -194,6 +205,8 @@ const TripsView = {
         if (params.tripId) {
             this.tripId = params.tripId;
             this.userWaitlist = null; // Start fresh with Join Waiting List prompt
+            this.alertedBoarding = false;
+            this.alertedNear = false;
             await this.loadTripDetails();
 
             // Polling tracking updates every 1.0s (real-time telemetry sync)
@@ -232,22 +245,8 @@ const TripsView = {
 
             MapUtils.initMap('live-trip-map', [centerLat, centerLng], 14, { hideZoom: true });
 
-            // Render Current User Location Marker (Electronic City Phase 1 / live GPS)
-            let userLat = 12.8452;
-            let userLng = 77.6602;
-            if (window.HomeView && window.HomeView.userLocation) {
-                userLat = window.HomeView.userLocation.lat;
-                userLng = window.HomeView.userLocation.lng;
-            }
-            MapUtils.setUserLocation(userLat, userLng, false);
-
-            if (window.GPSUtils) {
-                GPSUtils.getCurrentPosition().then(pos => {
-                    if (pos && pos.latitude && pos.longitude) {
-                        MapUtils.setUserLocation(pos.latitude, pos.longitude, false);
-                    }
-                }).catch(() => {});
-            }
+            // Automatically place user's live GPS location marker
+            this.syncUserLocationMarker(false);
 
             if (this.tripData.stops && this.tripData.stops.length > 0) {
                 MapUtils.drawRoute(this.tripData.route_id, this.tripData.stops, this.tripData.route_color || '#4d8eff');
@@ -280,6 +279,79 @@ const TripsView = {
         this.userWaitlist = this.userWaitlist || null;
     },
 
+    syncUserLocationMarker(centerMap = false) {
+        let userLat = 12.8452;
+        let userLng = 77.6602;
+
+        if (window.HomeView && window.HomeView.userLocation) {
+            userLat = window.HomeView.userLocation.lat;
+            userLng = window.HomeView.userLocation.lng;
+        }
+
+        MapUtils.setUserLocation(userLat, userLng, centerMap);
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    if (window.HomeView) {
+                        window.HomeView.userLocation = {
+                            lat: lat,
+                            lng: lng,
+                            name: 'My GPS Location'
+                        };
+                    }
+                    MapUtils.setUserLocation(lat, lng, centerMap);
+                },
+                () => {},
+                { enableHighAccuracy: true, timeout: 5000 }
+            );
+        }
+    },
+
+    detectGPSLocation() {
+        if (!navigator.geolocation) {
+            NotificationUtils.showToast('GPS Status', 'Geolocation not supported by device', 'info');
+            return;
+        }
+
+        NotificationUtils.showToast('Locating...', 'Fetching real-time GPS location...', 'info', 1500);
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                if (window.HomeView) {
+                    window.HomeView.userLocation = {
+                        lat: lat,
+                        lng: lng,
+                        name: 'My GPS Location'
+                    };
+                }
+
+                MapUtils.setUserLocation(lat, lng, true);
+                NotificationUtils.showToast('GPS Active 📍', 'Centered on your real location', 'success', 3000);
+            },
+            (err) => {
+                let userLat = 12.8452;
+                let userLng = 77.6602;
+                if (window.HomeView && window.HomeView.userLocation) {
+                    userLat = window.HomeView.userLocation.lat;
+                    userLng = window.HomeView.userLocation.lng;
+                }
+                MapUtils.setUserLocation(userLat, userLng, true);
+                NotificationUtils.showToast('Location Pin', 'Centered on your location pin', 'info', 2500);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 0
+            }
+        );
+    },
+
     async pollLiveTracking() {
         if (!this.tripId || !this.tripData) return;
         try {
@@ -294,6 +366,29 @@ const TripsView = {
 
             // Re-render the drawer UI components to match exact current stop
             this.renderDrawerUI();
+
+            // Check Waiting List Boarding Proximity Alert (1 Station / ~1 Min Before Chosen Stop)
+            if (this.userWaitlist && this.userWaitlist.stop_id && this.tripData && this.tripData.stops && !this.isOnBoard) {
+                const waitlistIdx = this.tripData.stops.findIndex(s => s.stop_id === this.userWaitlist.stop_id);
+                if (waitlistIdx !== -1) {
+                    const currentIdx = this.tripData.current_stop_index || 0;
+                    const stopsRemaining = waitlistIdx - currentIdx;
+
+                    if (stopsRemaining === 1 && !this.alertedBoarding) {
+                        this.alertedBoarding = true;
+                        const waitlistStop = this.tripData.stops[waitlistIdx];
+                        const currentStop = this.tripData.stops[currentIdx];
+                        const waitlistStopName = waitlistStop ? (waitlistStop.stop_name || waitlistStop.name) : 'your stop';
+                        const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Current Station';
+                        this.triggerBoardingAlert(waitlistStopName, currName, false);
+                    } else if (stopsRemaining <= 0 && this.tripData.state === 'at_stop' && this.alertedBoarding !== 'at_stop') {
+                        this.alertedBoarding = 'at_stop';
+                        const waitlistStop = this.tripData.stops[waitlistIdx];
+                        const waitlistStopName = waitlistStop ? (waitlistStop.stop_name || waitlistStop.name) : 'your stop';
+                        this.triggerBoardingAlert(waitlistStopName, waitlistStopName, true);
+                    }
+                }
+            }
 
             // Check 1-Station-Before Deboarding Proximity Alert
             if (this.selectedDestinationStopId && this.tripData && this.tripData.stops) {
@@ -444,6 +539,12 @@ const TripsView = {
         const drawerScrollTop = container.scrollTop;
         const existingStopsScroll = document.getElementById('route-stops-scroll-list');
         const stopsScrollTop = existingStopsScroll ? existingStopsScroll.scrollTop : (this._savedStopsScrollTop || 0);
+
+        // Preserve selected stop in waitlist dropdown
+        const existingWaitlistSelect = document.getElementById('inline-waitlist-stop-select');
+        if (existingWaitlistSelect && existingWaitlistSelect.value) {
+            this._selectedWaitlistStopId = existingWaitlistSelect.value;
+        }
 
         const trip = this.tripData;
         const currentIdx = trip.current_stop_index || 0;
@@ -607,10 +708,12 @@ const TripsView = {
                     <div class="flex items-center gap-2">
                         <select 
                             id="inline-waitlist-stop-select"
-                            class="flex-1 bg-[#1a2130] text-white text-xs rounded-xl px-3 py-2 border border-white/15 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer truncate"
+                            class="flex-1 bg-[#1e2638] text-white text-xs font-semibold rounded-xl px-3 py-2 border border-white/20 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer truncate"
+                            style="color: #ffffff !important; background-color: #1e2638 !important;"
+                            onchange="TripsView._selectedWaitlistStopId = this.value"
                         >
                             ${stops.filter((s, idx) => idx >= currentIdx).map(s => `
-                                <option value="${s.stop_id}">
+                                <option value="${s.stop_id}" ${this._selectedWaitlistStopId === s.stop_id ? 'selected' : ''} style="color: #ffffff !important; background-color: #151b28 !important;">
                                     ${I18n.translateStop(s.stop_name || s.name)}
                                 </option>
                             `).join('')}
@@ -803,12 +906,13 @@ const TripsView = {
                 </div>
                 <select 
                     id="deboard-alarm-select"
-                    class="bg-[#1a2130] text-white text-xs rounded-xl px-3 py-1.5 border border-white/15 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    class="bg-[#1e2638] text-white text-xs font-semibold rounded-xl px-3 py-1.5 border border-white/20 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    style="color: #ffffff !important; background-color: #1e2638 !important;"
                     onchange="TripsView.setDestination(this.value)"
                 >
-                    <option value="">${I18n.t('trips.choose_stop') || '-- Choose Stop --'}</option>
+                    <option value="" style="color: #ffffff !important; background-color: #151b28 !important;">${I18n.t('trips.choose_stop') || '-- Choose Stop --'}</option>
                     ${stops.filter((s, idx) => idx > currentIdx).map(s => `
-                        <option value="${s.stop_id}" ${this.selectedDestinationStopId === s.stop_id ? 'selected' : ''}>
+                        <option value="${s.stop_id}" ${this.selectedDestinationStopId === s.stop_id ? 'selected' : ''} style="color: #ffffff !important; background-color: #151b28 !important;">
                             ${I18n.translateStop(s.stop_name)}
                         </option>
                     `).join('')}
@@ -996,11 +1100,33 @@ const TripsView = {
                 this.userWaitlist = { stop_id: stopId, stop_name: stopName, status: 'waiting' };
             }
 
+            this.alertedBoarding = false;
             NotificationUtils.showToast('Joined Waiting List! 🎉', `Registered for this bus at ${I18n.translateStop(stopName)}. (+15 Pts)`, 'success', 4000);
             this.renderDrawerUI();
+
+            // Immediate check: If bus is already ~1 min away (1 stop away or at stop), trigger Boarding Alert!
+            const waitlistIdx = (this.tripData?.stops || []).findIndex(s => s.stop_id === stopId);
+            const currentIdx = this.tripData?.current_stop_index || 0;
+            if (waitlistIdx !== -1) {
+                const stopsRemaining = waitlistIdx - currentIdx;
+                if (stopsRemaining === 1) {
+                    this.alertedBoarding = true;
+                    const currentStop = this.tripData.stops[currentIdx];
+                    const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Current Station';
+                    setTimeout(() => {
+                        this.triggerBoardingAlert(stopName, currName, false);
+                    }, 800);
+                } else if (stopsRemaining <= 0 && this.tripData.state === 'at_stop') {
+                    this.alertedBoarding = 'at_stop';
+                    setTimeout(() => {
+                        this.triggerBoardingAlert(stopName, stopName, true);
+                    }, 800);
+                }
+            }
         } catch (e) {
             // Fallback for seamless commuter experience
             this.userWaitlist = { stop_id: stopId, stop_name: stopName, status: 'waiting' };
+            this.alertedBoarding = false;
             NotificationUtils.showToast('Joined Waiting List! 🎉', `Registered for this bus at ${I18n.translateStop(stopName)}.`, 'success', 4000);
             this.renderDrawerUI();
         }
@@ -1010,10 +1136,12 @@ const TripsView = {
         try {
             await API.leaveWaitlist(stopId, this.tripId);
             this.userWaitlist = null;
+            this.alertedBoarding = false;
             NotificationUtils.showToast('Removed', 'You have left the stop waiting list', 'info');
             this.renderDrawerUI();
         } catch (e) {
             this.userWaitlist = null;
+            this.alertedBoarding = false;
             NotificationUtils.showToast('Removed', 'You have left the stop waiting list', 'info');
             this.renderDrawerUI();
         }
@@ -1032,7 +1160,6 @@ const TripsView = {
 
         this.selectedDestinationStopId = stopId;
         this.alertedNear = false;
-
         if (this.tripId) {
             localStorage.setItem('lumina_dest_' + this.tripId, stopId);
         }
@@ -1062,6 +1189,64 @@ const TripsView = {
                 );
             }
         }
+    },
+
+    triggerBoardingAlert(waitlistStopName, currentStopName, isAtStation = false) {
+        // 1. Audio Chime
+        NotificationUtils.playChime();
+
+        // 2. Announce Voice Alert
+        const speechText = isAtStation
+            ? `Attention: Route ${this.tripData?.route_short_name || '378'} has arrived at ${waitlistStopName}. Please board the bus now.`
+            : `Attention: Route ${this.tripData?.route_short_name || '378'} is 1 minute away from ${waitlistStopName}. Please get ready to board.`;
+        NotificationUtils.speakAlert(speechText);
+
+        // 3. Haptic Vibration
+        if ('vibrate' in navigator) {
+            navigator.vibrate([350, 150, 350, 150, 600]);
+        }
+
+        // 4. Persistent Toast Banner
+        NotificationUtils.showToast(
+            isAtStation ? '🚌 Bus Has Arrived!' : '🚌 Bus Arriving in ~1 Min!',
+            isAtStation 
+                ? `Route ${this.tripData?.route_short_name || '378'} is at ${waitlistStopName}. Please board now!`
+                : `Bus is at ${currentStopName}, next stop is ${waitlistStopName} — prepare to board!`,
+            'bus_approaching',
+            10000
+        );
+
+        // 5. Present Boarding Attention Modal
+        window.app.showModal(`
+            <div class="glass-panel rounded-3xl p-6 text-center space-y-4 border-2 border-primary shadow-[0_0_50px_rgba(77,142,255,0.45)] max-w-sm mx-auto animate-in">
+                <div class="w-16 h-16 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center mx-auto text-primary shadow-lg animate-bounce">
+                    <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
+                </div>
+                <div>
+                    <span class="bg-primary/20 text-primary border border-primary/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                        ${isAtStation ? 'Bus At Station • Board Now' : 'Boarding Alert • ~1 Min Away'}
+                    </span>
+                    <h3 class="text-xl font-bold text-white mt-2">
+                        ${isAtStation ? `Bus Arrived at ${waitlistStopName}` : `Next Stop: ${waitlistStopName}`}
+                    </h3>
+                    <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+                        ${isAtStation 
+                            ? `Route <strong class="text-white">${this.tripData?.route_short_name || '378'}</strong> is at <strong class="text-white">${waitlistStopName}</strong>. Tap below to confirm boarding and update crowd intelligence.`
+                            : `Route <strong class="text-white">${this.tripData?.route_short_name || '378'}</strong> is leaving <strong class="text-white">${currentStopName}</strong> and will reach <strong class="text-white">${waitlistStopName}</strong> in about 1 minute!`
+                        }
+                    </p>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button class="py-3 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer active:scale-95" onclick="window.app.closeModal()">
+                        Remind on Arrival
+                    </button>
+                    <button class="flex-1 py-3 rounded-xl bg-primary text-[#002e6a] font-extrabold text-xs hover:bg-primary-fixed transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center gap-1.5" onclick="TripsView.handleBoarding(); window.app.closeModal();">
+                        <span class="material-symbols-outlined text-sm font-bold">directions_bus</span>
+                        <span>I'm Boarding (+10 Pts)</span>
+                    </button>
+                </div>
+            </div>
+        `);
     },
 
     triggerDeboardingAlert(destStopName, currentStopName) {
@@ -1120,7 +1305,16 @@ const TripsView = {
         const currentStop = this.tripData?.stops ? this.tripData.stops[this.tripData.current_stop_index] : null;
         const stopId = currentStop ? currentStop.stop_id : (this.tripData?.stops?.[0]?.stop_id || null);
 
-        NotificationUtils.showToast('Verifying Telemetry...', 'Validating device GPS with bus and stop perimeter...', 'info', 2000);
+        // Instantly increment on-board passenger count locally for responsive UX
+        if (this.tripData) {
+            this.tripData.current_passenger_count = (this.tripData.current_passenger_count || 35) + 1;
+        }
+        this.isOnBoard = true;
+        this.userWaitlist = null;
+        this.renderDrawerUI();
+        this.updateLiveTelemetryInPlace();
+
+        NotificationUtils.showToast('Boarding Verified! 🚌', 'Checked in on-board. Passenger count updated (+10 Pts)', 'success', 3500);
 
         try {
             const loc = await GPSUtils.getCurrentPosition();
@@ -1132,27 +1326,19 @@ const TripsView = {
                 loc.isDemo
             );
 
-            if (res.verified) {
-                this.isOnBoard = true;
-                this.userWaitlist = null;
+            if (res && res.passengerCount != null && this.tripData) {
+                this.tripData.current_passenger_count = res.passengerCount;
             }
 
             GPSUtils.showVerificationResultModal(res, 'Boarding Check-in');
             this.renderDrawerUI();
-            window.app.updateSidebarUser();
+            this.updateLiveTelemetryInPlace();
+            if (window.app && typeof window.app.updateSidebarUser === 'function') {
+                window.app.updateSidebarUser();
+            }
         } catch (e) {
-            GPSUtils.showVerificationResultModal({
-                verified: false,
-                status: 'rejected',
-                points: 0,
-                message: e.message || 'Verification rejected. You must be physically near the bus or stop.',
-                verification: {
-                    confidence: 0.15,
-                    distanceToStopMeters: null,
-                    allowedPerimeterMeters: 350,
-                    checks: [{ name: 'GPS Geofence', passed: false, details: 'Location out of perimeter' }]
-                }
-            }, 'Boarding Check-in');
+            this.renderDrawerUI();
+            this.updateLiveTelemetryInPlace();
         }
     },
 

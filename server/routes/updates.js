@@ -47,7 +47,7 @@ router.post('/board', authenticateToken, (req, res) => {
         );
 
         // Process in crowd intelligence engine
-        CrowdIntelligenceEngine.processBoarding(tripId, stopId, userId);
+        const boardRes = CrowdIntelligenceEngine.processBoarding(tripId, stopId, userId);
 
         // Create user journey record
         const journeyId = uuidv4();
@@ -79,6 +79,7 @@ router.post('/board', authenticateToken, (req, res) => {
             message: pointsResult.message,
             updateId,
             journeyId,
+            passengerCount: boardRes ? boardRes.passengerCount : undefined,
             points: pointsResult.points,
             pendingPoints: pointsResult.pendingPoints || 0,
             verification: {
@@ -135,7 +136,7 @@ router.post('/deboard', authenticateToken, (req, res) => {
         );
 
         // Process in crowd intelligence engine
-        CrowdIntelligenceEngine.processDeboarding(tripId, stopId, userId);
+        const deboardRes = CrowdIntelligenceEngine.processDeboarding(tripId, stopId, userId);
 
         // Complete user journey
         db.prepare(`
@@ -155,6 +156,7 @@ router.post('/deboard', authenticateToken, (req, res) => {
             verified: verification.isVerified,
             message: pointsResult.message,
             updateId,
+            passengerCount: deboardRes ? deboardRes.passengerCount : undefined,
             points: pointsResult.points,
             pendingPoints: pointsResult.pendingPoints || 0,
             verification: {

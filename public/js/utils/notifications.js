@@ -56,28 +56,28 @@ const NotificationUtils = {
         if (!container) return;
 
         const icons = {
-            success: 'check_circle',
-            error: 'error',
-            warning: 'warning',
-            info: 'info',
-            bus_approaching: 'directions_bus',
-            delay: 'schedule',
-            destination_approaching: 'location_on',
-            badge_earned: 'emoji_events',
-            points_earned: 'stars'
+            success: { icon: 'check_circle', color: 'var(--color-secondary)' },
+            error: { icon: 'error', color: 'var(--color-error)' },
+            warning: { icon: 'warning', color: 'var(--color-tertiary)' },
+            info: { icon: 'info', color: 'var(--color-primary)' },
+            bus_approaching: { icon: 'directions_bus', color: 'var(--color-primary)' },
+            delay: { icon: 'schedule', color: 'var(--color-tertiary)' },
+            destination_approaching: { icon: 'location_on', color: 'var(--color-tertiary)' },
+            badge_earned: { icon: 'emoji_events', color: 'var(--color-tertiary)' },
+            points_earned: { icon: 'stars', color: 'var(--color-primary)' }
         };
 
-        const icon = icons[type] || 'notifications';
+        const iconConfig = icons[type] || { icon: 'notifications', color: 'var(--color-primary)' };
 
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `
-            <span class="material-symbols-outlined" style="color: #adc6ff; font-size: 22px;">${icon}</span>
-            <div style="flex: 1;">
-                <div style="font-weight: 600; font-size: 0.88rem; color: #dce2f7;">${title}</div>
-                <div class="toast-message" style="color: #c2c6d6; margin-top: 2px; font-size: 0.8rem;">${message}</div>
+            <span class="material-symbols-outlined flex-shrink-0" style="color: ${iconConfig.color}; font-size: 22px;">${iconConfig.icon}</span>
+            <div style="flex: 1; min-width: 0;">
+                <div class="toast-title" style="font-weight: 700; font-size: 0.88rem; color: var(--color-on-surface); line-height: 1.3;">${title}</div>
+                <div class="toast-message" style="color: var(--color-on-surface-variant); margin-top: 2px; font-size: 0.8rem; line-height: 1.35;">${message}</div>
             </div>
-            <button onclick="this.parentElement.remove()" style="color: #8c909f; padding: 4px; background: none; border: none; cursor: pointer;">
+            <button onclick="this.parentElement.remove()" style="color: var(--color-outline); padding: 4px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px;" aria-label="Close">
                 <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
             </button>
         `;
@@ -150,7 +150,7 @@ const NotificationUtils = {
                 utterance.volume = 1.0;
                 window.speechSynthesis.speak(utterance);
             }
-        } catch (e) {}
+        } catch (e) { }
     },
 
     async updateBadge() {
@@ -171,6 +171,6 @@ const NotificationUtils = {
                     badge.style.display = 'none';
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
     }
 };
