@@ -102,6 +102,11 @@ class CrowdIntelligenceEngine {
 
         return {
             id: waitlistId,
+            user_id: userId,
+            stop_id: stopId,
+            route_id: routeId,
+            trip_id: tripId || null,
+            destination_stop_id: destinationStopId || null,
             status: 'waiting',
             message: 'Joined stop waiting list successfully'
         };

@@ -7,21 +7,21 @@ INSERT OR IGNORE INTO stops (id, name, latitude, longitude, zone, is_major, amen
 ('stop_blr_01', 'Electronic City Wipro Gate', 12.8452, 77.6602, 'Electronic City Hub', 1, '["shelter","seating","display_board","restroom"]'),
 ('stop_blr_02', 'Electronic City Toll Gate / Phase 1', 12.8498, 77.6705, 'Electronic City Corridor', 0, '["shelter","seating"]'),
 ('stop_blr_03', 'Konappana Agrahara', 12.8580, 77.6750, 'Hosur Rd Corridor', 0, '["shelter"]'),
-('stop_blr_04', 'Hosa Road Junction', 12.8710, 77.6650, 'Hosur Rd Corridor', 0, '["shelter","seating"]'),
-('stop_blr_05', 'Gottigere (Bannerghatta Rd)', 12.8582, 77.5850, 'NICE Corridor', 0, '["shelter","seating"]'),
-('stop_blr_06', 'Silk Institute (Kanakapura Rd)', 12.8465, 77.5342, 'Kanakapura Corridor', 1, '["shelter","seating","display_board"]'),
-('stop_blr_07', 'Thalaghattapura', 12.8550, 77.5390, 'Kanakapura Corridor', 0, '["shelter","seating"]'),
-('stop_blr_08', 'Vajrahalli', 12.8645, 77.5448, 'Kanakapura Corridor', 0, '["shelter"]'),
-('stop_blr_09', 'Konanakunte Cross', 12.8895, 77.5738, 'South Hub', 1, '["shelter","seating","display_board"]'),
-('stop_blr_10', 'Uttarahalli / Channasandra', 12.9050, 77.5250, 'Uttarahalli Corridor', 0, '["shelter","seating"]'),
-('stop_blr_11', 'Rajarajeshwari Nagar Gate', 12.9288, 77.5188, 'Mysore Rd Corridor', 0, '["shelter","seating"]'),
-('stop_blr_12', 'Bangalore University Gate', 12.9185, 77.5020, 'Mysore Rd Corridor', 0, '["shelter"]'),
-('stop_blr_13', 'Kengeri TTMC / Bus Terminal', 12.9081, 77.4835, 'West Terminal', 1, '["shelter","seating","display_board","restroom"]'),
-('stop_blr_14', 'Kengeri Satellite Town', 12.8985, 77.4780, 'West Terminal', 0, '["shelter","seating"]');
+('stop_blr_04', 'Hosa Road Junction', 12.87079, 77.66602, 'Hosur Rd Corridor', 0, '["shelter","seating"]'),
+('stop_blr_05', 'Gottigere (Bannerghatta Rd)', 12.85819, 77.58531, 'Bannerghatta Corridor', 0, '["shelter","seating"]'),
+('stop_blr_06', 'Silk Institute (Kanakapura Rd)', 12.86242, 77.53028, 'Kanakapura Corridor', 1, '["shelter","seating","display_board"]'),
+('stop_blr_07', 'Thalaghattapura', 12.87181, 77.53717, 'Kanakapura Corridor', 0, '["shelter","seating"]'),
+('stop_blr_08', 'Vajrahalli', 12.88140, 77.54630, 'Kanakapura Corridor', 0, '["shelter"]'),
+('stop_blr_09', 'Konanakunte Cross', 12.88950, 77.57381, 'South Hub', 1, '["shelter","seating","display_board"]'),
+('stop_blr_10', 'Uttarahalli / Channasandra', 12.90500, 77.52494, 'Uttarahalli Corridor', 0, '["shelter","seating"]'),
+('stop_blr_11', 'Rajarajeshwari Nagar Gate', 12.92891, 77.51884, 'Mysore Rd Corridor', 0, '["shelter","seating"]'),
+('stop_blr_12', 'Bangalore University Gate', 12.91833, 77.50172, 'Mysore Rd Corridor', 0, '["shelter"]'),
+('stop_blr_13', 'Kengeri TTMC / Bus Terminal', 12.90804, 77.48350, 'West Terminal', 1, '["shelter","seating","display_board","restroom"]'),
+('stop_blr_14', 'Kengeri Satellite Town', 12.89858, 77.47800, 'West Terminal', 0, '["shelter","seating"]');
 
 -- Insert Route 378
 INSERT OR IGNORE INTO routes (id, name, route_number, color, description, total_distance_km, avg_duration_minutes, fare_lkr, status) VALUES
-('route_blr_378', 'Electronic City - Kengeri TTMC', '378', '#10B981', 'Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via NICE Corridor, Silk Institute & RR Nagar', 32.0, 75, 45, 'active');
+('route_blr_378', 'Electronic City - Kengeri TTMC', '378', '#10B981', 'Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via Gottigere, Silk Institute, Vajrahalli & Uttarahalli', 32.0, 75, 45, 'active');
 
 -- Insert Route-Stop mappings
 INSERT OR IGNORE INTO route_stops (route_id, stop_id, sequence_order, distance_from_start_km, avg_time_from_start_min) VALUES
@@ -50,14 +50,11 @@ INSERT OR IGNORE INTO buses (id, route_id, bus_number, capacity, status, driver_
 -- Insert Badges
 INSERT OR IGNORE INTO badges (id, name, description, icon, category, requirement_type, requirement_value, rarity) VALUES
 ('badge_01', 'First Ride', 'Board your first bus', '🎫', 'travel', 'contributions', 1, 'common'),
-('badge_02', 'Regular Commuter', 'Make 10 contributions', '🚌', 'travel', 'contributions', 10, 'common'),
-('badge_03', 'Crowd Reporter', 'Submit 5 crowd feedbacks', '👥', 'crowd', 'contributions', 5, 'common'),
-('badge_04', 'Weekly Warrior', 'Maintain a 7-day streak', '🔥', 'general', 'streak', 7, 'rare'),
-('badge_05', 'Transit Expert', 'Reach 500 points', '⭐', 'general', 'points', 500, 'rare'),
-('badge_06', 'Community Guardian', 'Submit 10 valid reports', '🛡️', 'social', 'contributions', 10, 'rare'),
-('badge_07', 'Century Club', 'Make 100 contributions', '💯', 'general', 'contributions', 100, 'epic'),
-('badge_08', 'Trusted Source', 'Achieve 0.9 reliability score', '✅', 'general', 'special', 90, 'epic'),
-('badge_09', 'Transit Legend', 'Reach 5000 points', '👑', 'general', 'points', 5000, 'legendary');
+('badge_02', 'Crowd Reporter', 'Submit 5 crowd feedbacks', '👥', 'crowd', 'contributions', 5, 'common'),
+('badge_03', 'Weekly Warrior', 'Maintain a 7-day streak', '🔥', 'general', 'streak', 7, 'rare'),
+('badge_04', 'Transit Expert', 'Reach 500 points', '⭐', 'general', 'points', 500, 'rare'),
+('badge_05', 'Community Guard', 'Submit 10 valid reports', '🛡️', 'social', 'contributions', 10, 'epic'),
+('badge_06', 'Transit Legend', 'Reach 5000 points', '👑', 'general', 'points', 5000, 'legendary');
 
 -- Insert sample trips
 INSERT OR IGNORE INTO trips (id, bus_id, route_id, direction, scheduled_start, status, current_stop_index, current_passenger_count, delay_minutes) VALUES

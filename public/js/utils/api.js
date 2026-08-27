@@ -213,6 +213,10 @@ const API = {
         return this.request('/gamification/badges');
     },
 
+    async getContributionHistory(limit = 10) {
+        return this.request(`/gamification/history?limit=${limit}`);
+    },
+
     // Complaints
     async getComplaintCategories() {
         return this.request('/complaints/categories/list');

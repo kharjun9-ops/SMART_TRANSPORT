@@ -5,10 +5,10 @@
       "name": "Karthik Rao",
       "email": "karthik@demo.in",
       "password_hash": "$2a$10$HEJKONqOytrTRyVtSKUHwuWxfqHae5EahMIC6/5nxmHAfOkcTfSLa",
-      "points": 1880,
-      "level": "Contributor",
+      "points": 2130,
+      "level": "Expert",
       "reliability_score": 0.96,
-      "total_contributions": 35,
+      "total_contributions": 40,
       "streak_days": 2,
       "last_contribution_date": "2026-08-27"
     },
@@ -52,7 +52,7 @@
       "name": "Electronic City - Kengeri TTMC",
       "route_number": "378",
       "color": "#10B981",
-      "description": "Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via NICE Corridor, Silk Institute & RR Nagar",
+      "description": "Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via Gottigere, Silk Institute, Vajrahalli & Uttarahalli",
       "total_distance_km": 32,
       "avg_duration_minutes": 75,
       "fare_lkr": 45,
@@ -63,114 +63,128 @@
     {
       "id": "stop_blr_01",
       "name": "Electronic City Wipro Gate",
-      "latitude": 12.8452,
-      "longitude": 77.6602,
+      "latitude": 12.84515,
+      "longitude": 77.66021,
       "zone": "Electronic City Hub",
-      "is_major": 1
+      "is_major": 1,
+      "amenities": "[\"shelter\",\"seating\",\"display_board\",\"restroom\"]"
     },
     {
       "id": "stop_blr_02",
       "name": "Electronic City Toll Gate / Phase 1",
-      "latitude": 12.8498,
-      "longitude": 77.6705,
+      "latitude": 12.84923,
+      "longitude": 77.67052,
       "zone": "Electronic City Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     },
     {
       "id": "stop_blr_03",
       "name": "Konappana Agrahara",
-      "latitude": 12.858,
-      "longitude": 77.675,
+      "latitude": 12.85795,
+      "longitude": 77.67498,
       "zone": "Hosur Rd Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\"]"
     },
     {
       "id": "stop_blr_04",
       "name": "Hosa Road Junction",
-      "latitude": 12.871,
-      "longitude": 77.665,
+      "latitude": 12.87079,
+      "longitude": 77.66602,
       "zone": "Hosur Rd Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     },
     {
       "id": "stop_blr_05",
       "name": "Gottigere (Bannerghatta Rd)",
-      "latitude": 12.8582,
-      "longitude": 77.585,
-      "zone": "NICE Corridor",
-      "is_major": 0
+      "latitude": 12.85819,
+      "longitude": 77.58531,
+      "zone": "Bannerghatta Corridor",
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     },
     {
       "id": "stop_blr_06",
       "name": "Silk Institute (Kanakapura Rd)",
-      "latitude": 12.8465,
-      "longitude": 77.5342,
+      "latitude": 12.86242,
+      "longitude": 77.53028,
       "zone": "Kanakapura Corridor",
-      "is_major": 1
+      "is_major": 1,
+      "amenities": "[\"shelter\",\"seating\",\"display_board\"]"
     },
     {
       "id": "stop_blr_07",
       "name": "Thalaghattapura",
-      "latitude": 12.855,
-      "longitude": 77.539,
+      "latitude": 12.87181,
+      "longitude": 77.53717,
       "zone": "Kanakapura Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     },
     {
       "id": "stop_blr_08",
       "name": "Vajrahalli",
-      "latitude": 12.8645,
-      "longitude": 77.5448,
+      "latitude": 12.8814,
+      "longitude": 77.5463,
       "zone": "Kanakapura Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\"]"
     },
     {
       "id": "stop_blr_09",
       "name": "Konanakunte Cross",
       "latitude": 12.8895,
-      "longitude": 77.5738,
+      "longitude": 77.57381,
       "zone": "South Hub",
-      "is_major": 1
+      "is_major": 1,
+      "amenities": "[\"shelter\",\"seating\",\"display_board\"]"
     },
     {
       "id": "stop_blr_10",
       "name": "Uttarahalli / Channasandra",
       "latitude": 12.905,
-      "longitude": 77.525,
+      "longitude": 77.52494,
       "zone": "Uttarahalli Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     },
     {
       "id": "stop_blr_11",
       "name": "Rajarajeshwari Nagar Gate",
-      "latitude": 12.9288,
-      "longitude": 77.5188,
+      "latitude": 12.92891,
+      "longitude": 77.51884,
       "zone": "Mysore Rd Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     },
     {
       "id": "stop_blr_12",
       "name": "Bangalore University Gate",
-      "latitude": 12.9185,
-      "longitude": 77.502,
+      "latitude": 12.91833,
+      "longitude": 77.50172,
       "zone": "Mysore Rd Corridor",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\"]"
     },
     {
       "id": "stop_blr_13",
       "name": "Kengeri TTMC / Bus Terminal",
-      "latitude": 12.9081,
+      "latitude": 12.90804,
       "longitude": 77.4835,
       "zone": "West Terminal",
-      "is_major": 1
+      "is_major": 1,
+      "amenities": "[\"shelter\",\"seating\",\"display_board\",\"restroom\"]"
     },
     {
       "id": "stop_blr_14",
       "name": "Kengeri Satellite Town",
-      "latitude": 12.8985,
+      "latitude": 12.89858,
       "longitude": 77.478,
       "zone": "West Terminal",
-      "is_major": 0
+      "is_major": 0,
+      "amenities": "[\"shelter\",\"seating\"]"
     }
   ],
   "route_stops": [
@@ -279,48 +293,48 @@
       "route_id": "route_blr_378",
       "bus_number": "KA-01-F-3781",
       "capacity": 55,
-      "current_latitude": 12.848828,
-      "current_longitude": 77.530426,
-      "current_speed_kmh": 22,
+      "current_latitude": 12.862589,
+      "current_longitude": 77.530416,
+      "current_speed_kmh": 16,
       "driver_name": "Manjunath Gowda",
       "status": "in_service",
-      "heading": 2
+      "heading": 218
     },
     {
       "id": "bus_blr_02",
       "route_id": "route_blr_378",
       "bus_number": "KA-57-F-3782",
       "capacity": 55,
-      "current_latitude": 12.848384,
-      "current_longitude": 77.657875,
-      "current_speed_kmh": 28,
+      "current_latitude": 12.85339,
+      "current_longitude": 77.660463,
+      "current_speed_kmh": 34,
       "driver_name": "Ramesh Kumar",
       "status": "in_service",
-      "heading": 176
+      "heading": 185
     },
     {
       "id": "bus_blr_03",
       "route_id": "route_blr_378",
       "bus_number": "KA-41-F-3783",
       "capacity": 52,
-      "current_latitude": 12.89569,
-      "current_longitude": 77.571929,
-      "current_speed_kmh": 25,
+      "current_latitude": 12.894827,
+      "current_longitude": 77.568951,
+      "current_speed_kmh": 34,
       "driver_name": "Shankarappa",
       "status": "in_service",
-      "heading": 182
+      "heading": 40
     },
     {
       "id": "bus_blr_04",
       "route_id": "route_blr_378",
       "bus_number": "KA-05-AF-3784",
       "capacity": 55,
-      "current_latitude": 12.908047,
-      "current_longitude": 77.483275,
-      "current_speed_kmh": 17,
+      "current_latitude": 12.910349,
+      "current_longitude": 77.482342,
+      "current_speed_kmh": 26,
       "driver_name": "Venkatesh Murthy",
       "status": "in_service",
-      "heading": 92
+      "heading": 93
     }
   ],
   "trips": [
@@ -332,12 +346,12 @@
       "scheduled_start": "2026-08-26T16:05:06.364Z",
       "status": "active",
       "current_stop_index": 8,
-      "current_passenger_count": 23,
-      "delay_minutes": 1,
-      "segment_progress": 0.12572727272727274,
-      "state": "in_transit",
-      "dwell_seconds": 0,
-      "actual_start": "2026-08-27T14:07:51.365Z",
+      "current_passenger_count": 24,
+      "delay_minutes": 0,
+      "segment_progress": 0,
+      "state": "at_stop",
+      "dwell_seconds": 18,
+      "actual_start": "2026-08-27T16:19:48.972Z",
       "actual_end": null
     },
     {
@@ -348,12 +362,12 @@
       "scheduled_start": "2026-08-26T15:42:06.367Z",
       "status": "active",
       "current_stop_index": 12,
-      "current_passenger_count": 41,
-      "delay_minutes": 1,
-      "segment_progress": 0.7491538461538444,
+      "current_passenger_count": 35,
+      "delay_minutes": 0,
+      "segment_progress": 0.43376923076923013,
       "state": "in_transit",
       "dwell_seconds": 0,
-      "actual_start": "2026-08-27T13:53:37.803Z",
+      "actual_start": "2026-08-27T16:04:29.915Z",
       "actual_end": null
     },
     {
@@ -364,12 +378,12 @@
       "scheduled_start": "2026-08-26T15:58:06.367Z",
       "status": "active",
       "current_stop_index": 7,
-      "current_passenger_count": 28,
+      "current_passenger_count": 38,
       "delay_minutes": 0,
-      "segment_progress": 0.8235128205128186,
+      "segment_progress": 0.5606923076923067,
       "state": "in_transit",
       "dwell_seconds": 0,
-      "actual_start": "2026-08-27T14:04:36.216Z",
+      "actual_start": "2026-08-27T16:16:33.766Z",
       "actual_end": null
     },
     {
@@ -379,13 +393,13 @@
       "direction": "inbound",
       "scheduled_start": "2026-08-26T15:34:06.367Z",
       "status": "active",
-      "current_stop_index": 1,
-      "current_passenger_count": 25,
+      "current_stop_index": 0,
+      "current_passenger_count": 27,
       "delay_minutes": 0,
-      "segment_progress": 0,
-      "state": "at_stop",
-      "dwell_seconds": 18,
-      "actual_start": "2026-08-27T14:24:37.365Z",
+      "segment_progress": 0.802999999999998,
+      "state": "in_transit",
+      "dwell_seconds": 0,
+      "actual_start": "2026-08-27T16:52:44.471Z",
       "actual_end": null
     }
   ],
@@ -585,568 +599,638 @@
       "verification_status": "verified",
       "confidence_score": 0.85,
       "timestamp": "2026-08-27T14:27:29.960Z"
+    },
+    {
+      "id": "fb73ae5c-9250-4a0e-a9e8-d4b23e1a365c",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_01",
+      "update_type": 12.97781001810197,
+      "crowd_level": null,
+      "latitude": 77.57252041154042,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-27T15:39:40.356Z"
+    },
+    {
+      "id": "088b32aa-f325-4223-98c6-2f1afdba539a",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_02",
+      "update_type": 12.97769392536852,
+      "crowd_level": null,
+      "latitude": 77.57253713215854,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-27T15:42:46.043Z"
+    },
+    {
+      "id": "da3d970c-5ee5-4738-bad4-398358df50f8",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_04",
+      "update_type": 12.97769145823302,
+      "crowd_level": null,
+      "latitude": 77.5727435912075,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-27T15:47:22.298Z"
+    },
+    {
+      "id": "c82a6e1c-7692-4ef6-a2a7-422a688efd33",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_05",
+      "update_type": 12.977757678380815,
+      "crowd_level": null,
+      "latitude": 77.57266048241027,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-27T16:34:35.548Z"
+    },
+    {
+      "id": "60574a0d-e466-40aa-9712-471ead781cae",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_06",
+      "update_type": 12.97763916592505,
+      "crowd_level": null,
+      "latitude": 77.57252742390301,
+      "longitude": 1,
+      "gps_verified": 1,
+      "verification_status": "verified",
+      "confidence_score": 0.85,
+      "timestamp": "2026-08-27T16:54:54.572Z"
     }
   ],
   "crowd_estimates": [
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_11",
-      "estimated_level": "low",
-      "estimated_count": 20,
-      "capacity_percentage": 0.38461538461538464,
+      "estimated_level": "medium",
+      "estimated_count": 26,
+      "capacity_percentage": 0.5,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:32:38.693Z"
+      "updated_at": "2026-08-27T15:42:34.515Z"
     },
     {
       "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_07",
       "estimated_level": "medium",
-      "estimated_count": 34,
-      "capacity_percentage": 0.6181818181818182,
+      "estimated_count": 29,
+      "capacity_percentage": 0.5272727272727272,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:10:06.841Z"
+      "updated_at": "2026-08-27T16:25:25.264Z"
     },
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_03",
-      "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.4909090909090909,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T09:34:53.718Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_05",
-      "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.45454545454545453,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:01:56.410Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_10",
-      "estimated_level": "medium",
-      "estimated_count": 21,
-      "capacity_percentage": 0.40384615384615385,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T09:34:35.850Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_08",
-      "estimated_level": "medium",
-      "estimated_count": 34,
-      "capacity_percentage": 0.6181818181818182,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:07:43.260Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_04",
       "estimated_level": "medium",
       "estimated_count": 26,
       "capacity_percentage": 0.4727272727272727,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:47:25.368Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_09",
-      "estimated_level": "medium",
-      "estimated_count": 22,
-      "capacity_percentage": 0.4230769230769231,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T09:47:30.422Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_09",
-      "estimated_level": "medium",
-      "estimated_count": 33,
-      "capacity_percentage": 0.6,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:04:47.343Z"
+      "updated_at": "2026-08-27T15:44:26.653Z"
     },
     {
       "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_04",
-      "estimated_level": "medium",
-      "estimated_count": 23,
-      "capacity_percentage": 0.41818181818181815,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T13:58:01.729Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_05",
-      "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.4909090909090909,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T09:51:19.567Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_08",
-      "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.5384615384615384,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:25:07.689Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_10",
-      "estimated_level": "medium",
-      "estimated_count": 32,
-      "capacity_percentage": 0.5818181818181818,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:01:57.429Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_03",
       "estimated_level": "low",
-      "estimated_count": 22,
-      "capacity_percentage": 0.4,
+      "estimated_count": 19,
+      "capacity_percentage": 0.34545454545454546,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T13:55:11.823Z"
+      "updated_at": "2026-08-27T16:14:00.067Z"
     },
     {
       "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_07",
-      "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.5384615384615384,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:22:44.180Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_11",
-      "estimated_level": "medium",
-      "estimated_count": 30,
-      "capacity_percentage": 0.5454545454545454,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:00:00.045Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_02",
-      "estimated_level": "low",
-      "estimated_count": 21,
-      "capacity_percentage": 0.38181818181818183,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T13:52:48.244Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_06",
-      "estimated_level": "medium",
-      "estimated_count": 23,
-      "capacity_percentage": 0.41818181818181815,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:27:29.971Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_12",
-      "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5272727272727272,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T13:58:16.917Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_06",
-      "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.5384615384615384,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:20:14.534Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_01",
-      "estimated_level": "medium",
-      "estimated_count": 37,
-      "capacity_percentage": 0.6727272727272727,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T13:22:21.852Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_13",
-      "estimated_level": "medium",
-      "estimated_count": 30,
-      "capacity_percentage": 0.5454545454545454,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T13:56:13.493Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_07",
-      "estimated_level": "medium",
-      "estimated_count": 23,
-      "capacity_percentage": 0.41818181818181815,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:24:20.197Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_14",
-      "estimated_level": "high",
-      "estimated_count": 42,
-      "capacity_percentage": 0.7636363636363637,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T13:53:37.803Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_08",
-      "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:21:56.659Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_05",
-      "estimated_level": "medium",
-      "estimated_count": 29,
-      "capacity_percentage": 0.5576923076923077,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:16:19.970Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_09",
-      "estimated_level": "medium",
-      "estimated_count": 23,
-      "capacity_percentage": 0.41818181818181815,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:19:00.671Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_04",
-      "estimated_level": "medium",
-      "estimated_count": 28,
-      "capacity_percentage": 0.5384615384615384,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:12:25.315Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_10",
-      "estimated_level": "medium",
-      "estimated_count": 23,
-      "capacity_percentage": 0.41818181818181815,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:16:10.865Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_03",
       "estimated_level": "medium",
       "estimated_count": 26,
       "capacity_percentage": 0.5,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:09:35.526Z"
+      "updated_at": "2026-08-27T15:44:31.692Z"
     },
     {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_11",
-      "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:14:13.531Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_02",
-      "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.5192307692307693,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:07:11.923Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_12",
-      "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:12:30.375Z"
-    },
-    {
-      "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_13",
-      "estimated_level": "low",
-      "estimated_count": 22,
-      "capacity_percentage": 0.4,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:10:27.070Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_01",
-      "estimated_level": "medium",
-      "estimated_count": 27,
-      "capacity_percentage": 0.5192307692307693,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:04:36.215Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_06",
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_08",
       "estimated_level": "medium",
       "estimated_count": 28,
       "capacity_percentage": 0.509090909090909,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:05:51.031Z"
+      "updated_at": "2026-08-27T16:19:40.885Z"
     },
     {
       "trip_id": "trip_blr_01",
-      "stop_id": "stop_blr_14",
+      "stop_id": "stop_blr_04",
       "estimated_level": "medium",
-      "estimated_count": 30,
-      "capacity_percentage": 0.5454545454545454,
+      "estimated_count": 28,
+      "capacity_percentage": 0.509090909090909,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:07:51.365Z"
+      "updated_at": "2026-08-27T15:47:22.302Z"
     },
     {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_07",
-      "estimated_level": "medium",
-      "estimated_count": 30,
-      "capacity_percentage": 0.5454545454545454,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:08:20.681Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_08",
-      "estimated_level": "medium",
-      "estimated_count": 30,
-      "capacity_percentage": 0.5454545454545454,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:10:44.238Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_06",
-      "estimated_level": "medium",
-      "estimated_count": 37,
-      "capacity_percentage": 0.6727272727272727,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:12:30.375Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
+      "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_09",
       "estimated_level": "medium",
-      "estimated_count": 33,
-      "capacity_percentage": 0.6,
+      "estimated_count": 25,
+      "capacity_percentage": 0.4807692307692308,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:13:34.053Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_10",
-      "estimated_level": "medium",
-      "estimated_count": 33,
-      "capacity_percentage": 0.6,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:16:30.053Z"
+      "updated_at": "2026-08-27T15:47:21.336Z"
     },
     {
       "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_09",
+      "estimated_level": "medium",
+      "estimated_count": 28,
+      "capacity_percentage": 0.509090909090909,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:16:44.901Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_04",
+      "estimated_level": "low",
+      "estimated_count": 19,
+      "capacity_percentage": 0.34545454545454546,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:10:05.486Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_05",
       "estimated_level": "medium",
-      "estimated_count": 37,
-      "capacity_percentage": 0.6727272727272727,
+      "estimated_count": 29,
+      "capacity_percentage": 0.5272727272727272,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:16:31.064Z"
+      "updated_at": "2026-08-27T15:51:10.743Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_08",
+      "estimated_level": "high",
+      "estimated_count": 38,
+      "capacity_percentage": 0.7307692307692307,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:53:13.794Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_10",
+      "estimated_level": "medium",
+      "estimated_count": 24,
+      "capacity_percentage": 0.43636363636363634,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:13:55.027Z"
     },
     {
       "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_03",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:06:09.774Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_07",
+      "estimated_level": "high",
+      "estimated_count": 37,
+      "capacity_percentage": 0.7115384615384616,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:50:50.297Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_11",
       "estimated_level": "medium",
-      "estimated_count": 34,
-      "capacity_percentage": 0.6181818181818182,
+      "estimated_count": 23,
+      "capacity_percentage": 0.41818181818181815,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:18:27.369Z"
+      "updated_at": "2026-08-27T16:11:57.709Z"
     },
     {
       "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_02",
+      "estimated_level": "low",
+      "estimated_count": 19,
+      "capacity_percentage": 0.34545454545454546,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:03:46.435Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_06",
+      "estimated_level": "medium",
+      "estimated_count": 24,
+      "capacity_percentage": 0.43636363636363634,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:54:54.577Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_12",
       "estimated_level": "medium",
-      "estimated_count": 34,
-      "capacity_percentage": 0.6181818181818182,
+      "estimated_count": 23,
+      "capacity_percentage": 0.41818181818181815,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:20:10.501Z"
+      "updated_at": "2026-08-27T16:10:14.591Z"
     },
     {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_04",
-      "estimated_level": "high",
-      "estimated_count": 39,
-      "capacity_percentage": 0.7090909090909091,
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_06",
+      "estimated_level": "medium",
+      "estimated_count": 35,
+      "capacity_percentage": 0.6730769230769231,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T14:20:25.645Z"
+      "updated_at": "2026-08-27T16:48:20.577Z"
     },
     {
       "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_13",
-      "estimated_level": "medium",
-      "estimated_count": 25,
-      "capacity_percentage": 0.45454545454545453,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:27:13.111Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_03",
-      "estimated_level": "high",
-      "estimated_count": 41,
-      "capacity_percentage": 0.7454545454545455,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:23:15.493Z"
-    },
-    {
-      "trip_id": "trip_blr_04",
-      "stop_id": "stop_blr_14",
-      "estimated_level": "medium",
-      "estimated_count": 34,
-      "capacity_percentage": 0.6181818181818182,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:24:37.365Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
-      "stop_id": "stop_blr_02",
-      "estimated_level": "high",
-      "estimated_count": 41,
-      "capacity_percentage": 0.7454545454545455,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T14:25:39.020Z"
-    },
-    {
-      "trip_id": "trip_blr_02",
       "stop_id": "stop_blr_01",
       "estimated_level": "medium",
       "estimated_count": 29,
       "capacity_percentage": 0.5272727272727272,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:15:19.660Z"
+      "updated_at": "2026-08-27T16:01:10.795Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_13",
+      "estimated_level": "low",
+      "estimated_count": 22,
+      "capacity_percentage": 0.4,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:07:05.350Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_07",
+      "estimated_level": "medium",
+      "estimated_count": 23,
+      "capacity_percentage": 0.41818181818181815,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:52:26.258Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_14",
+      "estimated_level": "medium",
+      "estimated_count": 28,
+      "capacity_percentage": 0.509090909090909,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:04:29.914Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_08",
+      "estimated_level": "low",
+      "estimated_count": 21,
+      "capacity_percentage": 0.38181818181818183,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:50:02.747Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_05",
+      "estimated_level": "medium",
+      "estimated_count": 32,
+      "capacity_percentage": 0.6153846153846154,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:34:16.946Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_09",
+      "estimated_level": "low",
+      "estimated_count": 22,
+      "capacity_percentage": 0.4,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:47:06.798Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_04",
+      "estimated_level": "medium",
+      "estimated_count": 31,
+      "capacity_percentage": 0.5961538461538461,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:27:43.693Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_10",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:34:07.830Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_03",
+      "estimated_level": "medium",
+      "estimated_count": 31,
+      "capacity_percentage": 0.5961538461538461,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:24:53.958Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_11",
+      "estimated_level": "low",
+      "estimated_count": 19,
+      "capacity_percentage": 0.34545454545454546,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:32:10.576Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_02",
+      "estimated_level": "medium",
+      "estimated_count": 29,
+      "capacity_percentage": 0.5576923076923077,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:19:09.539Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_12",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:27:48.735Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_13",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:25:45.481Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_01",
+      "estimated_level": "medium",
+      "estimated_count": 34,
+      "capacity_percentage": 0.6538461538461539,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:16:33.764Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_06",
+      "estimated_level": "low",
+      "estimated_count": 21,
+      "capacity_percentage": 0.38181818181818183,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:17:54.683Z"
+    },
+    {
+      "trip_id": "trip_blr_01",
+      "stop_id": "stop_blr_14",
+      "estimated_level": "medium",
+      "estimated_count": 36,
+      "capacity_percentage": 0.6545454545454545,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:19:48.972Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_07",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:20:24.336Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_08",
+      "estimated_level": "low",
+      "estimated_count": 19,
+      "capacity_percentage": 0.34545454545454546,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:26:08.689Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_06",
+      "estimated_level": "medium",
+      "estimated_count": 31,
+      "capacity_percentage": 0.5636363636363636,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:27:48.735Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_09",
+      "estimated_level": "low",
+      "estimated_count": 18,
+      "capacity_percentage": 0.32727272727272727,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:31:37.227Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_10",
+      "estimated_level": "low",
+      "estimated_count": 18,
+      "capacity_percentage": 0.32727272727272727,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:34:33.130Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_05",
+      "estimated_level": "medium",
+      "estimated_count": 32,
+      "capacity_percentage": 0.5818181818181818,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:34:35.552Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_11",
+      "estimated_level": "low",
+      "estimated_count": 18,
+      "capacity_percentage": 0.32727272727272727,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:46:34.523Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_12",
+      "estimated_level": "low",
+      "estimated_count": 20,
+      "capacity_percentage": 0.36363636363636365,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:48:17.559Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_04",
+      "estimated_level": "medium",
+      "estimated_count": 34,
+      "capacity_percentage": 0.6181818181818182,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:48:31.686Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_13",
+      "estimated_level": "low",
+      "estimated_count": 21,
+      "capacity_percentage": 0.38181818181818183,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:50:14.902Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_03",
+      "estimated_level": "medium",
+      "estimated_count": 35,
+      "capacity_percentage": 0.6363636363636364,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:51:21.597Z"
+    },
+    {
+      "trip_id": "trip_blr_04",
+      "stop_id": "stop_blr_14",
+      "estimated_level": "low",
+      "estimated_count": 22,
+      "capacity_percentage": 0.4,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:52:44.471Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_02",
+      "estimated_level": "medium",
+      "estimated_count": 35,
+      "capacity_percentage": 0.6363636363636364,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T16:53:45.135Z"
+    },
+    {
+      "trip_id": "trip_blr_02",
+      "stop_id": "stop_blr_01",
+      "estimated_level": "high",
+      "estimated_count": 46,
+      "capacity_percentage": 0.8363636363636363,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T14:35:10.521Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_12",
-      "estimated_level": "low",
-      "estimated_count": 19,
-      "capacity_percentage": 0.36538461538461536,
+      "estimated_level": "medium",
+      "estimated_count": 27,
+      "capacity_percentage": 0.5192307692307693,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:30:55.600Z"
+      "updated_at": "2026-08-27T15:40:51.417Z"
     },
     {
       "trip_id": "trip_blr_03",
       "stop_id": "stop_blr_13",
-      "estimated_level": "low",
-      "estimated_count": 20,
-      "capacity_percentage": 0.38461538461538464,
-      "confidence": 0.6,
-      "data_sources": 1,
-      "updated_at": "2026-08-27T09:28:52.316Z"
-    },
-    {
-      "trip_id": "trip_blr_03",
-      "stop_id": "stop_blr_14",
       "estimated_level": "medium",
       "estimated_count": 26,
       "capacity_percentage": 0.5,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:26:16.752Z"
+      "updated_at": "2026-08-27T15:38:48.232Z"
+    },
+    {
+      "trip_id": "trip_blr_03",
+      "stop_id": "stop_blr_14",
+      "estimated_level": "medium",
+      "estimated_count": 35,
+      "capacity_percentage": 0.6730769230769231,
+      "confidence": 0.6,
+      "data_sources": 1,
+      "updated_at": "2026-08-27T15:36:12.699Z"
     },
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_02",
       "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
+      "estimated_count": 25,
+      "capacity_percentage": 0.45454545454545453,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:32:07.299Z"
+      "updated_at": "2026-08-27T15:42:46.052Z"
     },
     {
       "trip_id": "trip_blr_01",
       "stop_id": "stop_blr_01",
       "estimated_level": "medium",
-      "estimated_count": 24,
-      "capacity_percentage": 0.43636363636363634,
+      "estimated_count": 25,
+      "capacity_percentage": 0.45454545454545453,
       "confidence": 0.6,
       "data_sources": 1,
-      "updated_at": "2026-08-27T09:30:35.047Z"
+      "updated_at": "2026-08-27T15:39:40.358Z"
     }
   ],
   "badges": [
@@ -1725,6 +1809,226 @@
       "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
       "is_read": 0,
       "created_at": "2026-08-27T14:18:28.144Z"
+    },
+    {
+      "id": "00f86625-3884-49f2-a164-3c76c0a7a1e3",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:34:00.981Z"
+    },
+    {
+      "id": "7f224fac-0573-4c19-8bc2-7ba8677b589d",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:37:16.914Z"
+    },
+    {
+      "id": "b7917804-1edf-4a1c-8611-f890d7d71e5f",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 15 points for verified boarding confirmation.",
+      "data": "{\"points\":15,\"reason\":\"verified boarding confirmation\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:39:40.361Z"
+    },
+    {
+      "id": "54b2c2da-5071-4cb6-b551-817b69c09db8",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:45:38.595Z"
+    },
+    {
+      "id": "9afb330b-e4a2-4d83-9639-742b7e3711a9",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:46:10.790Z"
+    },
+    {
+      "id": "3833afea-1003-4c39-9593-0d6b499592dd",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 15 points for verified boarding confirmation.",
+      "data": "{\"points\":15,\"reason\":\"verified boarding confirmation\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:47:22.316Z"
+    },
+    {
+      "id": "9ffc2c8a-15e3-4ecb-a9e8-b857a7fdfb5b",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T15:55:46.654Z"
+    },
+    {
+      "id": "c1c154a6-15d0-4a78-983e-58df35120ea4",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:01:36.714Z"
+    },
+    {
+      "id": "403619b0-d3ff-4238-b1fb-117bc8db0773",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:07:34.780Z"
+    },
+    {
+      "id": "14a04ada-bef0-43c8-9195-ed70b45f7356",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:09:31.331Z"
+    },
+    {
+      "id": "ca600556-9449-4673-bd99-9a127257a0d4",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:11:55.657Z"
+    },
+    {
+      "id": "76108410-8105-4a92-a61e-5ea061092369",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:19:20.642Z"
+    },
+    {
+      "id": "9bf3acee-6169-4716-94e8-5b3f68076fe2",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:20:09.442Z"
+    },
+    {
+      "id": "dc08386d-9ad3-45eb-ba5c-a6c7a94c2d31",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:21:23.859Z"
+    },
+    {
+      "id": "4c1ce112-f02d-4f5b-87e9-8802810409f6",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:28:16.725Z"
+    },
+    {
+      "id": "2aeb4742-d171-4df0-bdc6-b8452f08f422",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:31:52.297Z"
+    },
+    {
+      "id": "0e20a668-5a5c-4f72-a713-a9d0b45909eb",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:32:15.888Z"
+    },
+    {
+      "id": "7d8a6567-9bf2-4abf-9c4d-52d330882146",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:33:24.976Z"
+    },
+    {
+      "id": "2330a87b-8fdb-4bf5-9e05-32f7ef44af25",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 15 points for verified boarding confirmation.",
+      "data": "{\"points\":15,\"reason\":\"verified boarding confirmation\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:34:35.566Z"
+    },
+    {
+      "id": "9f32b3d0-db0c-4fa7-83dc-4ce001209de7",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:47:07.443Z"
+    },
+    {
+      "id": "23e01b09-0504-4831-a30a-90b76866843a",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 10 points for verified stop waitlist registration.",
+      "data": "{\"points\":10,\"reason\":\"verified stop waitlist registration\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:54:03.995Z"
+    },
+    {
+      "id": "1e18a040-1b33-4aee-a34b-f27eafb1d8f0",
+      "user_id": "usr_01",
+      "type": "points_earned",
+      "title": "⭐ Points Earned!",
+      "message": "You earned 15 points for verified boarding confirmation.",
+      "data": "{\"points\":15,\"reason\":\"verified boarding confirmation\"}",
+      "is_read": 0,
+      "created_at": "2026-08-27T16:54:54.586Z"
     }
   ],
   "point_transactions": [
@@ -1932,6 +2236,236 @@
       "is_verified": 0,
       "is_permanent": 0,
       "created_at": "2026-08-27T14:27:29.975Z"
+    },
+    {
+      "id": "fb335d6e-1bd5-4790-a169-d7e915c25c70",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_1506cb12",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:34:00.961Z"
+    },
+    {
+      "id": "4b8ecc90-262a-4364-92b1-b3fb0eb757e5",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_5bd2179c",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:37:16.897Z"
+    },
+    {
+      "id": "e644aa4a-0d03-483f-b02a-ac4ba3ba42c3",
+      "user_id": "usr_01",
+      "amount": 15,
+      "reason": "board [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "fb73ae5c-9250-4a0e-a9e8-d4b23e1a365c",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:39:40.358Z"
+    },
+    {
+      "id": "f55b9deb-f2c5-4b45-9ea9-682592541bb0",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "deboard [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "088b32aa-f325-4223-98c6-2f1afdba539a",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:42:46.055Z"
+    },
+    {
+      "id": "9bfac67e-5bdf-4cfa-b79f-ff9917b50f71",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_5ac47f01",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:45:38.587Z"
+    },
+    {
+      "id": "d8bf5ce9-a695-41db-a8d3-c1da952cf6fd",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_d86d48c7",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:46:10.782Z"
+    },
+    {
+      "id": "6f153647-ed46-49cf-8dd3-d0ce00aa257e",
+      "user_id": "usr_01",
+      "amount": 15,
+      "reason": "board [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "da3d970c-5ee5-4738-bad4-398358df50f8",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:47:22.307Z"
+    },
+    {
+      "id": "e5e46901-e1b5-42fe-a58d-eebd3ad34b1c",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_53ac92cf",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T15:55:46.646Z"
+    },
+    {
+      "id": "df4e07ec-e811-4518-97b5-5fdca6729d25",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_d80a3216",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:01:36.707Z"
+    },
+    {
+      "id": "ab008b65-4404-4780-be25-42f009891aa9",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_475a7045",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:07:34.769Z"
+    },
+    {
+      "id": "fcbcc063-243d-4f14-a5d5-2f97fcdaad42",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_c061c5f8",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:09:31.311Z"
+    },
+    {
+      "id": "b616b06f-1378-409a-a380-feb3fe7e6bb9",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_16e64ea0",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:11:55.647Z"
+    },
+    {
+      "id": "54eeac07-ce97-4032-97bd-6942d9afc81b",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_faf252a0",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:19:20.634Z"
+    },
+    {
+      "id": "095e491d-a48e-4232-b91e-869166e6ddc2",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_e73ec43f",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:20:09.434Z"
+    },
+    {
+      "id": "2c2ee637-3b50-4ac3-baaa-cd3101b64317",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_605d6ae0",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:21:23.848Z"
+    },
+    {
+      "id": "fdd77f99-66c8-4594-99e7-07984eb375ce",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_5651738f",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:28:16.716Z"
+    },
+    {
+      "id": "17b11983-ef3e-4461-bf3b-43870a94e2fe",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_3b3596dc",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:31:52.286Z"
+    },
+    {
+      "id": "473160a5-7399-4ff7-b3da-137a2485b6c7",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_47e11690",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:32:15.875Z"
+    },
+    {
+      "id": "184f691b-148f-4ecb-8aaf-378a249c01ae",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_5f1c6a98",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:33:24.969Z"
+    },
+    {
+      "id": "8abdf4a7-5188-4eba-b24c-af0081ba94f6",
+      "user_id": "usr_01",
+      "amount": 15,
+      "reason": "board [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "c82a6e1c-7692-4ef6-a2a7-422a688efd33",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:34:35.557Z"
+    },
+    {
+      "id": "7681b401-6542-4092-be3c-6e428dcd9e8e",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_2ec007be",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:47:07.432Z"
+    },
+    {
+      "id": "adfc693c-bea2-4fe7-b71a-80d01814f2d5",
+      "user_id": "usr_01",
+      "amount": 10,
+      "reason": "waitlist_join [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "wait_5def4c7c",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:54:03.987Z"
+    },
+    {
+      "id": "fb90537c-d40d-449c-971a-06b54b37f9f9",
+      "user_id": "usr_01",
+      "amount": 15,
+      "reason": "board [GPS Verified ✓] (+5 accuracy bonus)",
+      "related_update_id": "60574a0d-e466-40aa-9712-471ead781cae",
+      "is_verified": 0,
+      "is_permanent": 0,
+      "created_at": "2026-08-27T16:54:54.580Z"
     }
   ],
   "user_journeys": [
@@ -1991,6 +2525,40 @@
       "trip_id": "trip_blr_02",
       "board_stop_id": "stop_blr_08",
       "boarded_at": "2026-08-27T09:46:23.463Z",
+      "status": "active"
+    },
+    {
+      "id": "da87fea4-9623-4823-b10e-df7f5ba632d6",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "board_stop_id": "stop_blr_01",
+      "boarded_at": "2026-08-27T15:39:40.358Z",
+      "status": "completed",
+      "deboard_stop_id": "stop_blr_02",
+      "deboarded_at": "2026-08-27T15:42:46.052Z"
+    },
+    {
+      "id": "4777307c-64af-4714-b207-012cf0195862",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "board_stop_id": "stop_blr_04",
+      "boarded_at": "2026-08-27T15:47:22.302Z",
+      "status": "active"
+    },
+    {
+      "id": "89d85ea3-0919-47fd-b383-f06bf7ce1c4f",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_02",
+      "board_stop_id": "stop_blr_05",
+      "boarded_at": "2026-08-27T16:34:35.553Z",
+      "status": "active"
+    },
+    {
+      "id": "99f1c0a9-f2e8-43d2-bdd3-1cf1b571b2ca",
+      "user_id": "usr_01",
+      "trip_id": "trip_blr_01",
+      "board_stop_id": "stop_blr_06",
+      "boarded_at": "2026-08-27T16:54:54.577Z",
       "status": "active"
     }
   ],
@@ -2082,6 +2650,204 @@
       "status": "waiting",
       "joined_at": "2026-08-27T14:18:28.130Z",
       "created_at": "2026-08-27T14:18:28.130Z"
+    },
+    {
+      "id": "wait_1506cb12",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_02",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T15:34:00.950Z",
+      "created_at": "2026-08-27T15:34:00.950Z"
+    },
+    {
+      "id": "wait_5bd2179c",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_01",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T15:37:16.888Z",
+      "created_at": "2026-08-27T15:37:16.888Z"
+    },
+    {
+      "id": "wait_5ac47f01",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_03",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T15:45:38.582Z",
+      "created_at": "2026-08-27T15:45:38.582Z"
+    },
+    {
+      "id": "wait_d86d48c7",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_04",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T15:46:10.776Z",
+      "created_at": "2026-08-27T15:46:10.776Z"
+    },
+    {
+      "id": "wait_53ac92cf",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_07",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T15:55:46.642Z",
+      "created_at": "2026-08-27T15:55:46.642Z"
+    },
+    {
+      "id": "wait_d80a3216",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_06",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:01:36.698Z",
+      "created_at": "2026-08-27T16:01:36.698Z"
+    },
+    {
+      "id": "wait_475a7045",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_08",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:07:34.759Z",
+      "created_at": "2026-08-27T16:07:34.759Z"
+    },
+    {
+      "id": "wait_c061c5f8",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_09",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:09:31.294Z",
+      "created_at": "2026-08-27T16:09:31.294Z"
+    },
+    {
+      "id": "wait_16e64ea0",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_11",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:11:55.643Z",
+      "created_at": "2026-08-27T16:11:55.643Z"
+    },
+    {
+      "id": "wait_faf252a0",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_13",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:19:20.628Z",
+      "created_at": "2026-08-27T16:19:20.628Z"
+    },
+    {
+      "id": "wait_e73ec43f",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_13",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:20:09.430Z",
+      "created_at": "2026-08-27T16:20:09.430Z"
+    },
+    {
+      "id": "wait_605d6ae0",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_13",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:21:23.839Z",
+      "created_at": "2026-08-27T16:21:23.839Z"
+    },
+    {
+      "id": "wait_5651738f",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_05",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_03",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:28:16.709Z",
+      "created_at": "2026-08-27T16:28:16.709Z"
+    },
+    {
+      "id": "wait_3b3596dc",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_11",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:31:52.280Z",
+      "created_at": "2026-08-27T16:31:52.280Z"
+    },
+    {
+      "id": "wait_47e11690",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_10",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:32:15.869Z",
+      "created_at": "2026-08-27T16:32:15.869Z"
+    },
+    {
+      "id": "wait_5f1c6a98",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_05",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_02",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:33:24.963Z",
+      "created_at": "2026-08-27T16:33:24.963Z"
+    },
+    {
+      "id": "wait_2ec007be",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_12",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_04",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:47:07.426Z",
+      "created_at": "2026-08-27T16:47:07.426Z"
+    },
+    {
+      "id": "wait_5def4c7c",
+      "user_id": "usr_01",
+      "stop_id": "stop_blr_06",
+      "route_id": "route_blr_378",
+      "trip_id": "trip_blr_01",
+      "destination_stop_id": null,
+      "status": "waiting",
+      "joined_at": "2026-08-27T16:54:03.984Z",
+      "created_at": "2026-08-27T16:54:03.984Z"
     }
   ]
 }

@@ -231,6 +231,38 @@ html.light textarea::placeholder {
     color: #70757a !important;
 }
 
+/* High Contrast Modal System for Light & Dark Themes */
+html.light #modal-overlay {
+    background-color: rgba(15, 23, 42, 0.65) !important;
+}
+
+html.light #modal-content {
+    color: #111827 !important;
+}
+
+html.light #modal-content .glass-panel {
+    background-color: #ffffff !important;
+    border-color: rgba(60, 64, 67, 0.15) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    color: #111827 !important;
+}
+
+html.light #modal-content h1,
+html.light #modal-content h2,
+html.light #modal-content h3,
+html.light #modal-content h4 {
+    color: #111827 !important;
+}
+
+html.light #modal-content p,
+html.light #modal-content span.font-body-md {
+    color: #374151 !important;
+}
+
+html.light #modal-content strong {
+    color: #111827 !important;
+}
+
 /* Material Symbols configuration */
 .material-symbols-outlined {
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
@@ -502,11 +534,22 @@ html.light .leaflet-popup-tip {
     background: #ffffff !important;
 }
 
-/* Pulse keyframes for map dots */
+/* Pulse & Radar keyframes for map dots */
 @keyframes pulseDot {
     0% { transform: scale(1); opacity: 0.8; }
     50% { transform: scale(1.6); opacity: 0; }
     100% { transform: scale(1); opacity: 0.8; }
+}
+
+@keyframes orangeRadarWave {
+    0% { transform: scale(0.6); opacity: 0.95; }
+    50% { transform: scale(1.8); opacity: 0.4; }
+    100% { transform: scale(2.6); opacity: 0; }
+}
+
+@keyframes orangeBeaconGlow {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(255, 109, 0, 0.9)); }
+    50% { transform: scale(1.15); filter: drop-shadow(0 0 18px rgba(255, 109, 0, 1)); }
 }
 
 /* Smooth Bus Marker Physics on Map */

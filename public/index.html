@@ -3,9 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-    <meta name="description" content="Lumina Transit - Smart Public Transport Crowd Intelligence & Passenger Assistance System">
+    <meta name="description" content="SMART TRANSIT - Smart Public Transport Crowd Intelligence & Passenger Assistance System">
     <meta name="theme-color" content="#ffffff">
-    <title>Lumina Transit - Crowd Intelligence</title>
+    <title>SMART TRANSIT - Crowd Intelligence</title>
 
     <!-- Theme Initialization Script (Pre-render) -->
     <script>
@@ -163,16 +163,16 @@
     <!-- App Shell -->
     <div id="app" class="flex flex-col min-h-screen" style="display:none;">
 
-        <!-- TopAppBar (Lumina Transit Header with Theme Toggle & Notifications) -->
-        <header id="app-header" class="fixed top-0 w-full flex justify-between items-center px-container-margin h-16 z-50 bg-surface/90 backdrop-blur-xl border-b border-white/10 shadow-sm transition-colors duration-200">
+        <!-- TopAppBar (SMART TRANSIT Header with Theme Toggle & Notifications) -->
+        <header id="app-header" class="fixed top-0 w-full flex justify-between items-center px-container-margin h-16 z-50 bg-surface/90 backdrop-blur-xl border-b border-white/10 shadow-sm transition-colors duration-200 relative">
             <button aria-label="Location" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -ml-2 flex items-center justify-center" onclick="if(window.HomeView && window.HomeView.detectGPSLocation){window.HomeView.detectGPSLocation();}else{app.navigate('home');}">
                 <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
             </button>
-            <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm cursor-pointer hover:bg-white/10 transition-all" onclick="app.navigate('home')">
+            <div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm cursor-pointer hover:bg-white/10 transition-all pointer-events-auto" onclick="app.navigate('home')">
                 <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                <h1 class="font-bold text-xs tracking-tight text-on-surface" id="app-title-header">Lumina Transit</h1>
+                <h1 class="font-bold text-xs tracking-tight text-on-surface uppercase" id="app-title-header">SMART TRANSIT</h1>
             </div>
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 ml-auto">
                 <!-- Language Toggle Button (EN / ಕನ್ನಡ / हिन्दी) -->
                 <button 
                     aria-label="Toggle Language" 
@@ -195,11 +195,6 @@
                     <span class="material-symbols-outlined text-2xl theme-toggle-icon">dark_mode</span>
                 </button>
 
-                <!-- Notifications Button -->
-                <button aria-label="Notifications" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform p-2 -mr-2 relative flex items-center justify-center cursor-pointer" onclick="app.navigate('profile')">
-                    <span class="material-symbols-outlined text-2xl">notifications</span>
-                    <span id="notification-badge" class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-tertiary shadow-[0_0_8px_rgba(234,134,0,0.8)]" style="display:none;"></span>
-                </button>
             </div>
         </header>
 
@@ -248,20 +243,20 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/js/data/route_378_road_points.js?v=10"></script>
-    <script src="/js/utils/theme.js?v=10"></script>
-    <script src="/js/utils/i18n.js?v=10"></script>
-    <script src="/js/utils/api.js?v=10"></script>
-    <script src="/js/utils/map.js?v=10"></script>
-    <script src="/js/utils/gps.js?v=10"></script>
-    <script src="/js/utils/notifications.js?v=10"></script>
-    <script src="/js/views/auth.js?v=10"></script>
-    <script src="/js/views/home.js?v=10"></script>
-    <script src="/js/views/trips.js?v=10"></script>
-    <script src="/js/views/gamification.js?v=10"></script>
-    <script src="/js/views/complaints.js?v=10"></script>
-    <script src="/js/views/profile.js?v=10"></script>
-    <script src="/js/app.js?v=10"></script>
+    <script src="/js/data/route_378_road_points.js?v=20"></script>
+    <script src="/js/utils/theme.js?v=20"></script>
+    <script src="/js/utils/i18n.js?v=20"></script>
+    <script src="/js/utils/api.js?v=20"></script>
+    <script src="/js/utils/map.js?v=20"></script>
+    <script src="/js/utils/gps.js?v=20"></script>
+    <script src="/js/utils/notifications.js?v=20"></script>
+    <script src="/js/views/auth.js?v=20"></script>
+    <script src="/js/views/home.js?v=20"></script>
+    <script src="/js/views/trips.js?v=20"></script>
+    <script src="/js/views/gamification.js?v=20"></script>
+    <script src="/js/views/complaints.js?v=20"></script>
+    <script src="/js/views/profile.js?v=20"></script>
+    <script src="/js/app.js?v=20"></script>
 
     <!-- Global language switcher & failsafe auto-dismiss -->
     <script>

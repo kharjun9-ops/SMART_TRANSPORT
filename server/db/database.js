@@ -352,10 +352,11 @@ class MemoryDatabase {
 
         // 11. Point transactions
         if (lower.includes('from point_transactions where user_id = ?')) {
+            const limit = params[1] || 50;
             return this.tables.point_transactions
                 .filter(pt => pt.user_id === params[0])
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .slice(0, 50);
+                .slice(0, limit);
         }
         if (lower.includes('from point_transactions where related_update_id = ? and is_verified = 0')) {
             const pt = this.tables.point_transactions.find(x => x.related_update_id === params[0] && !x.is_verified);
@@ -846,24 +847,24 @@ function initializeDatabase() {
         ];
 
         db.tables.stops = [
-            { id: 'stop_blr_01', name: 'Electronic City Wipro Gate', latitude: 12.8452, longitude: 77.6602, zone: 'Electronic City Hub', is_major: 1 },
-            { id: 'stop_blr_02', name: 'Electronic City Toll Gate / Phase 1', latitude: 12.8498, longitude: 77.6705, zone: 'Electronic City Corridor', is_major: 0 },
-            { id: 'stop_blr_03', name: 'Konappana Agrahara', latitude: 12.8580, longitude: 77.6750, zone: 'Hosur Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_04', name: 'Hosa Road Junction', latitude: 12.8710, longitude: 77.6650, zone: 'Hosur Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_05', name: 'Gottigere (Bannerghatta Rd)', latitude: 12.8582, longitude: 77.5850, zone: 'NICE Corridor', is_major: 0 },
-            { id: 'stop_blr_06', name: 'Silk Institute (Kanakapura Rd)', latitude: 12.8465, longitude: 77.5342, zone: 'Kanakapura Corridor', is_major: 1 },
-            { id: 'stop_blr_07', name: 'Thalaghattapura', latitude: 12.8550, longitude: 77.5390, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_08', name: 'Vajrahalli', latitude: 12.8645, longitude: 77.5448, zone: 'Kanakapura Corridor', is_major: 0 },
-            { id: 'stop_blr_09', name: 'Konanakunte Cross', latitude: 12.8895, longitude: 77.5738, zone: 'South Hub', is_major: 1 },
-            { id: 'stop_blr_10', name: 'Uttarahalli / Channasandra', latitude: 12.9050, longitude: 77.5250, zone: 'Uttarahalli Corridor', is_major: 0 },
-            { id: 'stop_blr_11', name: 'Rajarajeshwari Nagar Gate', latitude: 12.9288, longitude: 77.5188, zone: 'Mysore Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_12', name: 'Bangalore University Gate', latitude: 12.9185, longitude: 77.5020, zone: 'Mysore Rd Corridor', is_major: 0 },
-            { id: 'stop_blr_13', name: 'Kengeri TTMC / Bus Terminal', latitude: 12.9081, longitude: 77.4835, zone: 'West Terminal', is_major: 1 },
-            { id: 'stop_blr_14', name: 'Kengeri Satellite Town', latitude: 12.8985, longitude: 77.4780, zone: 'West Terminal', is_major: 0 }
+            { id: 'stop_blr_01', name: 'Electronic City Wipro Gate', latitude: 12.84515, longitude: 77.66021, zone: 'Electronic City Hub', is_major: 1 },
+            { id: 'stop_blr_02', name: 'Electronic City Toll Gate / Phase 1', latitude: 12.84923, longitude: 77.67052, zone: 'Electronic City Corridor', is_major: 0 },
+            { id: 'stop_blr_03', name: 'Konappana Agrahara', latitude: 12.85795, longitude: 77.67498, zone: 'Hosur Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_04', name: 'Hosa Road Junction', latitude: 12.87079, longitude: 77.66602, zone: 'Hosur Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_05', name: 'Gottigere (Bannerghatta Rd)', latitude: 12.85819, longitude: 77.58531, zone: 'Bannerghatta Corridor', is_major: 0 },
+            { id: 'stop_blr_06', name: 'Silk Institute (Kanakapura Rd)', latitude: 12.86242, longitude: 77.53028, zone: 'Kanakapura Corridor', is_major: 1 },
+            { id: 'stop_blr_07', name: 'Thalaghattapura', latitude: 12.87181, longitude: 77.53717, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_08', name: 'Vajrahalli', latitude: 12.88140, longitude: 77.54630, zone: 'Kanakapura Corridor', is_major: 0 },
+            { id: 'stop_blr_09', name: 'Konanakunte Cross', latitude: 12.88950, longitude: 77.57381, zone: 'South Hub', is_major: 1 },
+            { id: 'stop_blr_10', name: 'Uttarahalli / Channasandra', latitude: 12.90500, longitude: 77.52494, zone: 'Uttarahalli Corridor', is_major: 0 },
+            { id: 'stop_blr_11', name: 'Rajarajeshwari Nagar Gate', latitude: 12.92891, longitude: 77.51884, zone: 'Mysore Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_12', name: 'Bangalore University Gate', latitude: 12.91833, longitude: 77.50172, zone: 'Mysore Rd Corridor', is_major: 0 },
+            { id: 'stop_blr_13', name: 'Kengeri TTMC / Bus Terminal', latitude: 12.90804, longitude: 77.48350, zone: 'West Terminal', is_major: 1 },
+            { id: 'stop_blr_14', name: 'Kengeri Satellite Town', latitude: 12.89858, longitude: 77.47800, zone: 'West Terminal', is_major: 0 }
         ];
 
         db.tables.routes = [
-            { id: 'route_blr_378', name: 'Electronic City - Kengeri TTMC', route_number: '378', color: '#10B981', description: 'Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via NICE Corridor, Silk Institute & RR Nagar', total_distance_km: 32.0, avg_duration_minutes: 75, fare_lkr: 45, status: 'active' }
+            { id: 'route_blr_378', name: 'Electronic City - Kengeri TTMC', route_number: '378', color: '#10B981', description: 'Direct BMTC Route 378 connecting Electronic City to Kengeri TTMC via Begur, Gottigere, Konanakunte & Uttarahalli', total_distance_km: 32.0, avg_duration_minutes: 75, fare_lkr: 45, status: 'active' }
         ];
 
         db.tables.route_stops = [
@@ -891,10 +892,10 @@ function initializeDatabase() {
         ];
 
         db.tables.trips = [
-            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 5 * 60000).toISOString(), status: 'active', current_stop_index: 1, current_passenger_count: 24, delay_minutes: 0, segment_progress: 0.25, state: 'in_transit', dwell_seconds: 0 },
-            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 28 * 60000).toISOString(), status: 'active', current_stop_index: 5, current_passenger_count: 38, delay_minutes: 1, segment_progress: 0.40, state: 'in_transit', dwell_seconds: 0 },
-            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 12 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 29, delay_minutes: 0, segment_progress: 0.35, state: 'in_transit', dwell_seconds: 0 },
-            { id: 'trip_blr_04', bus_id: 'bus_blr_04', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 36 * 60000).toISOString(), status: 'active', current_stop_index: 8, current_passenger_count: 44, delay_minutes: 2, segment_progress: 0.50, state: 'in_transit', dwell_seconds: 0 }
+            { id: 'trip_blr_01', bus_id: 'bus_blr_01', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 5 * 60000).toISOString(), status: 'active', current_stop_index: 1, current_passenger_count: 16, delay_minutes: 0, segment_progress: 0.25, state: 'in_transit', dwell_seconds: 0 },
+            { id: 'trip_blr_02', bus_id: 'bus_blr_02', route_id: 'route_blr_378', direction: 'outbound', scheduled_start: new Date(Date.now() - 28 * 60000).toISOString(), status: 'active', current_stop_index: 5, current_passenger_count: 32, delay_minutes: 1, segment_progress: 0.40, state: 'in_transit', dwell_seconds: 0 },
+            { id: 'trip_blr_03', bus_id: 'bus_blr_03', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 12 * 60000).toISOString(), status: 'active', current_stop_index: 2, current_passenger_count: 20, delay_minutes: 0, segment_progress: 0.35, state: 'in_transit', dwell_seconds: 0 },
+            { id: 'trip_blr_04', bus_id: 'bus_blr_04', route_id: 'route_blr_378', direction: 'inbound', scheduled_start: new Date(Date.now() - 36 * 60000).toISOString(), status: 'active', current_stop_index: 8, current_passenger_count: 45, delay_minutes: 2, segment_progress: 0.50, state: 'in_transit', dwell_seconds: 0 }
         ];
 
         db.tables.badges = [

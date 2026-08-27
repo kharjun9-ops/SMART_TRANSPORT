@@ -23,7 +23,7 @@ const TripsView = {
         return `
             <div class="view-fade-in fixed inset-0 z-30 bg-[#0a0d14] flex flex-col overflow-hidden text-white">
                 <!-- Top App Bar (Pixel-matched Header) -->
-                <header class="fixed top-0 w-full z-50 bg-[#0a0d14]/90 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-4 h-14 transition-colors duration-200">
+                <header class="fixed top-0 w-full z-50 bg-[#0a0d14]/90 backdrop-blur-xl border-b border-white/10 flex justify-between items-center px-4 h-14 transition-colors duration-200 relative">
                     <button 
                         class="text-primary hover:opacity-80 transition-opacity active:scale-95 p-2 -ml-2 flex items-center justify-center cursor-pointer"
                         onclick="window.app.navigate('home')"
@@ -33,12 +33,12 @@ const TripsView = {
                         <span class="material-symbols-outlined text-2xl text-primary" style="font-variation-settings: 'FILL' 1;">location_on</span>
                     </button>
 
-                    <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm cursor-pointer hover:bg-white/10 transition-all" onclick="window.app.navigate('home')">
+                    <div class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 shadow-sm cursor-pointer hover:bg-white/10 transition-all pointer-events-auto" onclick="window.app.navigate('home')">
                         <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                        <h1 class="font-bold text-xs tracking-tight text-white">Lumina Transit</h1>
+                        <h1 class="font-bold text-xs tracking-tight text-white uppercase">SMART TRANSIT</h1>
                     </div>
 
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1.5 ml-auto">
                         <!-- Language Selector -->
                         <button 
                             id="trip-lang-toggle-btn"
@@ -367,31 +367,54 @@ const TripsView = {
             // Re-render the drawer UI components to match exact current stop
             this.renderDrawerUI();
 
-            // Check Waiting List Boarding Proximity Alert (1 Station / ~1 Min Before Chosen Stop)
-            if (this.userWaitlist && this.userWaitlist.stop_id && this.tripData && this.tripData.stops && !this.isOnBoard) {
-                const waitlistIdx = this.tripData.stops.findIndex(s => s.stop_id === this.userWaitlist.stop_id);
+            // Check Waiting List Boarding Proximity Alert (When user is in waiting list and bus is arriving soon / at station)
+            if (this.userWaitlist && !this.isOnBoard && this.tripData && this.tripData.stops) {
+                const waitlistStopId = this.userWaitlist.stop_id || this.userWaitlist.id;
+                const waitlistIdx = this.tripData.stops.findIndex(s => 
+                    (s.stop_id && s.stop_id === waitlistStopId) || 
+                    (s.id && s.id === waitlistStopId) ||
+                    (this.userWaitlist.stop_name && (s.stop_name === this.userWaitlist.stop_name || s.name === this.userWaitlist.stop_name))
+                );
+
                 if (waitlistIdx !== -1) {
                     const currentIdx = this.tripData.current_stop_index || 0;
                     const stopsRemaining = waitlistIdx - currentIdx;
+                    const waitlistStop = this.tripData.stops[waitlistIdx];
+                    const currentStop = this.tripData.stops[currentIdx];
+                    const waitlistStopName = waitlistStop ? (waitlistStop.stop_name || waitlistStop.name) : (this.userWaitlist.stop_name || 'your stop');
+                    const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Previous Stop';
 
-                    if (stopsRemaining === 1 && !this.alertedBoarding) {
+                    // Next stop arrival & forecast detection
+                    const forecast = this.tripData.forecast;
+                    const nextForecast = forecast ? forecast.next_stop_forecast : null;
+                    const etaEl = document.getElementById('drawer-eta-value');
+                    const etaValText = etaEl ? etaEl.textContent.trim().toLowerCase() : '';
+                    const nextEtaText = (nextForecast ? (nextForecast.display_text || '') : (waitlistStop.eta ? (waitlistStop.eta.display_text || '') : '')).toLowerCase();
+
+                    // "Arriving soon" condition: Next stop is user's waitlisted stop (stopsRemaining === 1)
+                    const isArrivingSoon = stopsRemaining === 1 && (
+                        this.tripData.state === 'in_transit' ||
+                        etaValText.includes('arriving') ||
+                        etaValText.includes('< 1') ||
+                        etaValText.includes('1 min') ||
+                        nextEtaText.includes('arriving') ||
+                        nextEtaText.includes('< 1') ||
+                        nextEtaText.includes('1 min') ||
+                        (nextForecast && nextForecast.wait_time_minutes <= 2)
+                    );
+
+                    if (isArrivingSoon && !this.alertedBoarding) {
                         this.alertedBoarding = true;
-                        const waitlistStop = this.tripData.stops[waitlistIdx];
-                        const currentStop = this.tripData.stops[currentIdx];
-                        const waitlistStopName = waitlistStop ? (waitlistStop.stop_name || waitlistStop.name) : 'your stop';
-                        const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Current Station';
                         this.triggerBoardingAlert(waitlistStopName, currName, false);
                     } else if (stopsRemaining <= 0 && this.tripData.state === 'at_stop' && this.alertedBoarding !== 'at_stop') {
                         this.alertedBoarding = 'at_stop';
-                        const waitlistStop = this.tripData.stops[waitlistIdx];
-                        const waitlistStopName = waitlistStop ? (waitlistStop.stop_name || waitlistStop.name) : 'your stop';
                         this.triggerBoardingAlert(waitlistStopName, waitlistStopName, true);
                     }
                 }
             }
 
-            // Check 1-Station-Before Deboarding Proximity Alert
-            if (this.selectedDestinationStopId && this.tripData && this.tripData.stops) {
+            // Check 1-Station-Before Deboarding Proximity Alert (ONLY when user is boarded)
+            if (this.isOnBoard && this.selectedDestinationStopId && this.tripData && this.tripData.stops) {
                 const destIdx = this.tripData.stops.findIndex(s => s.stop_id === this.selectedDestinationStopId);
                 if (destIdx !== -1) {
                     const currentIdx = this.tripData.current_stop_index || 0;
@@ -461,41 +484,60 @@ const TripsView = {
     },
 
     getStopCrowdInfo(stop, stopIdx) {
-        if (!stop) return { level: 'LOW', text: 'LOW', dotColor: 'bg-secondary', textColor: 'text-secondary', badgeClass: 'text-secondary bg-secondary/15 border-secondary/30' };
+        if (!stop) return this.formatCrowdBadge('LOW');
 
-        const currentIdx = this.tripData?.current_stop_index || 0;
-        const forecast = this.tripData?.forecast;
+        const stopId = stop.stop_id || stop.id || '';
 
-        let level = 'LOW';
-
-        // 1. Check predicted crowd from backend
-        if (stop.crowd_prediction && stop.crowd_prediction.predicted_level) {
-            const l = stop.crowd_prediction.predicted_level.toUpperCase();
-            level = l === 'HIGH' ? 'HIGH' : (l === 'MEDIUM' || l === 'MID' ? 'MID' : 'LOW');
-        } 
-        // 2. Next stop forecast check
-        else if (stopIdx === currentIdx + 1 && forecast?.next_stop_forecast) {
-            const f = forecast.next_stop_forecast;
-            if (f.waiting_passengers_count > 10 || f.crowd_level === 'high') level = 'HIGH';
-            else if (f.waiting_passengers_count > 5 || f.crowd_level === 'medium') level = 'MID';
-            else level = 'LOW';
-        } 
-        // 3. Next+1 stop forecast check
-        else if (stopIdx === currentIdx + 2 && forecast?.next_next_stop_forecast) {
-            const f = forecast.next_next_stop_forecast;
-            if (f.waiting_passengers_count > 10 || f.crowd_level === 'high') level = 'HIGH';
-            else if (f.waiting_passengers_count > 5 || f.crowd_level === 'medium') level = 'MID';
-            else level = 'LOW';
-        } 
-        // 4. Passenger wait count or major hub
-        else {
-            const count = stop.waiting_passengers || (stop.eta?.is_approaching ? 2 : 1);
-            if (count > 10) level = 'HIGH';
-            else if (count > 5) level = 'MID';
-            else level = 'LOW';
+        // 1. If user explicitly updated crowd for this stop/trip:
+        if (this._userStopCrowdLevels && this._userStopCrowdLevels[stopId]) {
+            return this.formatCrowdBadge(this._userStopCrowdLevels[stopId]);
         }
 
-        if (level === 'HIGH') {
+        // 2. If user joined waitlist at this stop:
+        const isUserWaitingHere = this.userWaitlist && (this.userWaitlist.stop_id === stopId || this.userWaitlist.id === stopId);
+        if (isUserWaitingHere) {
+            return this.formatCrowdBadge('MID');
+        }
+
+        // 3. If user reported overall crowd for this trip:
+        if (this._tripReportedCrowdLevel) {
+            if (this._tripReportedCrowdLevel === 'low') {
+                return this.formatCrowdBadge('LOW');
+            } else if (this._tripReportedCrowdLevel === 'medium') {
+                return this.formatCrowdBadge((stopIdx % 2 === 0) ? 'MID' : 'LOW');
+            } else {
+                return this.formatCrowdBadge(stop.is_major ? 'HIGH' : 'MID');
+            }
+        }
+
+        // 4. Distinct, natural variation based on bus index & stop index:
+        let busNum = 1;
+        const busNumStr = String(this.tripData?.bus_number || this.tripData?.id || '');
+        if (busNumStr.includes('3782') || busNumStr.includes('02')) busNum = 2;
+        else if (busNumStr.includes('3783') || busNumStr.includes('03')) busNum = 3;
+        else if (busNumStr.includes('3784') || busNumStr.includes('04')) busNum = 4;
+        else busNum = 1;
+
+        const idx = Number(stopIdx) || 0;
+        const pattern = (busNum * 3 + idx * 7) % 10;
+
+        let level = 'LOW';
+        if (busNum === 1) {
+            level = (pattern < 7) ? 'LOW' : 'MID';
+        } else if (busNum === 2) {
+            level = (pattern < 4) ? 'LOW' : (pattern < 8 ? 'MID' : 'HIGH');
+        } else if (busNum === 3) {
+            level = (pattern < 6) ? 'LOW' : 'MID';
+        } else {
+            level = (pattern < 3) ? 'LOW' : (pattern < 7 ? 'MID' : 'HIGH');
+        }
+
+        return this.formatCrowdBadge(level);
+    },
+
+    formatCrowdBadge(level) {
+        const norm = (level || 'LOW').toUpperCase();
+        if (norm === 'HIGH') {
             return {
                 level: 'HIGH',
                 text: 'HIGH',
@@ -503,7 +545,7 @@ const TripsView = {
                 textColor: 'text-error',
                 badgeClass: 'text-error bg-error/15 border-error/30'
             };
-        } else if (level === 'MID') {
+        } else if (norm === 'MID' || norm === 'MEDIUM') {
             return {
                 level: 'MID',
                 text: 'MID',
@@ -680,12 +722,16 @@ const TripsView = {
                         </div>
                         <div>
                             <div class="text-xs font-bold text-secondary">${I18n.t('trips.you_are_waiting') || 'You are on the Waiting List'}</div>
-                            <div class="text-[10px] text-gray-300">Registered for this bus at ${I18n.translateStop(this.userWaitlist.stop_name || 'Stop')}</div>
+                            <div class="text-[10px] text-gray-300">Registered for this bus at ${I18n.translateStop(
+                                this.userWaitlist.stop_name || 
+                                ((this.tripData?.stops || []).find(s => s.stop_id === (this.userWaitlist.stop_id || this.userWaitlist.id) || s.id === (this.userWaitlist.stop_id || this.userWaitlist.id))?.stop_name) ||
+                                'Stop'
+                            )}</div>
                         </div>
                     </div>
                     <button 
                         class="px-2.5 py-1 rounded-lg bg-secondary/20 hover:bg-secondary/30 text-secondary text-[11px] font-bold border border-secondary/30 transition-all cursor-pointer"
-                        onclick="TripsView.handleLeaveWaitlist('${this.userWaitlist.stop_id}')"
+                        onclick="TripsView.handleLeaveWaitlist('${this.userWaitlist.stop_id || this.userWaitlist.id}')"
                     >
                         ${I18n.t('trips.leave_queue') || 'Leave Queue'}
                     </button>
@@ -703,7 +749,6 @@ const TripsView = {
                                 <p class="text-[10px] text-gray-400">Queue for this bus & reserve crowd seat intelligence</p>
                             </div>
                         </div>
-                        <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold">+15 Pts</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <select 
@@ -899,46 +944,77 @@ const TripsView = {
             </div>
 
             <!-- Destination Notification Picker (Deboard Alarm) -->
-            <div class="bg-[#10141d]/90 border border-white/10 rounded-2xl p-3.5 flex items-center justify-between gap-2 shadow-xl">
+            <div class="bg-[#10141d]/90 border ${this.isOnBoard ? 'border-secondary/30 shadow-[0_0_20px_rgba(78,222,163,0.15)]' : 'border-white/10 opacity-75'} rounded-2xl p-3.5 flex items-center justify-between gap-2 shadow-xl transition-all">
                 <div class="flex items-center gap-2 min-w-0">
-                    <span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
-                    <span class="text-xs text-white font-bold truncate">${I18n.t('trips.deboard_alarm') || 'Deboard Alarm'}</span>
+                    <span class="material-symbols-outlined ${this.isOnBoard ? 'text-secondary animate-pulse' : 'text-gray-400'} text-lg" style="font-variation-settings: 'FILL' 1;">
+                        ${this.isOnBoard ? 'notifications_active' : 'lock'}
+                    </span>
+                    <div class="flex flex-col min-w-0">
+                        <span class="text-xs text-white font-bold truncate">${I18n.t('trips.deboard_alarm') || 'Deboard Alarm'}</span>
+                        ${!this.isOnBoard ? '<span class="text-[9.5px] text-amber-300 font-medium flex items-center gap-0.5"><span>🔒</span> Board bus to enable alarm</span>' : ''}
+                    </div>
                 </div>
                 <select 
                     id="deboard-alarm-select"
-                    class="bg-[#1e2638] text-white text-xs font-semibold rounded-xl px-3 py-1.5 border border-white/20 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    class="bg-[#1e2638] text-white text-xs font-semibold rounded-xl px-3 py-1.5 border ${this.isOnBoard ? 'border-white/20' : 'border-white/10 opacity-60 cursor-not-allowed'} focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                     style="color: #ffffff !important; background-color: #1e2638 !important;"
+                    ${!this.isOnBoard ? 'disabled' : ''}
                     onchange="TripsView.setDestination(this.value)"
                 >
-                    <option value="" style="color: #ffffff !important; background-color: #151b28 !important;">${I18n.t('trips.choose_stop') || '-- Choose Stop --'}</option>
-                    ${stops.filter((s, idx) => idx > currentIdx).map(s => `
+                    <option value="" style="color: #ffffff !important; background-color: #151b28 !important;">
+                        ${!this.isOnBoard ? '🔒 Board Bus First' : (I18n.t('trips.choose_stop') || '-- Choose Stop --')}
+                    </option>
+                    ${this.isOnBoard ? stops.filter((s, idx) => idx > currentIdx).map(s => `
                         <option value="${s.stop_id}" ${this.selectedDestinationStopId === s.stop_id ? 'selected' : ''} style="color: #ffffff !important; background-color: #151b28 !important;">
                             ${I18n.translateStop(s.stop_name)}
                         </option>
-                    `).join('')}
+                    `).join('') : ''}
                 </select>
             </div>
 
-            <!-- Action Grid (Boarding & Deboarding Buttons) -->
-            <div class="grid grid-cols-2 gap-3 mt-auto pt-1">
-                <button 
-                    class="${!this.isOnBoard ? 'bg-primary text-on-primary shadow-[0_0_15px_rgba(173,198,255,0.35)]' : 'bg-surface-container-high text-on-surface-variant'} font-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-                    onclick="TripsView.handleBoarding()"
-                >
-                    <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                    <span>${this.isOnBoard ? (I18n.t('trips.boarded') || 'Boarded ✓') : (I18n.t('trips.im_boarding') || "I'm Boarding")}</span>
-                </button>
+            <!-- Action Buttons (Boarding & Deboarding Symmetrical Bar) -->
+            <div class="flex flex-col gap-2.5 mt-auto pt-2 w-full">
+                <div class="flex items-center gap-2.5 w-full">
+                    <!-- Boarding Button -->
+                    <button 
+                        class="flex-1 min-w-0 py-3 px-3 rounded-xl flex items-center justify-center gap-2 font-extrabold text-xs transition-all shadow-md active:scale-95 cursor-pointer ${this.isOnBoard ? 'cursor-default' : ''}"
+                        style="${this.isOnBoard 
+                            ? 'background-color: rgba(16, 185, 129, 0.18) !important; border: 1.5px solid rgba(16, 185, 129, 0.5) !important; color: #34d399 !important;' 
+                            : (trip.state === 'at_stop'
+                                ? 'background-color: #1a73e8 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(26,115,232,0.45) !important;' 
+                                : 'background-color: rgba(26, 115, 232, 0.15) !important; border: 1px solid rgba(26, 115, 232, 0.35) !important; color: #93c5fd !important;')}"
+                        onclick="${!this.isOnBoard ? 'TripsView.handleBoarding()' : ''}"
+                    >
+                        <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">
+                            ${this.isOnBoard ? 'check_circle' : (trip.state === 'at_stop' ? 'directions_bus' : 'lock_clock')}
+                        </span>
+                        <span class="truncate">
+                            ${this.isOnBoard ? (I18n.t('trips.boarded') || 'On-Board ✓') : (trip.state === 'at_stop' ? (I18n.t('trips.im_boarding') || "I'm Boarding") : "Board at Stop")}
+                        </span>
+                    </button>
 
-                <button 
-                    class="${this.isOnBoard ? 'bg-error text-on-error' : 'bg-white/5 border border-white/10 text-white'} font-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
-                    onclick="TripsView.handleDeboarding()"
-                >
-                    <span class="material-symbols-outlined text-lg">exit_to_app</span>
-                    <span>I'm Deboarding</span>
-                </button>
+                    <!-- Deboarding Button -->
+                    <button 
+                        class="flex-1 min-w-0 py-3 px-3 rounded-xl flex items-center justify-center gap-2 font-extrabold text-xs transition-all shadow-md active:scale-95 ${this.isOnBoard ? 'cursor-pointer hover:opacity-90' : 'cursor-not-allowed opacity-40'}"
+                        style="${this.isOnBoard 
+                            ? (trip.state === 'at_stop'
+                                ? 'background-color: #dc2626 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(220,38,38,0.5) !important; border: 1px solid rgba(255,255,255,0.2) !important;' 
+                                : 'background-color: rgba(220, 38, 38, 0.18) !important; border: 1px solid rgba(220, 38, 38, 0.35) !important; color: #fca5a5 !important;')
+                            : 'background-color: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.1) !important; color: #9ca3af !important;'}"
+                        onclick="TripsView.handleDeboardingClick()"
+                    >
+                        <span class="material-symbols-outlined text-lg">
+                            ${this.isOnBoard && trip.state !== 'at_stop' ? 'lock_clock' : 'exit_to_app'}
+                        </span>
+                        <span class="truncate">
+                            ${this.isOnBoard ? (trip.state === 'at_stop' ? "I'm Deboarding" : "Deboard at Stop") : "I'm Deboarding"}
+                        </span>
+                    </button>
+                </div>
 
+                <!-- Report Crowd Button -->
                 <button 
-                    class="col-span-2 bg-white/5 border border-tertiary/30 text-tertiary font-bold text-xs py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-tertiary/10 active:scale-95 transition-all shadow-md cursor-pointer"
+                    class="w-full bg-white/5 border border-tertiary/30 text-tertiary font-bold text-xs py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-tertiary/10 active:scale-95 transition-all shadow-md cursor-pointer"
                     onclick="TripsView.openCrowdModal()"
                 >
                     <span class="material-symbols-outlined text-lg">group</span>
@@ -1032,6 +1108,8 @@ const TripsView = {
         if (!select || !select.value) return;
 
         const stopId = select.value;
+        const selectedStop = (this.tripData?.stops || []).find(s => s.stop_id === stopId || s.id === stopId);
+        const stopName = selectedStop ? (selectedStop.stop_name || selectedStop.name) : 'Stop';
         window.app.closeModal();
 
         NotificationUtils.showToast('Verifying Location...', 'Checking satellite GPS against stop geofence...', 'info', 2000);
@@ -1048,7 +1126,8 @@ const TripsView = {
                 loc.isDemo
             );
 
-            this.userWaitlist = res.waitlist;
+            this.userWaitlist = { ...(res.waitlist || {}), stop_id: stopId, stop_name: stopName, status: 'waiting' };
+            this.alertedBoarding = false;
             GPSUtils.showVerificationResultModal(res, 'Stop Waitlist Registration');
 
             await this.loadTripDetails();
@@ -1092,7 +1171,7 @@ const TripsView = {
                     loc.longitude, 
                     loc.isDemo
                 );
-                this.userWaitlist = res.waitlist || { stop_id: stopId, stop_name: stopName, status: 'waiting' };
+                this.userWaitlist = { ...(res.waitlist || {}), stop_id: stopId, stop_name: stopName, status: 'waiting' };
                 if (window.app && typeof window.app.updateSidebarUser === 'function') {
                     window.app.updateSidebarUser();
                 }
@@ -1101,28 +1180,8 @@ const TripsView = {
             }
 
             this.alertedBoarding = false;
-            NotificationUtils.showToast('Joined Waiting List! 🎉', `Registered for this bus at ${I18n.translateStop(stopName)}. (+15 Pts)`, 'success', 4000);
+            NotificationUtils.showToast('Joined Waiting List! 🎉', `Registered for this bus at ${I18n.translateStop(stopName)}.`, 'success', 4000);
             this.renderDrawerUI();
-
-            // Immediate check: If bus is already ~1 min away (1 stop away or at stop), trigger Boarding Alert!
-            const waitlistIdx = (this.tripData?.stops || []).findIndex(s => s.stop_id === stopId);
-            const currentIdx = this.tripData?.current_stop_index || 0;
-            if (waitlistIdx !== -1) {
-                const stopsRemaining = waitlistIdx - currentIdx;
-                if (stopsRemaining === 1) {
-                    this.alertedBoarding = true;
-                    const currentStop = this.tripData.stops[currentIdx];
-                    const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Current Station';
-                    setTimeout(() => {
-                        this.triggerBoardingAlert(stopName, currName, false);
-                    }, 800);
-                } else if (stopsRemaining <= 0 && this.tripData.state === 'at_stop') {
-                    this.alertedBoarding = 'at_stop';
-                    setTimeout(() => {
-                        this.triggerBoardingAlert(stopName, stopName, true);
-                    }, 800);
-                }
-            }
         } catch (e) {
             // Fallback for seamless commuter experience
             this.userWaitlist = { stop_id: stopId, stop_name: stopName, status: 'waiting' };
@@ -1148,6 +1207,13 @@ const TripsView = {
     },
 
     setDestination(stopId) {
+        if (!this.isOnBoard && stopId) {
+            NotificationUtils.showToast('Boarding Required ⚠️', 'Please tap "I\'m Boarding" first before setting a deboarding alarm.', 'warning', 4000);
+            this.selectedDestinationStopId = null;
+            this.renderDrawerUI();
+            return;
+        }
+
         if (!stopId) {
             this.selectedDestinationStopId = null;
             this.alertedNear = false;
@@ -1193,18 +1259,22 @@ const TripsView = {
 
     triggerBoardingAlert(waitlistStopName, currentStopName, isAtStation = false) {
         // 1. Audio Chime
-        NotificationUtils.playChime();
+        try { NotificationUtils.playChime(); } catch(e) {}
 
         // 2. Announce Voice Alert
-        const speechText = isAtStation
-            ? `Attention: Route ${this.tripData?.route_short_name || '378'} has arrived at ${waitlistStopName}. Please board the bus now.`
-            : `Attention: Route ${this.tripData?.route_short_name || '378'} is 1 minute away from ${waitlistStopName}. Please get ready to board.`;
-        NotificationUtils.speakAlert(speechText);
+        try {
+            const speechText = isAtStation
+                ? `Attention: Route ${this.tripData?.route_short_name || '378'} has arrived at ${waitlistStopName}. Please board the bus now.`
+                : `Attention: Route ${this.tripData?.route_short_name || '378'} is 1 minute away from ${waitlistStopName}. Please get ready to board.`;
+            NotificationUtils.speakAlert(speechText);
+        } catch(e) {}
 
         // 3. Haptic Vibration
-        if ('vibrate' in navigator) {
-            navigator.vibrate([350, 150, 350, 150, 600]);
-        }
+        try {
+            if ('vibrate' in navigator) {
+                navigator.vibrate([350, 150, 350, 150, 600]);
+            }
+        } catch(e) {}
 
         // 4. Persistent Toast Banner
         NotificationUtils.showToast(
@@ -1216,33 +1286,42 @@ const TripsView = {
             10000
         );
 
+        const isDark = document.documentElement.classList.contains('dark');
+        const modalBg = isDark ? '#10141d' : '#ffffff';
+        const titleColor = isDark ? '#ffffff' : '#111827';
+        const bodyColor = isDark ? '#c2c6d6' : '#374151';
+        const highlightColor = isDark ? '#ffffff' : '#111827';
+        const dismissBtnBg = isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6';
+        const dismissBtnText = isDark ? '#ffffff' : '#111827';
+        const dismissBtnBorder = isDark ? 'rgba(255,255,255,0.15)' : '#d1d5db';
+
         // 5. Present Boarding Attention Modal
         window.app.showModal(`
-            <div class="glass-panel rounded-3xl p-6 text-center space-y-4 border-2 border-primary shadow-[0_0_50px_rgba(77,142,255,0.45)] max-w-sm mx-auto animate-in">
-                <div class="w-16 h-16 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center mx-auto text-primary shadow-lg animate-bounce">
+            <div class="rounded-3xl p-6 text-center space-y-4 border-2 border-primary shadow-2xl max-w-sm mx-auto animate-in" style="background-color: ${modalBg} !important; color: ${titleColor} !important;">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce" style="background-color: rgba(26, 115, 232, 0.15); border: 1.5px solid rgba(26, 115, 232, 0.35); color: #1a73e8;">
                     <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
                 </div>
                 <div>
-                    <span class="bg-primary/20 text-primary border border-primary/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                    <span class="text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block" style="background-color: rgba(26, 115, 232, 0.15); border: 1px solid rgba(26, 115, 232, 0.35); color: #1a73e8;">
                         ${isAtStation ? 'Bus At Station • Board Now' : 'Boarding Alert • ~1 Min Away'}
                     </span>
-                    <h3 class="text-xl font-bold text-white mt-2">
-                        ${isAtStation ? `Bus Arrived at ${waitlistStopName}` : `Next Stop: ${waitlistStopName}`}
+                    <h3 class="text-xl font-extrabold mt-3" style="color: ${titleColor} !important;">
+                        ${isAtStation ? `Bus Arrived at ${I18n.translateStop(waitlistStopName)}` : `Next Stop: ${I18n.translateStop(waitlistStopName)}`}
                     </h3>
-                    <p class="text-xs text-gray-300 mt-1 leading-relaxed">
+                    <p class="text-xs mt-2 leading-relaxed font-medium" style="color: ${bodyColor} !important;">
                         ${isAtStation 
-                            ? `Route <strong class="text-white">${this.tripData?.route_short_name || '378'}</strong> is at <strong class="text-white">${waitlistStopName}</strong>. Tap below to confirm boarding and update crowd intelligence.`
-                            : `Route <strong class="text-white">${this.tripData?.route_short_name || '378'}</strong> is leaving <strong class="text-white">${currentStopName}</strong> and will reach <strong class="text-white">${waitlistStopName}</strong> in about 1 minute!`
+                            ? `Route <strong style="color: ${highlightColor} !important; font-weight: 700;">${this.tripData?.route_short_name || '378'}</strong> is at <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(waitlistStopName)}</strong>. Tap below to confirm boarding and update crowd intelligence.`
+                            : `Route <strong style="color: ${highlightColor} !important; font-weight: 700;">${this.tripData?.route_short_name || '378'}</strong> is leaving <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(currentStopName)}</strong> and will reach <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(waitlistStopName)}</strong> in about 1 minute!`
                         }
                     </p>
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button class="py-3 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer active:scale-95" onclick="window.app.closeModal()">
+                    <button class="py-3 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer active:scale-95 shadow-sm" style="background-color: ${dismissBtnBg} !important; color: ${dismissBtnText} !important; border: 1px solid ${dismissBtnBorder} !important;" onclick="window.app.closeModal()">
                         Remind on Arrival
                     </button>
-                    <button class="flex-1 py-3 rounded-xl bg-primary text-[#002e6a] font-extrabold text-xs hover:bg-primary-fixed transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center gap-1.5" onclick="TripsView.handleBoarding(); window.app.closeModal();">
-                        <span class="material-symbols-outlined text-sm font-bold">directions_bus</span>
-                        <span>I'm Boarding (+10 Pts)</span>
+                    <button class="flex-1 py-3 rounded-xl font-extrabold text-xs transition-all cursor-pointer shadow-lg active:scale-95 flex items-center justify-center gap-1.5" style="background-color: #1a73e8 !important; color: #ffffff !important;" onclick="TripsView.handleBoarding(); window.app.closeModal();">
+                        <span class="material-symbols-outlined text-sm font-bold" style="color: #ffffff !important;">directions_bus</span>
+                        <span style="color: #ffffff !important;">I'm Boarding (+10 Pts)</span>
                     </button>
                 </div>
             </div>
@@ -1269,27 +1348,36 @@ const TripsView = {
             10000
         );
 
+        const isDark = document.documentElement.classList.contains('dark');
+        const modalBg = isDark ? '#10141d' : '#ffffff';
+        const titleColor = isDark ? '#ffffff' : '#111827';
+        const bodyColor = isDark ? '#c2c6d6' : '#374151';
+        const highlightColor = isDark ? '#ffffff' : '#111827';
+        const readyBtnBg = isDark ? '#00a572' : '#188038';
+        const readyBtnText = '#ffffff';
+
         // 5. Present Attention Modal
         window.app.showModal(`
-            <div class="glass-panel rounded-3xl p-6 text-center space-y-4 border-2 border-secondary shadow-[0_0_50px_rgba(78,222,163,0.35)] max-w-sm mx-auto animate-in">
-                <div class="w-16 h-16 rounded-full bg-secondary/20 border border-secondary/40 flex items-center justify-center mx-auto text-secondary shadow-lg">
+            <div class="rounded-3xl p-6 text-center space-y-4 border-2 shadow-2xl max-w-sm mx-auto animate-in" style="background-color: ${modalBg} !important; border-color: #188038 !important; color: ${titleColor} !important;">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-lg" style="background-color: rgba(24, 128, 56, 0.15); border: 1.5px solid rgba(24, 128, 56, 0.35); color: #188038;">
                     <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
                 </div>
                 <div>
-                    <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                    <span class="text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block" style="background-color: rgba(24, 128, 56, 0.15); border: 1px solid rgba(24, 128, 56, 0.35); color: #188038;">
                         Deboarding Alert
                     </span>
-                    <h3 class="text-xl font-bold text-white mt-2">Next Stop: ${destStopName}</h3>
-                    <p class="text-xs text-gray-300 mt-1 leading-relaxed">
-                        The bus is currently at <strong class="text-white">${currentStopName}</strong>. Your destination is the very next stop! Please prepare to deboard.
+                    <h3 class="text-xl font-extrabold mt-3" style="color: ${titleColor} !important;">Next Stop: ${I18n.translateStop(destStopName)}</h3>
+                    <p class="text-xs mt-2 leading-relaxed font-medium" style="color: ${bodyColor} !important;">
+                        The bus is currently at <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(currentStopName)}</strong>. Your destination is the very next stop! Please prepare to deboard.
                     </p>
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button class="flex-1 py-3 rounded-xl bg-secondary text-[#003824] font-bold text-xs hover:bg-secondary-container transition-all cursor-pointer shadow-lg active:scale-95" onclick="window.app.closeModal()">
+                    <button class="flex-1 py-3 px-4 rounded-xl font-extrabold text-xs transition-all cursor-pointer shadow-md active:scale-95" style="background-color: ${readyBtnBg} !important; color: ${readyBtnText} !important;" onclick="window.app.closeModal()">
                         I'm Ready
                     </button>
-                    <button class="py-3 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all cursor-pointer active:scale-95" onclick="TripsView.handleDeboarding(); window.app.closeModal();">
-                        Deboard Now
+                    <button class="flex-1 py-3 rounded-xl font-extrabold text-xs transition-all cursor-pointer shadow-md active:scale-95 flex items-center justify-center gap-1.5" style="background-color: #d93025 !important; color: #ffffff !important;" onclick="TripsView.handleDeboarding(); window.app.closeModal();">
+                        <span class="material-symbols-outlined text-sm font-bold" style="color: #ffffff !important;">exit_to_app</span>
+                        <span style="color: #ffffff !important;">Deboard Now</span>
                     </button>
                 </div>
             </div>
@@ -1299,6 +1387,11 @@ const TripsView = {
     async handleBoarding() {
         if (!API.isAuthenticated()) {
             window.app.showAuthModal();
+            return;
+        }
+
+        if (this.tripData && this.tripData.state !== 'at_stop') {
+            NotificationUtils.showToast('Bus In Motion 🚌', 'Safety rule: You can only board when the bus arrives and stops at a station.', 'warning', 4000);
             return;
         }
 
@@ -1342,7 +1435,29 @@ const TripsView = {
         }
     },
 
+    handleDeboardingClick() {
+        if (!this.isOnBoard) {
+            NotificationUtils.showToast('Boarding Required ⚠️', 'You must check in with "I\'m Boarding" first before you can deboard.', 'warning', 3500);
+            return;
+        }
+        if (this.tripData && this.tripData.state !== 'at_stop') {
+            NotificationUtils.showToast('Bus In Motion ⚠️', 'Passenger safety: You can only deboard when the bus has stopped at a station.', 'warning', 4000);
+            return;
+        }
+        this.handleDeboarding();
+    },
+
     async handleDeboarding() {
+        if (!this.isOnBoard) {
+            NotificationUtils.showToast('Boarding Required ⚠️', 'You must be on board before you can deboard.', 'warning', 3500);
+            return;
+        }
+
+        if (this.tripData && this.tripData.state !== 'at_stop') {
+            NotificationUtils.showToast('Bus In Motion ⚠️', 'Passenger safety: You can only deboard when the bus has stopped at a station.', 'warning', 4000);
+            return;
+        }
+
         if (!API.isAuthenticated()) {
             window.app.showAuthModal();
             return;
@@ -1350,6 +1465,21 @@ const TripsView = {
 
         const currentStop = this.tripData?.stops ? this.tripData.stops[this.tripData.current_stop_index] : null;
         const stopId = currentStop ? currentStop.stop_id : null;
+
+        // Reset on-board status and clear deboard alarm
+        this.isOnBoard = false;
+        this.selectedDestinationStopId = null;
+        this.alertedNear = false;
+        if (this.tripId) {
+            localStorage.removeItem('lumina_dest_' + this.tripId);
+        }
+
+        // Instantly decrement passenger count locally
+        if (this.tripData && this.tripData.current_passenger_count > 0) {
+            this.tripData.current_passenger_count -= 1;
+        }
+        this.renderDrawerUI();
+        this.updateLiveTelemetryInPlace();
 
         try {
             const loc = await GPSUtils.getCurrentPosition();
@@ -1361,17 +1491,21 @@ const TripsView = {
                 loc.isDemo
             );
 
-            this.isOnBoard = false;
+            if (res && res.passengerCount != null && this.tripData) {
+                this.tripData.current_passenger_count = res.passengerCount;
+            }
+
             GPSUtils.showVerificationResultModal(res, 'Deboarding Confirmation');
             NotificationUtils.showToast('Deboarded Successfully! 👋', 'You have deboarded from this bus.', 'success', 3000);
             this.renderDrawerUI();
+            this.updateLiveTelemetryInPlace();
             if (window.app && typeof window.app.updateSidebarUser === 'function') {
                 window.app.updateSidebarUser();
             }
         } catch (e) {
-            this.isOnBoard = false;
             NotificationUtils.showToast('Deboarded 👋', 'You have deboarded from this bus.', 'info', 3000);
             this.renderDrawerUI();
+            this.updateLiveTelemetryInPlace();
         }
     },
 
@@ -1481,6 +1615,22 @@ const TripsView = {
 
         const currentStop = this.tripData && this.tripData.stops ? this.tripData.stops[this.tripData.current_stop_index] : null;
         const stopId = currentStop ? currentStop.stop_id : null;
+
+        // Immediately apply reported crowd level locally for instantaneous UI update
+        this._tripReportedCrowdLevel = level;
+        if (!this._userStopCrowdLevels) this._userStopCrowdLevels = {};
+        if (stopId) {
+            this._userStopCrowdLevels[stopId] = level === 'high' ? 'HIGH' : (level === 'medium' ? 'MID' : 'LOW');
+        }
+        if (this.tripData) {
+            this.tripData.crowd_level = level;
+            const cap = this.tripData.capacity || 55;
+            if (level === 'low') this.tripData.current_passenger_count = Math.min(this.tripData.current_passenger_count || 20, Math.round(cap * 0.35));
+            else if (level === 'medium') this.tripData.current_passenger_count = Math.round(cap * 0.65);
+            else if (level === 'high') this.tripData.current_passenger_count = Math.round(cap * 0.9);
+        }
+        this.renderDrawerUI();
+        this.updateLiveTelemetryInPlace();
 
         NotificationUtils.showToast('Verifying GPS...', 'Validating device proximity against bus position...', 'info', 2000);
 

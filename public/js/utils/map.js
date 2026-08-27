@@ -179,50 +179,74 @@ const MapUtils = {
         if (!this.map) return;
         this.userCoordinates = { lat, lng };
 
-        // Official Google Maps Blue Dot Marker with Pulse Radar Halo & Label
+        // High-Visibility Electric Orange Live GPS Location Beacon with Dual Radar Halo
         const userIcon = L.divIcon({
             className: 'google-maps-user-marker',
             html: `
                 <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -100%);">
+                    <!-- Glowing Orange Pill Badge -->
                     <div style="
-                        background: #1a73e8;
+                        background: linear-gradient(135deg, #ff6d00 0%, #ff3d00 100%);
                         color: #ffffff;
                         font-family: 'Inter', sans-serif;
                         font-weight: 800;
                         font-size: 10px;
-                        padding: 2.5px 8px;
+                        letter-spacing: 0.3px;
+                        padding: 3px 9px;
                         border-radius: 999px;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+                        box-shadow: 0 4px 14px rgba(255, 109, 0, 0.6), 0 2px 4px rgba(0,0,0,0.3);
                         white-space: nowrap;
-                        margin-bottom: 2px;
+                        margin-bottom: 4px;
                         border: 1.5px solid #ffffff;
                         display: flex;
                         align-items: center;
-                        gap: 3px;
+                        gap: 4px;
+                        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
                     ">
-                        <span style="display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ffffff; animation: pulseDot 1.5s infinite;"></span>
-                        <span>Your Location</span>
+                        <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ffffff; box-shadow: 0 0 6px #fff; animation: pulseDot 1.2s infinite;"></span>
+                        <span>YOUR LOCATION</span>
                     </div>
-                    <div style="position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
+
+                    <!-- Glowing Orange Radar Core -->
+                    <div style="position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">
+                        <!-- Primary Outer Orange Radar Shockwave -->
                         <div style="
                             position: absolute;
-                            inset: -6px;
+                            inset: -8px;
                             border-radius: 50%;
-                            border: 2px solid #1a73e8;
-                            background: rgba(26, 115, 232, 0.25);
-                            animation: pulseDot 2s infinite;
+                            border: 2px solid #ff6d00;
+                            background: rgba(255, 109, 0, 0.25);
+                            animation: orangeRadarWave 2.2s infinite ease-out;
                             pointer-events: none;
                         "></div>
+
+                        <!-- Secondary Inner Pulse Ring -->
                         <div style="
-                            width: 15px;
-                            height: 15px;
-                            background: #1a73e8;
+                            position: absolute;
+                            inset: -3px;
+                            border-radius: 50%;
+                            border: 1.5px solid #ff9100;
+                            background: rgba(255, 145, 0, 0.3);
+                            animation: orangeRadarWave 2.2s infinite 0.7s ease-out;
+                            pointer-events: none;
+                        "></div>
+
+                        <!-- 3D Electric Orange Beacon Dot -->
+                        <div style="
+                            width: 16px;
+                            height: 16px;
+                            background: linear-gradient(135deg, #ff9100 0%, #ff5722 50%, #e64a19 100%);
                             border: 2.5px solid #ffffff;
                             border-radius: 50%;
-                            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                            box-shadow: 0 0 14px #ff6d00, 0 0 24px rgba(255, 109, 0, 0.7), 0 3px 8px rgba(0,0,0,0.5);
                             position: relative;
                             z-index: 2;
-                        "></div>
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        ">
+                            <span style="width: 4px; height: 4px; border-radius: 50%; background: #ffffff;"></span>
+                        </div>
                     </div>
                 </div>
             `,
@@ -236,9 +260,13 @@ const MapUtils = {
         } else {
             this.markers.user = L.marker([lat, lng], { icon: userIcon }).addTo(this.map);
             this.markers.user.bindPopup(`
-                <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #202124; padding: 2px 4px;">
-                    <strong style="color: #1a73e8;">📍 Your Current Location</strong>
-                    <div style="font-size: 10.5px; color: #5f6368; margin-top: 2px;">Electronic City / Bengaluru GPS</div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #202124; padding: 3px 4px; min-width: 160px;">
+                    <div style="display: flex; items-center; gap: 6px; margin-bottom: 3px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ff6d00; box-shadow: 0 0 6px #ff6d00;"></span>
+                        <strong style="color: #ff6d00; font-size: 12px;">Your Live Location</strong>
+                    </div>
+                    <div style="font-size: 11px; color: #374151; font-weight: 500;">Bengaluru Transit GPS</div>
+                    <div style="font-size: 9.5px; color: #9ca3af; margin-top: 2px;">Verified Real-Time Satellite Telemetry</div>
                 </div>
             `);
         }

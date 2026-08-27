@@ -45,12 +45,13 @@ router.get('/badges/my', authenticateToken, (req, res) => {
 // GET /api/gamification/history - Get point transaction history
 router.get('/history', authenticateToken, (req, res) => {
     const db = getDb();
+    const limit = parseInt(req.query.limit) || 50;
     const transactions = db.prepare(`
         SELECT * FROM point_transactions
         WHERE user_id = ?
         ORDER BY created_at DESC
-        LIMIT 50
-    `).all(req.user.id);
+        LIMIT ?
+    `).all(req.user.id, limit);
 
     res.json({ transactions });
 });

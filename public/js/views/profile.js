@@ -183,22 +183,7 @@ const ProfileView = {
                 </div>
             </div>
 
-            <!-- Live System Alerts & Notifications -->
-            <div class="glass-panel rounded-2xl p-4 shadow-lg">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="font-headline-md text-xs font-bold text-on-surface flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-primary text-base">notifications</span>
-                        ${I18n.t('profile.notifications')}
-                    </h4>
-                    <button class="text-xs text-primary font-semibold hover:underline" onclick="ProfileView.markAllRead()">
-                        ${I18n.t('profile.mark_all_read')}
-                    </button>
-                </div>
 
-                <div class="space-y-2">
-                    ${this.renderNotificationsList()}
-                </div>
-            </div>
 
             <!-- Display & Theme Settings -->
             <div class="glass-panel rounded-2xl p-4 shadow-lg space-y-3">

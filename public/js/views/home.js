@@ -220,13 +220,6 @@ const HomeView = {
                                                     `}
                                                 </div>
                                                 <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
-                                                    <span class="text-primary font-bold flex items-center gap-1">
-                                                        <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-primary' : 'bg-primary'}"></span>
-                                                        ${arrivingText}
-                                                    </span>
-                                                    <span>•</span>
-                                                    <span>${I18n.t('home.min_trip_clean', { mins: durationMins }) || `${durationMins} min trip`}</span>
-                                                    <span>•</span>
                                                     <span>₹${fare}</span>
                                                 </div>
                                                 <!-- Left From / Dwell Info -->

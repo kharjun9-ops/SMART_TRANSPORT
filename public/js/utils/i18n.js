@@ -15,9 +15,9 @@ const I18n = {
         // APP SHELL & NAVIGATION
         // ============================
         'app.name': {
-            en: 'Lumina Transit',
-            kn: 'ಲುಮಿನಾ ಟ್ರಾನ್ಸಿಟ್',
-            hi: 'लुमिना ट्रांज़िट'
+            en: 'SMART TRANSIT',
+            kn: 'ಸ್ಮಾರ್ಟ್ ಟ್ರಾನ್ಸಿಟ್',
+            hi: 'स्मार्ट ट्रांजिट'
         },
         'app.tagline': {
             en: 'Real-Time Crowd Intelligence',
@@ -424,9 +424,9 @@ const I18n = {
             hi: '3. गंभीरता स्तर'
         },
         'report.step4': {
-            en: '4. Evidence (Photo or Camera)',
-            kn: '4. ಪುರಾವೆ (ಫೋಟೋ ಅಥವಾ ಕ್ಯಾಮೆರಾ)',
-            hi: '4. साक्ष्य (फोटो या कैमरा)'
+            en: '4. Evidence (Camera)',
+            kn: '4. ಪುರಾವೆ (ಕ್ಯಾಮೆರಾ)',
+            hi: '4. साक्ष्य (कैमरा)'
         },
         'report.describe': {
             en: 'Describe what happened (e.g. Bus #WP-ND-4521 dangerously packed with open doors at Bambalapitiya)',
@@ -523,9 +523,9 @@ const I18n = {
         'profile.theme_dark_label': { en: 'Lumina Dark HUD', kn: 'ಲುಮಿನಾ ಡಾರ್ಕ್ HUD', hi: 'लुमिना डार्क HUD' },
         'profile.account_settings': { en: 'Account Settings', kn: 'ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು', hi: 'खाता सेटिंग्स' },
         'profile.privacy_note': {
-            en: 'Lumina Transit operates privacy-preserving, verified GPS passenger feedback.',
-            kn: 'ಲುಮಿನಾ ಟ್ರಾನ್ಸಿಟ್ ಗೌಪ್ಯತೆ-ಸಂರಕ್ಷಿತ, ಪರಿಶೀಲಿತ GPS ಪ್ರಯಾಣಿಕ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನಡೆಸುತ್ತದೆ.',
-            hi: 'लुमिना ट्रांज़िट गोपनीयता-संरक्षित, सत्यापित GPS यात्री फीडबैक संचालित करता है।'
+            en: 'SMART TRANSIT operates privacy-preserving, verified GPS passenger feedback.',
+            kn: 'ಸ್ಮಾರ್ಟ್ ಟ್ರಾನ್ಸಿಟ್ ಗೌಪ್ಯತೆ-ಸಂರಕ್ಷಿತ, ಪರಿಶೀಲಿತ GPS ಪ್ರಯಾಣಿಕ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನಡೆಸುತ್ತದೆ.',
+            hi: 'स्मार्ट ट्रांजिट गोपनीयता-संरक्षित, सत्यापित GPS यात्री फीडबैक संचालित करता है।'
         },
         'profile.sign_out': { en: 'Sign Out', kn: 'ಸೈನ್ ಔಟ್', hi: 'साइन आउट' },
 
@@ -542,9 +542,9 @@ const I18n = {
         // ============================
         'toast.welcome_back': { en: 'Welcome back!', kn: 'ಮತ್ತೆ ಸ್ವಾಗತ!', hi: 'वापसी का स्वागत!' },
         'toast.signed_in': {
-            en: 'Signed into Lumina Transit Bengaluru',
-            kn: 'ಲುಮಿನಾ ಟ್ರಾನ್ಸಿಟ್ ಬೆಂಗಳೂರಿಗೆ ಸೈನ್ ಇನ್ ಆಗಿದೆ',
-            hi: 'लुमिना ट्रांज़िट बेंगलुरु में साइन इन किया'
+            en: 'Signed into SMART TRANSIT Bengaluru',
+            kn: 'ಸ್ಮಾರ್ಟ್ ಟ್ರಾನ್ಸಿಟ್ ಬೆಂಗಳೂರಿಗೆ ಸೈನ್ ಇನ್ ಆಗಿದೆ',
+            hi: 'स्मार्ट ट्रांजिट बेंगलुरु में साइन इन किया'
         },
         'toast.account_created': { en: 'Account Created!', kn: 'ಖಾತೆ ರಚಿಸಲಾಗಿದೆ!', hi: 'खाता बनाया गया!' },
         'toast.welcome_pts': {
@@ -554,9 +554,9 @@ const I18n = {
         },
         'toast.signed_out': { en: 'Signed Out', kn: 'ಸೈನ್ ಔಟ್ ಆಗಿದೆ', hi: 'साइन आउट हो गया' },
         'toast.signed_out_msg': {
-            en: 'You have been signed out of Lumina Transit Bengaluru.',
-            kn: 'ನೀವು ಲುಮಿನಾ ಟ್ರಾನ್ಸಿಟ್ ಬೆಂಗಳೂರಿನಿಂದ ಸೈನ್ ಔಟ್ ಆಗಿದ್ದೀರಿ.',
-            hi: 'आपको लुमिना ट्रांज़िट बेंगलुरु से साइन आउट कर दिया गया है।'
+            en: 'You have been signed out of SMART TRANSIT Bengaluru.',
+            kn: 'ನೀವು ಸ್ಮಾರ್ಟ್ ಟ್ರಾನ್ಸಿಟ್ ಬೆಂಗಳೂರಿನಿಂದ ಸೈನ್ ಔಟ್ ಆಗಿದ್ದೀರಿ.',
+            hi: 'आपको स्मार्ट ट्रांजिट बेंगलुरु से साइन आउट कर दिया गया है।'
         },
         'toast.report_submitted': {
             en: 'Report Submitted!',

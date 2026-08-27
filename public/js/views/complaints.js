@@ -113,19 +113,14 @@ const ComplaintsView = {
                             </button>
                         </div>
 
-                        <div class="flex gap-2">
+                        <div>
                             <button 
                                 type="button" 
-                                class="flex-1 py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/20 transition-all active:scale-95"
+                                class="w-full py-2.5 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-primary/20 transition-all active:scale-95 cursor-pointer"
                                 onclick="ComplaintsView.startCamera()"
                             >
                                 <span class="material-symbols-outlined text-base">photo_camera</span> ${I18n.t('report.open_camera')}
                             </button>
-
-                            <label class="flex-1 py-2.5 rounded-xl border border-white/15 bg-surface-container text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-surface-container-high transition-all active:scale-95 cursor-pointer">
-                                <span class="material-symbols-outlined text-base text-tertiary">upload_file</span> ${I18n.t('report.upload_photo')}
-                                <input type="file" id="complaint-file-input" accept="image/*" class="hidden" onchange="ComplaintsView.handleFileUpload(event)">
-                            </label>
                         </div>
                     </div>
 
