@@ -88,8 +88,8 @@ try {
     // Initialize database
     initializeDatabase();
 
-    // Start simulation engine
-    SimulationEngine.start(5000); // Tick every 5 seconds
+    // Start simulation engine (1s real-time telemetry cadence)
+    SimulationEngine.start(1000);
 
     const HOST = '0.0.0.0';
     server.listen(PORT, HOST, () => {

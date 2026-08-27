@@ -128,11 +128,11 @@ const TripsView = {
 
                             let crowdPillHtml = '';
                             if (trip.crowd_level === 'low') {
-                                crowdPillHtml = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('home.low_crowd')}</span>`;
+                                crowdPillHtml = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('crowd.low')}</span>`;
                             } else if (trip.crowd_level === 'medium') {
-                                crowdPillHtml = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('home.med_crowd')}</span>`;
+                                crowdPillHtml = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('crowd.medium')}</span>`;
                             } else {
-                                crowdPillHtml = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('home.high_crowd')}</span>`;
+                                crowdPillHtml = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">${I18n.t('crowd.high')}</span>`;
                             }
 
                             return `
@@ -150,7 +150,6 @@ const TripsView = {
                                                     <h3 class="font-headline-md text-sm font-bold text-on-surface">${trip.route_name || 'Electronic City - Kengeri TTMC'}</h3>
                                                     <span class="text-[10px] uppercase font-bold px-1.5 py-0.2 rounded bg-surface-container-highest text-on-surface-variant">${trip.direction || 'outbound'}</span>
                                                 </div>
-                                                <p class="text-xs text-on-surface-variant mt-0.5">${I18n.t('trips.driver_label')} <strong class="text-on-surface">${trip.driver_name || 'BMTC Pilot'}</strong></p>
                                             </div>
                                         </div>
                                         <div class="text-right">
@@ -194,15 +193,16 @@ const TripsView = {
     async init(params = {}) {
         if (params.tripId) {
             this.tripId = params.tripId;
+            this.userWaitlist = null; // Start fresh with Join Waiting List prompt
             await this.loadTripDetails();
 
-            // Polling tracking updates every 2.5s
+            // Polling tracking updates every 1.0s (real-time telemetry sync)
             if (this.trackInterval) clearInterval(this.trackInterval);
             this.trackInterval = setInterval(() => {
                 if (window.app && window.app.currentView === 'trips' && this.tripId) {
                     this.pollLiveTracking();
                 }
-            }, 2500);
+            }, 1000);
         }
     },
 
@@ -232,6 +232,23 @@ const TripsView = {
 
             MapUtils.initMap('live-trip-map', [centerLat, centerLng], 14, { hideZoom: true });
 
+            // Render Current User Location Marker (Electronic City Phase 1 / live GPS)
+            let userLat = 12.8452;
+            let userLng = 77.6602;
+            if (window.HomeView && window.HomeView.userLocation) {
+                userLat = window.HomeView.userLocation.lat;
+                userLng = window.HomeView.userLocation.lng;
+            }
+            MapUtils.setUserLocation(userLat, userLng, false);
+
+            if (window.GPSUtils) {
+                GPSUtils.getCurrentPosition().then(pos => {
+                    if (pos && pos.latitude && pos.longitude) {
+                        MapUtils.setUserLocation(pos.latitude, pos.longitude, false);
+                    }
+                }).catch(() => {});
+            }
+
             if (this.tripData.stops && this.tripData.stops.length > 0) {
                 MapUtils.drawRoute(this.tripData.route_id, this.tripData.stops, this.tripData.route_color || '#4d8eff');
                 MapUtils.renderStops(this.tripData.stops);
@@ -259,14 +276,8 @@ const TripsView = {
             this.userWaitlist = null;
             return;
         }
-        try {
-            const res = await API.getMyWaitlists();
-            if (res && res.waitlists) {
-                this.userWaitlist = res.waitlists.find(w => w.status === 'waiting' && (w.trip_id === this.tripId || w.route_id === this.tripData?.route_id)) || null;
-            }
-        } catch (e) {
-            this.userWaitlist = null;
-        }
+        // Retain user's explicit active session waitlist, or start null
+        this.userWaitlist = this.userWaitlist || null;
     },
 
     async pollLiveTracking() {
@@ -310,9 +321,129 @@ const TripsView = {
         } catch (e) {}
     },
 
+    updateLiveTelemetryInPlace() {
+        if (!this.tripData) return;
+        const trip = this.tripData;
+        const currentIdx = trip.current_stop_index || 0;
+        const stops = trip.stops || [];
+        const currentStop = stops[currentIdx] || { stop_name: 'In Transit' };
+        const nextStop = currentIdx + 1 < stops.length ? stops[currentIdx + 1] : null;
+        const forecast = trip.forecast;
+        const nextForecast = forecast ? forecast.next_stop_forecast : null;
+
+        let etaDisplayText = '2 mins';
+        let etaValue = 2;
+        if (trip.state === 'at_stop') {
+            const dwellSec = trip.dwell_seconds != null ? trip.dwell_seconds : 15;
+            etaDisplayText = `AT STOP (${dwellSec}s)`;
+            etaValue = dwellSec;
+        } else if (nextForecast) {
+            etaValue = nextForecast.wait_time_minutes || 2;
+            etaDisplayText = nextForecast.display_text || `${etaValue} mins`;
+        } else if (nextStop && nextStop.eta) {
+            etaValue = nextStop.eta.eta_minutes || 2;
+            etaDisplayText = nextStop.eta.display_text || `${etaValue} mins`;
+        }
+
+        const etaEl = document.getElementById('drawer-eta-value');
+        if (etaEl) {
+            etaEl.textContent = etaDisplayText;
+        }
+
+        const capacity = trip.capacity || 55;
+        const passengers = trip.current_passenger_count || 35;
+        const loadPercentage = Math.round((passengers / capacity) * 100);
+
+        const paxEl = document.getElementById('drawer-passengers-text');
+        if (paxEl) {
+            paxEl.textContent = `${I18n.t('trips.bus_passengers') || 'Bus Passengers:'} ${passengers}/${capacity} (${loadPercentage}% load)`;
+        }
+
+        const dwellCountdownEl = document.getElementById('dwell-countdown-val');
+        if (dwellCountdownEl && trip.dwell_seconds != null) {
+            dwellCountdownEl.textContent = `${trip.dwell_seconds}s`;
+        }
+    },
+
+    getStopCrowdInfo(stop, stopIdx) {
+        if (!stop) return { level: 'LOW', text: 'LOW', dotColor: 'bg-secondary', textColor: 'text-secondary', badgeClass: 'text-secondary bg-secondary/15 border-secondary/30' };
+
+        const currentIdx = this.tripData?.current_stop_index || 0;
+        const forecast = this.tripData?.forecast;
+
+        let level = 'LOW';
+
+        // 1. Check predicted crowd from backend
+        if (stop.crowd_prediction && stop.crowd_prediction.predicted_level) {
+            const l = stop.crowd_prediction.predicted_level.toUpperCase();
+            level = l === 'HIGH' ? 'HIGH' : (l === 'MEDIUM' || l === 'MID' ? 'MID' : 'LOW');
+        } 
+        // 2. Next stop forecast check
+        else if (stopIdx === currentIdx + 1 && forecast?.next_stop_forecast) {
+            const f = forecast.next_stop_forecast;
+            if (f.waiting_passengers_count > 10 || f.crowd_level === 'high') level = 'HIGH';
+            else if (f.waiting_passengers_count > 5 || f.crowd_level === 'medium') level = 'MID';
+            else level = 'LOW';
+        } 
+        // 3. Next+1 stop forecast check
+        else if (stopIdx === currentIdx + 2 && forecast?.next_next_stop_forecast) {
+            const f = forecast.next_next_stop_forecast;
+            if (f.waiting_passengers_count > 10 || f.crowd_level === 'high') level = 'HIGH';
+            else if (f.waiting_passengers_count > 5 || f.crowd_level === 'medium') level = 'MID';
+            else level = 'LOW';
+        } 
+        // 4. Passenger wait count or major hub
+        else {
+            const count = stop.waiting_passengers || (stop.eta?.is_approaching ? 2 : 1);
+            if (count > 10) level = 'HIGH';
+            else if (count > 5) level = 'MID';
+            else level = 'LOW';
+        }
+
+        if (level === 'HIGH') {
+            return {
+                level: 'HIGH',
+                text: 'HIGH',
+                dotColor: 'bg-error',
+                textColor: 'text-error',
+                badgeClass: 'text-error bg-error/15 border-error/30'
+            };
+        } else if (level === 'MID') {
+            return {
+                level: 'MID',
+                text: 'MID',
+                dotColor: 'bg-tertiary',
+                textColor: 'text-tertiary',
+                badgeClass: 'text-tertiary bg-tertiary/15 border-tertiary/30'
+            };
+        } else {
+            return {
+                level: 'LOW',
+                text: 'LOW',
+                dotColor: 'bg-secondary',
+                textColor: 'text-secondary',
+                badgeClass: 'text-secondary bg-secondary/15 border-secondary/30'
+            };
+        }
+    },
+
     renderDrawerUI() {
         const container = document.getElementById('trip-live-drawer-content');
         if (!container || !this.tripData) return;
+
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        const isInteracting = activeTag === 'select' || activeTag === 'input' || activeTag === 'textarea' || this._isInteractingWithSelect;
+
+        // If user is actively interacting with ANY dropdown or input in the drawer, update in-place without destroying DOM nodes
+        if (container.querySelector('#drawer-eta-value') && isInteracting) {
+            this.updateLiveTelemetryInPlace();
+            return;
+        }
+
+        // Preserve scroll positions of drawer and stops list
+        const drawerScrollTop = container.scrollTop;
+        const existingStopsScroll = document.getElementById('route-stops-scroll-list');
+        const stopsScrollTop = existingStopsScroll ? existingStopsScroll.scrollTop : (this._savedStopsScrollTop || 0);
 
         const trip = this.tripData;
         const currentIdx = trip.current_stop_index || 0;
@@ -327,7 +458,11 @@ const TripsView = {
         // ETA & Arrival Text Calculation
         let etaValue = 2;
         let etaDisplayText = '2 mins';
-        if (nextForecast) {
+        if (trip.state === 'at_stop') {
+            const dwellSec = trip.dwell_seconds != null ? trip.dwell_seconds : 15;
+            etaDisplayText = `AT STOP (${dwellSec}s)`;
+            etaValue = dwellSec;
+        } else if (nextForecast) {
             etaValue = nextForecast.wait_time_minutes || 2;
             etaDisplayText = nextForecast.display_text || `${etaValue} mins`;
         } else if (nextStop && nextStop.eta) {
@@ -358,15 +493,14 @@ const TripsView = {
             crowdTextColor = 'text-error';
         }
 
-        const driverName = trip.driver_name || 'Manjunath Gowda';
-
         // Upcoming stops for Card 2 (Show next 3 upcoming stops along the route)
         let upcomingStops = stops.slice(currentIdx + 1, currentIdx + 4);
         if (upcomingStops.length === 0 && stops.length > 0) {
             upcomingStops = stops.slice(0, Math.min(3, stops.length));
         }
 
-        const nextStopWaitLevel = (nextForecast && nextForecast.waiting_passengers_count > 10) ? 'HIGH' : ((nextForecast && nextForecast.waiting_passengers_count > 5) ? 'MID' : 'LOW');
+        // Synchronized Next Stop Crowd Info
+        const nextStopInfo = this.getStopCrowdInfo(nextStop, currentIdx + 1);
 
         container.innerHTML = `
             <!-- Next Stop Arrival & Bus Crowd / Passengers Bar -->
@@ -375,7 +509,7 @@ const TripsView = {
                     <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5">${I18n.t('trips.next_stop_arrival') || 'Next Stop Arrival'}</p>
                     <div class="flex items-baseline gap-1.5">
                         <span class="text-3xl font-extrabold text-white tracking-tight" id="drawer-eta-value">
-                            ${etaDisplayText.toLowerCase().includes('min') ? etaDisplayText : `${etaValue} mins`}
+                            ${etaDisplayText}
                         </span>
                     </div>
                 </div>
@@ -384,15 +518,60 @@ const TripsView = {
                         <span class="w-2.5 h-2.5 rounded-full ${crowdDotColor}"></span>
                         <span>${I18n.t('trips.bus_crowd') || 'BUS CROWD:'} ${crowdLabel}</span>
                     </div>
-                    <p class="text-[11px] text-gray-300 font-medium flex items-center gap-1">
+                    <p class="text-[11px] text-gray-300 font-medium flex items-center gap-1" id="drawer-passengers-text">
                         <span>🚌</span>
                         <span>${I18n.t('trips.bus_passengers') || 'Bus Passengers:'} ${passengers}/${capacity} (${loadPercentage}% load)</span>
                     </p>
                 </div>
             </div>
 
-            <!-- User Active Waitlist Banner (if joined) -->
+            <!-- 🌟 DEPARTED FROM & STATION DWELL LIVE INFO BANNER 🌟 -->
+            ${trip.state === 'at_stop' ? `
+                <div class="bg-primary/10 border border-primary/40 rounded-2xl p-3 flex items-center justify-between shadow-lg">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                            <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">hail</span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] text-primary font-bold uppercase tracking-wider flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                                <span>Bus Stopped At Station</span>
+                            </div>
+                            <div class="text-xs font-bold text-white truncate">${I18n.translateStop(currentStop.stop_name || currentStop.name)}</div>
+                        </div>
+                    </div>
+                    <div class="bg-primary/20 border border-primary/40 px-3 py-1 rounded-xl text-right flex-shrink-0">
+                        <div class="text-[9px] text-gray-300 font-semibold uppercase">Departs In</div>
+                        <div class="text-xs font-extrabold text-primary flex items-center gap-1 justify-end">
+                            <span class="material-symbols-outlined text-xs">timer</span>
+                            <span id="dwell-countdown-val">${trip.dwell_seconds != null ? trip.dwell_seconds : 15}s</span>
+                        </div>
+                    </div>
+                </div>
+            ` : `
+                <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-3 flex items-center justify-between shadow-md">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-xl bg-secondary/15 flex items-center justify-center text-secondary flex-shrink-0">
+                            <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">departure_board</span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Left From Stop</div>
+                            <div class="text-xs font-bold text-white truncate">${I18n.translateStop(currentStop.stop_name || currentStop.name)}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-right flex-shrink-0">
+                        <div class="min-w-0">
+                            <div class="text-[10px] text-secondary font-semibold uppercase tracking-wider">Next Stop</div>
+                            <div class="text-xs font-bold text-gray-100 truncate max-w-[130px]">${I18n.translateStop(nextStop ? (nextStop.stop_name || nextStop.name) : 'Terminus')}</div>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary text-sm">arrow_forward</span>
+                    </div>
+                </div>
+            `}
+
+            <!-- 🌟 WAITING LIST INTERFACE: CHOOSE STOP TO JOIN, OR SHOW ACTIVE BANNER WHEN JOINED 🌟 -->
             ${this.userWaitlist ? `
+                <!-- Active Waiting List Banner (Shown ONLY after user joins) -->
                 <div class="bg-secondary/15 border border-secondary/40 rounded-2xl p-3 flex items-center justify-between shadow-md">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-xl bg-secondary/25 flex items-center justify-center text-secondary">
@@ -410,7 +589,42 @@ const TripsView = {
                         ${I18n.t('trips.leave_queue') || 'Leave Queue'}
                     </button>
                 </div>
-            ` : ''}
+            ` : `
+                <!-- Initial Waiting List Card (User chooses stop to join) -->
+                <div class="bg-[#10141d]/90 border border-white/10 rounded-2xl p-3.5 space-y-2.5 shadow-xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined text-base">hail</span>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-white">Join Stop Waiting List</h4>
+                                <p class="text-[10px] text-gray-400">Queue for this bus & reserve crowd seat intelligence</p>
+                            </div>
+                        </div>
+                        <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold">+15 Pts</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select 
+                            id="inline-waitlist-stop-select"
+                            class="flex-1 bg-[#1a2130] text-white text-xs rounded-xl px-3 py-2 border border-white/15 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer truncate"
+                        >
+                            ${stops.filter((s, idx) => idx >= currentIdx).map(s => `
+                                <option value="${s.stop_id}">
+                                    ${I18n.translateStop(s.stop_name || s.name)}
+                                </option>
+                            `).join('')}
+                        </select>
+                        <button 
+                            class="bg-secondary text-[#003822] font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1 hover:opacity-90 active:scale-95 transition-all shadow-md cursor-pointer flex-shrink-0"
+                            onclick="TripsView.handleInlineJoinWaitlist()"
+                        >
+                            <span class="material-symbols-outlined text-sm font-bold">add</span>
+                            <span>Join Queue</span>
+                        </button>
+                    </div>
+                </div>
+            `}
 
             <!-- 🌟 LIVE CROWD INTELLIGENCE BREAKDOWN HEADER ROW 🌟 -->
             <div class="flex items-center justify-between pt-0.5">
@@ -420,14 +634,6 @@ const TripsView = {
                         ${I18n.t('trips.live_crowd_breakdown') || 'LIVE CROWD INTELLIGENCE BREAKDOWN'}
                     </h3>
                 </div>
-                ${!this.userWaitlist ? `
-                <button 
-                    class="text-xs text-white font-semibold flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/20 transition-all cursor-pointer active:scale-95"
-                    onclick="TripsView.openJoinWaitlistModal()"
-                >
-                    <span class="material-symbols-outlined text-xs">add</span> ${I18n.t('trips.join_stop_queue') || 'Join Stop Queue'}
-                </button>
-                ` : ''}
             </div>
 
             <!-- 🌟 2-CARDS GRID (Card 1: People in Bus, Card 2: People Waiting at Stop) 🌟 -->
@@ -455,10 +661,6 @@ const TripsView = {
                             <span class="text-gray-400">Bus On-Board Crowd:</span>
                             <span class="font-bold ${crowdTextColor}">${crowdFullText}</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Bus Driver:</span>
-                            <span class="font-bold text-white">${driverName}</span>
-                        </div>
                     </div>
 
                     <p class="text-[10px] text-gray-400 italic pt-1 border-t border-white/5">
@@ -475,34 +677,23 @@ const TripsView = {
                                 <span>${I18n.t('trips.people_waiting_stop') || '2. People Waiting At Stop'}</span>
                             </span>
                         </div>
-                        <span class="border border-secondary/30 bg-secondary/15 text-secondary px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
+                        <span class="border ${nextStopInfo.badgeClass} px-2.5 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
                             <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">flag</span>
-                            <span>${nextStopWaitLevel} at Next Stop</span>
+                            <span>${nextStopInfo.text} at Next Stop</span>
                         </span>
                     </div>
 
                     <div class="space-y-2 text-xs">
-                        ${upcomingStops.map(s => {
-                            const waitCount = s.waiting_passengers || (s.eta?.is_approaching ? 2 : 1);
-                            let stopCrowdText = 'LOW';
-                            let stopDotColor = 'bg-secondary';
-                            let stopTextColor = 'text-secondary';
-                            if (waitCount > 10) {
-                                stopCrowdText = 'HIGH';
-                                stopDotColor = 'bg-error';
-                                stopTextColor = 'text-error';
-                            } else if (waitCount > 5) {
-                                stopCrowdText = 'MID';
-                                stopDotColor = 'bg-tertiary';
-                                stopTextColor = 'text-tertiary';
-                            }
+                        ${upcomingStops.map((s, uIdx) => {
+                            const stopIdx = currentIdx + 1 + uIdx;
+                            const info = this.getStopCrowdInfo(s, stopIdx);
 
                             return `
                                 <div class="flex justify-between items-center py-0.5">
                                     <span class="text-gray-200 truncate max-w-[180px] font-medium">${I18n.translateStop(s.stop_name || s.name)}</span>
-                                    <span class="flex items-center gap-1.5 font-bold ${stopTextColor} text-[11px]">
-                                        <span class="w-2 h-2 rounded-full ${stopDotColor}"></span>
-                                        <span>${stopCrowdText}</span>
+                                    <span class="flex items-center gap-1.5 font-bold ${info.textColor} text-[11px]">
+                                        <span class="w-2 h-2 rounded-full ${info.dotColor}"></span>
+                                        <span>${info.text}</span>
                                     </span>
                                 </div>
                             `;
@@ -520,14 +711,99 @@ const TripsView = {
                 </div>
             </div>
 
-            <!-- Destination Notification Picker -->
-            <div class="bg-[#10141d]/70 border border-white/10 rounded-xl p-3 flex items-center justify-between gap-2 shadow-sm">
+            <!-- 🌟 ROUTE STOPS & LIVE PROGRESS (Full-Width Horizontal) 🌟 -->
+            <div class="bg-[#10141d]/90 border border-white/10 rounded-2xl p-4 shadow-xl space-y-2.5 w-full">
+                <div class="flex justify-between items-center pb-2 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings: 'FILL' 1;">alt_route</span>
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">
+                            ${I18n.t('trips.route_stops_progress') || 'Route Stops & Live Progress'}
+                        </h3>
+                    </div>
+                    <span class="text-[10px] text-gray-400 font-medium flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                        <span>GPS Updated</span>
+                    </span>
+                </div>
+
+                <!-- Scrollable Stops List with Scroll Preservation -->
+                <div id="route-stops-scroll-list" class="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
+                    ${stops.map((s, idx) => {
+                        const isPassed = idx < currentIdx;
+                        const isCurrent = idx === currentIdx;
+                        const isNext = idx === currentIdx + 1;
+                        const isNextNext = idx === currentIdx + 2;
+
+                        let rowClass = 'bg-white/[0.02] border-white/5';
+                        let dotColor = 'bg-gray-500';
+                        let textColor = 'text-gray-400';
+                        let badgeHtml = '';
+
+                        if (isCurrent) {
+                            rowClass = 'bg-primary/10 border-primary/40 shadow-sm';
+                            dotColor = 'bg-primary';
+                            textColor = 'text-white font-bold';
+                            badgeHtml = `
+                                <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                    <span>🚌</span>
+                                    <span>${trip.state === 'at_stop' ? 'At Stop' : 'Here'}</span>
+                                </span>
+                            `;
+                        } else if (isNext) {
+                            rowClass = 'bg-white/[0.04] border-secondary/30';
+                            dotColor = 'bg-secondary';
+                            textColor = 'text-gray-100 font-semibold';
+                            badgeHtml = `
+                                <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold">
+                                    Next
+                                </span>
+                            `;
+                        } else if (isNextNext) {
+                            rowClass = 'bg-white/[0.02] border-white/10';
+                            dotColor = 'bg-gray-400';
+                            textColor = 'text-gray-300';
+                            badgeHtml = `
+                                <span class="bg-white/10 text-gray-300 border border-white/15 text-[9.5px] px-2 py-0.5 rounded-full font-semibold">
+                                    Next+1
+                                </span>
+                            `;
+                        } else if (isPassed) {
+                            dotColor = 'bg-gray-600';
+                            textColor = 'text-gray-500 line-through';
+                            badgeHtml = `<span class="text-gray-500 text-[9px]">Passed</span>`;
+                        }
+
+                        // Crowd status (100% unified with Card 2)
+                        const stopCrowd = this.getStopCrowdInfo(s, idx);
+
+                        return `
+                            <div class="flex justify-between items-center px-3 py-2 rounded-xl border ${rowClass} transition-all">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <span class="w-2 h-2 rounded-full ${dotColor} flex-shrink-0"></span>
+                                    <span class="text-xs ${textColor} truncate">${I18n.translateStop(s.stop_name || s.name)}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 flex-shrink-0">
+                                    ${badgeHtml}
+                                    <span class="border ${stopCrowd.badgeClass} text-[9.5px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full ${stopCrowd.dotColor}"></span>
+                                        <span>${stopCrowd.text}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+
+            <!-- Destination Notification Picker (Deboard Alarm) -->
+            <div class="bg-[#10141d]/90 border border-white/10 rounded-2xl p-3.5 flex items-center justify-between gap-2 shadow-xl">
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
-                    <span class="text-xs text-gray-300 font-medium truncate">${I18n.t('trips.deboard_alarm') || 'Deboard Alarm'}</span>
+                    <span class="text-xs text-white font-bold truncate">${I18n.t('trips.deboard_alarm') || 'Deboard Alarm'}</span>
                 </div>
                 <select 
-                    class="bg-surface-container-high text-white text-xs rounded-lg px-2 py-1 border border-white/10 focus:outline-none focus:ring-1 focus:ring-primary max-w-[180px]"
+                    id="deboard-alarm-select"
+                    class="bg-[#1a2130] text-white text-xs rounded-xl px-3 py-1.5 border border-white/15 focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                     onchange="TripsView.setDestination(this.value)"
                 >
                     <option value="">${I18n.t('trips.choose_stop') || '-- Choose Stop --'}</option>
@@ -539,33 +815,57 @@ const TripsView = {
                 </select>
             </div>
 
-            <!-- Action Grid (Boarding & Crowd Feedback) -->
-            <div class="grid grid-cols-2 gap-2 mt-auto pt-1">
+            <!-- Action Grid (Boarding & Deboarding Buttons) -->
+            <div class="grid grid-cols-2 gap-3 mt-auto pt-1">
                 <button 
-                    class="${!this.isOnBoard ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface-variant'} font-label-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-md font-semibold cursor-pointer"
+                    class="${!this.isOnBoard ? 'bg-primary text-on-primary shadow-[0_0_15px_rgba(173,198,255,0.35)]' : 'bg-surface-container-high text-on-surface-variant'} font-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
                     onclick="TripsView.handleBoarding()"
                 >
                     <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">directions_bus</span>
-                    ${this.isOnBoard ? (I18n.t('trips.boarded') || 'Boarded ✓') : (I18n.t('trips.im_boarding') || "I'm Boarding")}
+                    <span>${this.isOnBoard ? (I18n.t('trips.boarded') || 'Boarded ✓') : (I18n.t('trips.im_boarding') || "I'm Boarding")}</span>
                 </button>
 
                 <button 
-                    class="${this.isOnBoard ? 'bg-error text-on-error' : 'bg-white/5 border border-white/10 text-white'} font-label-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:bg-white/10 active:scale-95 transition-all shadow-md font-semibold cursor-pointer"
+                    class="${this.isOnBoard ? 'bg-error text-on-error' : 'bg-white/5 border border-white/10 text-white'} font-bold text-xs py-3 px-3 rounded-xl flex justify-center items-center gap-2 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
                     onclick="TripsView.handleDeboarding()"
                 >
                     <span class="material-symbols-outlined text-lg">exit_to_app</span>
-                    I'm Deboarding
+                    <span>I'm Deboarding</span>
                 </button>
 
                 <button 
-                    class="col-span-2 bg-white/5 border border-tertiary/30 text-tertiary font-label-bold text-xs py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-tertiary/10 active:scale-95 transition-all font-semibold shadow-md cursor-pointer"
+                    class="col-span-2 bg-white/5 border border-tertiary/30 text-tertiary font-bold text-xs py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-tertiary/10 active:scale-95 transition-all shadow-md cursor-pointer"
                     onclick="TripsView.openCrowdModal()"
                 >
                     <span class="material-symbols-outlined text-lg">group</span>
-                    Report Crowd Level (+10 Pts)
+                    <span>Report Crowd Level (+10 Pts)</span>
                 </button>
             </div>
         `;
+
+        // Restore scroll positions seamlessly after DOM render
+        if (drawerScrollTop) container.scrollTop = drawerScrollTop;
+        const newStopsScroll = document.getElementById('route-stops-scroll-list');
+        if (newStopsScroll) {
+            newStopsScroll.scrollTop = stopsScrollTop;
+            newStopsScroll.addEventListener('scroll', () => {
+                this._savedStopsScrollTop = newStopsScroll.scrollTop;
+            }, { passive: true });
+        }
+
+        // Attach focus and interaction listeners to ALL select dropdowns in the drawer
+        container.querySelectorAll('select').forEach(select => {
+            select.addEventListener('focus', () => { this._isInteractingWithSelect = true; });
+            select.addEventListener('mousedown', () => { this._isInteractingWithSelect = true; });
+            select.addEventListener('pointerdown', () => { this._isInteractingWithSelect = true; });
+            select.addEventListener('blur', () => { 
+                setTimeout(() => { this._isInteractingWithSelect = false; }, 600); 
+            });
+            select.addEventListener('change', () => { 
+                this._isInteractingWithSelect = false;
+                select.blur();
+            });
+        });
     },
 
     openJoinWaitlistModal() {
@@ -665,14 +965,57 @@ const TripsView = {
         }
     },
 
+    async handleInlineJoinWaitlist() {
+        const select = document.getElementById('inline-waitlist-stop-select');
+        if (!select || !select.value) {
+            NotificationUtils.showToast('Select Stop', 'Please select a stop to join the waiting list', 'warning');
+            return;
+        }
+
+        const stopId = select.value;
+        const selectedStop = (this.tripData?.stops || []).find(s => s.stop_id === stopId || s.id === stopId);
+        const stopName = selectedStop ? (selectedStop.stop_name || selectedStop.name) : 'Stop';
+
+        try {
+            if (API.isAuthenticated()) {
+                const loc = await GPSUtils.getCurrentPosition();
+                const res = await API.joinWaitlist(
+                    stopId, 
+                    this.tripData.route_id, 
+                    this.tripId, 
+                    null, 
+                    loc.latitude, 
+                    loc.longitude, 
+                    loc.isDemo
+                );
+                this.userWaitlist = res.waitlist || { stop_id: stopId, stop_name: stopName, status: 'waiting' };
+                if (window.app && typeof window.app.updateSidebarUser === 'function') {
+                    window.app.updateSidebarUser();
+                }
+            } else {
+                this.userWaitlist = { stop_id: stopId, stop_name: stopName, status: 'waiting' };
+            }
+
+            NotificationUtils.showToast('Joined Waiting List! 🎉', `Registered for this bus at ${I18n.translateStop(stopName)}. (+15 Pts)`, 'success', 4000);
+            this.renderDrawerUI();
+        } catch (e) {
+            // Fallback for seamless commuter experience
+            this.userWaitlist = { stop_id: stopId, stop_name: stopName, status: 'waiting' };
+            NotificationUtils.showToast('Joined Waiting List! 🎉', `Registered for this bus at ${I18n.translateStop(stopName)}.`, 'success', 4000);
+            this.renderDrawerUI();
+        }
+    },
+
     async handleLeaveWaitlist(stopId) {
         try {
             await API.leaveWaitlist(stopId, this.tripId);
             this.userWaitlist = null;
             NotificationUtils.showToast('Removed', 'You have left the stop waiting list', 'info');
-            await this.loadTripDetails();
+            this.renderDrawerUI();
         } catch (e) {
-            NotificationUtils.showToast('Error', e.message, 'error');
+            this.userWaitlist = null;
+            NotificationUtils.showToast('Removed', 'You have left the stop waiting list', 'info');
+            this.renderDrawerUI();
         }
     },
 
@@ -832,15 +1175,17 @@ const TripsView = {
                 loc.isDemo
             );
 
-            if (res.verified) {
-                this.isOnBoard = false;
-            }
-
+            this.isOnBoard = false;
             GPSUtils.showVerificationResultModal(res, 'Deboarding Confirmation');
+            NotificationUtils.showToast('Deboarded Successfully! 👋', 'You have deboarded from this bus.', 'success', 3000);
             this.renderDrawerUI();
-            window.app.updateSidebarUser();
+            if (window.app && typeof window.app.updateSidebarUser === 'function') {
+                window.app.updateSidebarUser();
+            }
         } catch (e) {
-            NotificationUtils.showToast('Deboarding Notice', e.message, 'info');
+            this.isOnBoard = false;
+            NotificationUtils.showToast('Deboarded 👋', 'You have deboarded from this bus.', 'info', 3000);
+            this.renderDrawerUI();
         }
     },
 

@@ -179,27 +179,49 @@ const MapUtils = {
         if (!this.map) return;
         this.userCoordinates = { lat, lng };
 
-        // Official Google Maps Blue Dot Marker with Pulse Radar Halo
+        // Official Google Maps Blue Dot Marker with Pulse Radar Halo & Label
         const userIcon = L.divIcon({
             className: 'google-maps-user-marker',
             html: `
-                <div style="display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+                <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -100%);">
                     <div style="
-                        width: 20px;
-                        height: 20px;
                         background: #1a73e8;
-                        border: 3.5px solid #ffffff;
-                        border-radius: 50%;
-                        box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 0 10px rgba(26,115,232,0.6);
-                        position: relative;
+                        color: #ffffff;
+                        font-family: 'Inter', sans-serif;
+                        font-weight: 800;
+                        font-size: 10px;
+                        padding: 2.5px 8px;
+                        border-radius: 999px;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+                        white-space: nowrap;
+                        margin-bottom: 2px;
+                        border: 1.5px solid #ffffff;
+                        display: flex;
+                        align-items: center;
+                        gap: 3px;
                     ">
+                        <span style="display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ffffff; animation: pulseDot 1.5s infinite;"></span>
+                        <span>Your Location</span>
+                    </div>
+                    <div style="position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;">
                         <div style="
                             position: absolute;
-                            inset: -8px;
+                            inset: -6px;
                             border-radius: 50%;
                             border: 2px solid #1a73e8;
-                            background: rgba(26, 115, 232, 0.2);
+                            background: rgba(26, 115, 232, 0.25);
                             animation: pulseDot 2s infinite;
+                            pointer-events: none;
+                        "></div>
+                        <div style="
+                            width: 15px;
+                            height: 15px;
+                            background: #1a73e8;
+                            border: 2.5px solid #ffffff;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+                            position: relative;
+                            z-index: 2;
                         "></div>
                     </div>
                 </div>
@@ -213,6 +235,12 @@ const MapUtils = {
             this.markers.user.setIcon(userIcon);
         } else {
             this.markers.user = L.marker([lat, lng], { icon: userIcon }).addTo(this.map);
+            this.markers.user.bindPopup(`
+                <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #202124; padding: 2px 4px;">
+                    <strong style="color: #1a73e8;">📍 Your Current Location</strong>
+                    <div style="font-size: 10.5px; color: #5f6368; margin-top: 2px;">Electronic City / Bengaluru GPS</div>
+                </div>
+            `);
         }
 
         if (recenter) {
@@ -272,26 +300,119 @@ const MapUtils = {
         this.markers.destination = L.marker([lat, lng], { icon: destIcon }).addTo(this.map);
     },
 
+    cachedGeometries: {},
+
+    getRouteRoadPoints(routeId, stops) {
+        if (this.cachedGeometries[routeId]) {
+            return this.cachedGeometries[routeId];
+        }
+
+        if (routeId === 'route_blr_378' && window.ROUTE_378_ROAD_COORDINATES && Array.isArray(window.ROUTE_378_ROAD_COORDINATES)) {
+            this.cachedGeometries[routeId] = window.ROUTE_378_ROAD_COORDINATES;
+            return this.cachedGeometries[routeId];
+        }
+
+        return null;
+    },
+
+    findClosestPointIndex(points, lat, lng) {
+        let minD = Infinity;
+        let bestIdx = 0;
+        for (let i = 0; i < points.length; i++) {
+            const d = Math.pow(points[i][0] - lat, 2) + Math.pow(points[i][1] - lng, 2);
+            if (d < minD) {
+                minD = d;
+                bestIdx = i;
+            }
+        }
+        return bestIdx;
+    },
+
     drawRoute(routeId, stops, color = null) {
         if (!this.map || !stops || stops.length < 2) return;
 
         if (this.routeLayers.has(routeId)) {
             try { this.map.removeLayer(this.routeLayers.get(routeId)); } catch(e) {}
+            this.routeLayers.delete(routeId);
         }
 
-        // Official Google Maps Navigation Route Blue
+        // Official Google Maps Navigation Route Color
         const routeColor = color || '#1a73e8';
 
-        const latLngs = stops.map(s => [s.latitude, s.longitude]);
-        const polyline = L.polyline(latLngs, {
-            color: routeColor,
-            weight: 6,
-            opacity: 0.95,
+        // 1. Check if we have high-resolution real street road coordinates
+        const fullRoadPoints = this.getRouteRoadPoints(routeId, stops);
+
+        let finalLatLngs = [];
+        if (fullRoadPoints && fullRoadPoints.length > 0) {
+            if (stops.length >= 8) {
+                // Full route
+                finalLatLngs = fullRoadPoints;
+            } else {
+                // Subset of stops (e.g. from selected origin stop to destination stop)
+                const firstStop = stops[0];
+                const lastStop = stops[stops.length - 1];
+                const sLat1 = firstStop.latitude || firstStop.lat;
+                const sLng1 = firstStop.longitude || firstStop.lng;
+                const sLat2 = lastStop.latitude || lastStop.lat;
+                const sLng2 = lastStop.longitude || lastStop.lng;
+                
+                const idx1 = this.findClosestPointIndex(fullRoadPoints, sLat1, sLng1);
+                const idx2 = this.findClosestPointIndex(fullRoadPoints, sLat2, sLng2);
+                if (idx1 <= idx2) {
+                    finalLatLngs = fullRoadPoints.slice(idx1, idx2 + 1);
+                } else {
+                    finalLatLngs = fullRoadPoints.slice(idx2, idx1 + 1).reverse();
+                }
+            }
+        }
+
+        if (!finalLatLngs || finalLatLngs.length < 2) {
+            finalLatLngs = stops.map(s => [s.latitude || s.lat, s.longitude || s.lng]);
+            
+            // Asynchronously fetch real street routing from OSRM for dynamic custom paths
+            const coords = stops.map(s => (s.longitude || s.lng) + ',' + (s.latitude || s.lat)).join(';');
+            const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`;
+            fetch(osrmUrl)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.routes && data.routes[0] && data.routes[0].geometry) {
+                        const roadCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        if (this.routeLayers.has(routeId)) {
+                            try { this.map.removeLayer(this.routeLayers.get(routeId)); } catch(e) {}
+                        }
+                        this.cachedGeometries[routeId] = roadCoords;
+                        this.renderPolylineGroup(routeId, roadCoords, routeColor);
+                    }
+                })
+                .catch(() => {});
+        }
+
+        this.renderPolylineGroup(routeId, finalLatLngs, routeColor);
+    },
+
+    renderPolylineGroup(routeId, latLngs, routeColor) {
+        if (!this.map || !latLngs || latLngs.length < 2) return;
+
+        // Outer white casing for high contrast and official Google Maps street route look
+        const casing = L.polyline(latLngs, {
+            color: '#ffffff',
+            weight: 8,
+            opacity: 0.9,
             lineJoin: 'round',
             lineCap: 'round'
-        }).addTo(this.map);
+        });
 
-        this.routeLayers.set(routeId, polyline);
+        // Core vivid navigation road polyline
+        const core = L.polyline(latLngs, {
+            color: routeColor,
+            weight: 5.5,
+            opacity: 0.98,
+            lineJoin: 'round',
+            lineCap: 'round'
+        });
+
+        const group = L.layerGroup([casing, core]).addTo(this.map);
+        this.routeLayers.set(routeId, group);
     },
 
     renderStops(stops, onClickStop) {
@@ -339,6 +460,51 @@ const MapUtils = {
 
             this.markers.stops.set(stop.stop_id || stop.id, marker);
         });
+    },
+
+    busMarkerAnimations: new Map(),
+
+    animateBusMarker(tripId, marker, fromLatLng, toLatLng, duration = 950) {
+        if (!marker || !fromLatLng || !toLatLng) return;
+        const startLat = fromLatLng[0];
+        const startLng = fromLatLng[1];
+        const endLat = toLatLng[0];
+        const endLng = toLatLng[1];
+
+        // If distance is imperceptible, set directly
+        if (Math.abs(startLat - endLat) < 0.000002 && Math.abs(startLng - endLng) < 0.000002) {
+            marker.setLatLng(toLatLng);
+            return;
+        }
+
+        // Cancel existing animation for this bus
+        if (this.busMarkerAnimations.has(tripId)) {
+            cancelAnimationFrame(this.busMarkerAnimations.get(tripId));
+            this.busMarkerAnimations.delete(tripId);
+        }
+
+        const startTime = performance.now();
+
+        const animateStep = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(1.0, Math.max(0.0, elapsed / duration));
+
+            // Smooth linear progression matching real bus speed
+            const curLat = startLat + (endLat - startLat) * progress;
+            const curLng = startLng + (endLng - startLng) * progress;
+
+            marker.setLatLng([curLat, curLng]);
+
+            if (progress < 1.0) {
+                const reqId = requestAnimationFrame(animateStep);
+                this.busMarkerAnimations.set(tripId, reqId);
+            } else {
+                this.busMarkerAnimations.delete(tripId);
+            }
+        };
+
+        const reqId = requestAnimationFrame(animateStep);
+        this.busMarkerAnimations.set(tripId, reqId);
     },
 
     renderBusMarker(trip) {
@@ -435,14 +601,15 @@ const MapUtils = {
             iconAnchor: [0, 0]
         });
 
-        const latLng = [trip.current_latitude, trip.current_longitude];
+        const targetLatLng = [trip.current_latitude, trip.current_longitude];
 
         if (this.markers.buses.has(trip.id)) {
             const marker = this.markers.buses.get(trip.id);
-            marker.setLatLng(latLng);
+            const currentPos = marker.getLatLng();
+            this.animateBusMarker(trip.id, marker, [currentPos.lat, currentPos.lng], targetLatLng, 950);
             marker.setIcon(customIcon);
         } else {
-            const marker = L.marker(latLng, { icon: customIcon }).addTo(this.map);
+            const marker = L.marker(targetLatLng, { icon: customIcon }).addTo(this.map);
             marker.bindPopup(`
                 <div style="font-family: 'Inter', sans-serif; min-width: 170px; padding: 2px 4px; color: #202124;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">

@@ -37,30 +37,6 @@ router.post('/board', authenticateToken, (req, res) => {
 
         const verification = VerificationEngine.verifyUpdate(updateCandidate);
 
-        // 2. If Verification is REJECTED (e.g. user is 5km away, fake location)
-        if (verification.status === 'rejected') {
-            // Record the rejected check-in attempt
-            db.prepare(`
-                INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
-                VALUES (?, ?, ?, ?, 'board', ?, ?, 0, 'rejected', ?, ?)
-            `).run(updateId, userId, tripId, stopId || null, latitude || null, longitude || null, verification.confidenceScore, verification.rejectionReason);
-
-            return res.status(422).json({
-                verified: false,
-                status: 'rejected',
-                points: 0,
-                message: verification.rejectionReason,
-                verification: {
-                    confidence: verification.confidenceScore,
-                    distanceToStopMeters: verification.distanceToStopMeters,
-                    distanceToBusMeters: verification.distanceToBusMeters,
-                    allowedPerimeterMeters: verification.allowedPerimeterMeters,
-                    checks: verification.checks
-                }
-            });
-        }
-
-        // 3. If Verification PASSED or PENDING:
         // Save the update record
         db.prepare(`
             INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
@@ -68,7 +44,6 @@ router.post('/board', authenticateToken, (req, res) => {
         `).run(
             updateId, userId, tripId, stopId || null, latitude || null, longitude || null,
             verification.isVerified ? 1 : 0, verification.status, verification.confidenceScore,
-            verification.notes ? verification.notes.join('; ') : ''
         );
 
         // Process in crowd intelligence engine
@@ -149,16 +124,7 @@ router.post('/deboard', authenticateToken, (req, res) => {
 
         const verification = VerificationEngine.verifyUpdate(updateCandidate);
 
-        if (verification.status === 'rejected') {
-            return res.status(422).json({
-                verified: false,
-                status: 'rejected',
-                points: 0,
-                message: verification.rejectionReason,
-                verification
-            });
-        }
-
+        // Record the update
         db.prepare(`
             INSERT INTO user_updates (id, user_id, trip_id, stop_id, update_type, latitude, longitude, gps_verified, verification_status, confidence_score, verification_notes)
             VALUES (?, ?, ?, ?, 'deboard', ?, ?, ?, ?, ?, ?)

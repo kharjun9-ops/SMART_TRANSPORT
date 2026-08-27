@@ -194,8 +194,11 @@ const HomeView = {
                             const fare = opt.route?.fare_lkr || 25;
                             const nextStopForecast = opt.trip?.next_stop_forecast;
                             const nextEta = opt.trip?.next_stop_eta || (nextStopForecast ? { eta_minutes: nextStopForecast.wait_time_minutes, display_text: nextStopForecast.display_text } : null);
-                            const arrivingText = nextEta ? (nextEta.eta_minutes !== undefined ? I18n.t('home.arriving_in', { mins: nextEta.eta_minutes }) : nextEta.display_text) : I18n.t('home.arriving_in', { mins: 3 });
                             const isAtStop = opt.trip?.state === 'at_stop' || opt.trip?.current_speed_kmh === 0;
+                            const dwellSec = opt.trip?.dwell_seconds != null ? opt.trip.dwell_seconds : 15;
+                            const arrivingText = isAtStop ? `AT STOP (${dwellSec}s)` : (nextEta ? (nextEta.eta_minutes !== undefined ? I18n.t('home.arriving_in', { mins: nextEta.eta_minutes }) : nextEta.display_text) : I18n.t('home.arriving_in', { mins: 3 }));
+                            const departedStopName = opt.trip?.current_stop_name || 'Electronic City';
+                            const nextStopName = opt.trip?.next_stop_name || 'Hosa Road';
 
                             return `
                                 <div class="glass-panel rounded-2xl p-4 shadow-xl border ${idx === 0 ? 'border-primary/40' : 'border-white/10'} hover:bg-surface-container-high transition-all">
@@ -208,20 +211,28 @@ const HomeView = {
                                                 <div class="flex items-center gap-2">
                                                     <h4 class="font-bold text-sm text-on-surface">${opt.route?.name ? opt.route.name.split(' - ').map(s => I18n.translateStop(s)).join(' - ') : 'Electronic City - Kengeri TTMC'}</h4>
                                                     ${isAtStop ? `
-                                                        <span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${I18n.t('trips.at_stop') || 'AT STOP'}</span>
+                                                        <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                                                            <span>AT STOP (${dwellSec}s)</span>
+                                                        </span>
                                                     ` : `
-                                                        <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 30} km/h</span>
+                                                        <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 26} km/h</span>
                                                     `}
                                                 </div>
                                                 <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
                                                     <span class="text-primary font-bold flex items-center gap-1">
-                                                        <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-tertiary' : 'bg-primary'}"></span>
+                                                        <span class="w-1.5 h-1.5 rounded-full ${isAtStop ? 'bg-primary' : 'bg-primary'}"></span>
                                                         ${arrivingText}
                                                     </span>
                                                     <span>•</span>
                                                     <span>${I18n.t('home.min_trip_clean', { mins: durationMins }) || `${durationMins} min trip`}</span>
                                                     <span>•</span>
                                                     <span>₹${fare}</span>
+                                                </div>
+                                                <!-- Left From / Dwell Info -->
+                                                <div class="mt-1 text-[10px] ${isAtStop ? 'text-primary' : 'text-gray-400'} font-semibold flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[13px]">${isAtStop ? 'hail' : 'departure_board'}</span>
+                                                    <span>${isAtStop ? `Stopped at ${I18n.translateStop(departedStopName)} • Departs in ${dwellSec}s` : `Left: ${I18n.translateStop(departedStopName)} → Next: ${I18n.translateStop(nextStopName)}`}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -368,20 +379,23 @@ const HomeView = {
 
         await this.fetchInitialData();
 
-        // Initialize Clean Map with Bengaluru User Location Pin
-        MapUtils.initMap('home-map', [this.userLocation.lat, this.userLocation.lng], 13, { hideZoom: true });
-        MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
+        // Initialize Clean Map focused strictly on User Current Location Pin
+        MapUtils.initMap('home-map', [this.userLocation.lat, this.userLocation.lng], 15, { hideZoom: true });
+        MapUtils.clearRoutesAndBuses();
+        MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng, true);
 
-        // Draw Route 378 and render active live buses
-        if (this.stops && this.stops.length > 1) {
-            MapUtils.drawRoute('route_blr_378', this.stops, '#1a73e8');
-            MapUtils.renderStops(this.stops);
-        }
-        if (this.activeTrips && this.activeTrips.length > 0) {
-            MapUtils.renderBuses(this.activeTrips);
+        // Check for live device GPS to refine user location
+        if (window.GPSUtils) {
+            GPSUtils.getCurrentPosition().then(pos => {
+                if (pos && pos.latitude && pos.longitude) {
+                    this.userLocation.lat = pos.latitude;
+                    this.userLocation.lng = pos.longitude;
+                    MapUtils.setUserLocation(pos.latitude, pos.longitude, true);
+                }
+            }).catch(() => {});
         }
 
-        // Live polling every 2.5s for real-time bus motion & synced ETAs
+        // Live polling every 2.5s for real-time bus updates (only renders route/buses if destination is selected)
         if (this.livePollInterval) clearInterval(this.livePollInterval);
         this.livePollInterval = setInterval(async () => {
             if (window.app && window.app.currentView === 'home') {
@@ -407,11 +421,10 @@ const HomeView = {
             if (!tripsRes || !tripsRes.trips) return;
             this.activeTrips = tripsRes.trips;
 
-            // Render/update live moving bus markers on map
-            MapUtils.renderBuses(this.activeTrips);
-
-            // If destination is chosen, update transit options
+            // If destination is chosen, render live moving bus markers & route
             if (this.destination) {
+                MapUtils.renderBuses(this.activeTrips);
+
                 const route378 = this.routes.find(r => r.route_number === '378') || this.routes[0];
                 this.matchedTransitOptions = this.activeTrips.map(trip => ({
                     route: route378,
@@ -573,18 +586,9 @@ const HomeView = {
         const clearBtn = document.getElementById('dest-clear-btn');
         if (clearBtn) clearBtn.classList.add('hidden');
 
-        // Reset map to full route & all moving buses
+        // Reset map cleanly: remove route lines and focus only on user location
         MapUtils.clearRoutesAndBuses();
-        MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
-
-        if (this.stops && this.stops.length > 1) {
-            MapUtils.drawRoute('route_blr_378', this.stops, '#1a73e8');
-            MapUtils.renderStops(this.stops);
-        }
-
-        if (this.activeTrips && this.activeTrips.length > 0) {
-            MapUtils.renderBuses(this.activeTrips);
-        }
+        MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng, true);
 
         const resultsEl = document.getElementById('transit-results-section');
         if (resultsEl) {

@@ -465,8 +465,24 @@ html.light .leaflet-popup-tip {
 
 /* Smooth Bus Marker Physics on Map */
 .google-maps-bus-marker {
-    transition: transform 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
     will-change: transform;
+    pointer-events: auto;
+}
+
+/* Route Stops Scrollbar */
+#route-stops-scroll-list::-webkit-scrollbar {
+    width: 5px;
+}
+#route-stops-scroll-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 999px;
+}
+#route-stops-scroll-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+}
+#route-stops-scroll-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
 @keyframes busPulseMoving {

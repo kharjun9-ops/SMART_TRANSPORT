@@ -200,6 +200,12 @@ const I18n = {
         'crowd.low': { en: 'Low Crowd', kn: 'ಕಡಿಮೆ ಜನಸಂದಣಿ', hi: 'कम भीड़' },
         'crowd.medium': { en: 'Med Crowd', kn: 'ಮಧ್ಯಮ ಜನಸಂದಣಿ', hi: 'मध्यम भीड़' },
         'crowd.high': { en: 'High Crowd', kn: 'ಅಧಿಕ ಜನಸಂದಣಿ', hi: 'अधिक भीड़' },
+        'home.low_crowd': { en: 'Low Crowd', kn: 'ಕಡಿಮೆ ಜನಸಂದಣಿ', hi: 'कम भीड़' },
+        'home.med_crowd': { en: 'Med Crowd', kn: 'ಮಧ್ಯಮ ಜನಸಂದಣಿ', hi: 'मध्यम भीड़' },
+        'home.high_crowd': { en: 'High Crowd', kn: 'ಅಧಿಕ ಜನಸಂದಣಿ', hi: 'अधिक भीड़' },
+        'low_crowd': { en: 'Low Crowd', kn: 'ಕಡಿಮೆ ಜನಸಂದಣಿ', hi: 'कम भीड़' },
+        'med_crowd': { en: 'Med Crowd', kn: 'ಮಧ್ಯಮ ಜನಸಂದಣಿ', hi: 'मध्यम भीड़' },
+        'high_crowd': { en: 'High Crowd', kn: 'ಅಧಿಕ ಜನಸಂದಣಿ', hi: 'अधिक भीड़' },
 
         // ============================
         // AUTH VIEW
@@ -286,6 +292,7 @@ const I18n = {
         'trips.people_in_bus': { en: '1. People In The Bus', kn: '1. ಬಸ್‌ನಲ್ಲಿರುವ ಜನರು', hi: '1. बस में लोग' },
         'trips.onboard_label': { en: 'On-Board', kn: 'ಒಳಗೆ', hi: 'सवार' },
         'trips.people_waiting_stop': { en: '2. People Waiting At Stop', kn: '2. ನಿಲ್ದಾಣದಲ್ಲಿ ಕಾಯುತ್ತಿರುವ ಜನರು', hi: '2. स्टॉप पर प्रतीक्षा कर रहे लोग' },
+        'trips.route_stops_progress': { en: 'Route Stops & Live Progress', kn: 'ಮಾರ್ಗ ನಿಲ್ದಾಣಗಳು ಮತ್ತು ಲೈವ್ ಪ್ರಗತಿ', hi: 'रूट स्टॉप्स और लाइव प्रगति' },
         'trips.deboard_alarm': { en: 'Deboard Alarm', kn: 'ಇಳಿಯುವ ಎಚ್ಚರಿಕೆ', hi: 'उतरने का अलार्म' },
         'trips.choose_stop': { en: '-- Choose Stop --', kn: '-- ನಿಲ್ದಾಣ ಆಯ್ಕೆಮಾಡಿ --', hi: '-- स्टॉप चुनें --' },
         'trips.im_boarding': { en: "I'm Boarding", kn: 'ನಾನು ಹತ್ತುತ್ತಿದ್ದೇನೆ', hi: 'मैं चढ़ रहा हूँ' },

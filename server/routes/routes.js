@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const { getDb } = require('../db/database');
 const { optionalAuth } = require('../middleware/auth');
@@ -5,6 +7,21 @@ const CrowdIntelligenceEngine = require('../engines/crowdIntelligence');
 const ETAEngine = require('../engines/eta');
 
 const router = express.Router();
+
+let cachedRoadPoints = null;
+let cachedSegments = null;
+try {
+    const pointsPath = path.join(__dirname, '..', '..', 'data', 'route_378_road_points.json');
+    const segsPath = path.join(__dirname, '..', '..', 'data', 'route_378_segments.json');
+    if (fs.existsSync(pointsPath)) {
+        cachedRoadPoints = JSON.parse(fs.readFileSync(pointsPath, 'utf8'));
+    }
+    if (fs.existsSync(segsPath)) {
+        cachedSegments = JSON.parse(fs.readFileSync(segsPath, 'utf8'));
+    }
+} catch (e) {
+    console.error('Failed to load cached road points:', e);
+}
 
 // GET /api/routes - List all routes
 router.get('/', (req, res) => {
@@ -132,6 +149,7 @@ router.get('/:id', (req, res) => {
         route: {
             ...route,
             stops,
+            road_coordinates: req.params.id === 'route_blr_378' ? cachedRoadPoints : null,
             activeTrips: activeTrips.map(trip => {
                 const percentage = trip.capacity > 0 ? trip.current_passenger_count / trip.capacity : 0;
                 return {
@@ -141,6 +159,32 @@ router.get('/:id', (req, res) => {
                 };
             })
         }
+    });
+});
+
+// GET /api/routes/:id/geometry - Get high-resolution real street road coordinates
+router.get('/:id/geometry', (req, res) => {
+    if (req.params.id === 'route_blr_378' && cachedRoadPoints) {
+        return res.json({
+            route_id: req.params.id,
+            road_coordinates: cachedRoadPoints,
+            segments: cachedSegments
+        });
+    }
+
+    const db = getDb();
+    const stops = db.prepare(`
+        SELECT s.latitude, s.longitude
+        FROM route_stops rs
+        JOIN stops s ON rs.stop_id = s.id
+        WHERE rs.route_id = ?
+        ORDER BY rs.sequence_order
+    `).all(req.params.id);
+
+    res.json({
+        route_id: req.params.id,
+        road_coordinates: stops.map(s => [s.latitude, s.longitude]),
+        segments: []
     });
 });
 

@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const { getDb } = require('../db/database');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
@@ -8,6 +10,14 @@ const NotificationEngine = require('../engines/notifications');
 const VerificationEngine = require('../engines/verification');
 
 const router = express.Router();
+
+let cachedRoadPoints = null;
+try {
+    const pointsPath = path.join(__dirname, '..', '..', 'data', 'route_378_road_points.json');
+    if (fs.existsSync(pointsPath)) {
+        cachedRoadPoints = JSON.parse(fs.readFileSync(pointsPath, 'utf8'));
+    }
+} catch (e) {}
 
 // GET /api/trips/active - Get all active trips
 router.get('/active', (req, res) => {
@@ -256,6 +266,7 @@ router.get('/:id', (req, res) => {
     res.json({
         trip: {
             ...trip,
+            road_coordinates: trip.route_id === 'route_blr_378' ? cachedRoadPoints : null,
             crowd_level: percentage <= 0.4 ? 'low' : (percentage <= 0.7 ? 'medium' : 'high'),
             crowd_percentage: Math.round(percentage * 100),
             stops: stopsWithETAs,

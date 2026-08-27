@@ -1,5 +1,20 @@
+const path = require('path');
+const fs = require('fs');
 const { getDb } = require('../db/database');
 const NotificationEngine = require('./notifications');
+
+let routeSegments = {};
+try {
+    const segFile = path.join(__dirname, '..', '..', 'data', 'route_378_segments.json');
+    if (fs.existsSync(segFile)) {
+        const segs = JSON.parse(fs.readFileSync(segFile, 'utf8'));
+        segs.forEach(s => {
+            routeSegments[`${s.from_stop_id}_${s.to_stop_id}`] = s.coordinates;
+        });
+    }
+} catch (e) {
+    console.error('Failed to load route segments:', e);
+}
 
 class SimulationEngine {
     static simulationInterval = null;
@@ -8,10 +23,10 @@ class SimulationEngine {
     /**
      * Start the simulation - moves buses along routes smoothly in real-time
      */
-    static start(intervalMs = 2500) {
+    static start(intervalMs = 1000) {
         if (this.simulationInterval) return;
 
-        console.log('🚌 Simulation engine started (Continuous Real-Time Transit Telemetry & Stop Dwell Sync)');
+        console.log('🚌 Simulation engine started (Continuous Real-Time Transit Telemetry & Stop Dwell Sync - 1s Tick)');
         this.simulationInterval = setInterval(() => {
             this.tick();
         }, intervalMs);
@@ -166,25 +181,22 @@ class SimulationEngine {
 
                 db.prepare(`
                     UPDATE trips 
-                    SET segment_progress = ?, state = ?, dwell_seconds = ? 
+                    SET segment_progress = 0.0, state = 'at_stop', dwell_seconds = ? 
                     WHERE id = ?
-                `).run(0.0, 'at_stop', state.dwellTicks * 2, trip.id);
+                `).run(state.dwellTicks, trip.id);
                 return;
             } else {
                 // Dwell finished -> transition to in_transit towards next stop
                 state.state = 'in_transit';
-                state.segmentProgress = 0.05;
+                state.segmentProgress = 0.003;
             }
         }
 
         // 2. IN TRANSIT ADVANCEMENT
-        // Progress rate is distance and time calibrated:
-        // Shorter segments move faster in fraction, longer segments progress proportionally
-        const baseStep = Math.max(0.06, Math.min(0.18, 0.7 / timeMin));
+        // Calibrated realistic bus pacing: ~100-180 seconds per road segment
+        const segmentDurationSec = Math.max(90, Math.min(220, timeMin * 26));
+        const baseStep = 1.0 / segmentDurationSec;
         state.segmentProgress += baseStep;
-
-        const heading = this.calculateBearing(currentStop.latitude, currentStop.longitude, nextStop.latitude, nextStop.longitude);
-        state.heading = Math.round(heading);
 
         if (state.segmentProgress >= 1.0) {
             // Bus has arrived at next stop
@@ -234,7 +246,7 @@ class SimulationEngine {
                 const initialPassengers = Math.floor(Math.random() * 12) + 18;
                 state.segmentProgress = 0.0;
                 state.state = 'at_stop';
-                state.dwellTicks = 3; // 3 ticks dwell at terminal hub
+                state.dwellTicks = 24; // 24 seconds dwell at terminal hub
                 trip.current_stop_index = 0;
                 trip.direction = nextDirection;
                 trip.current_passenger_count = initialPassengers;
@@ -246,40 +258,63 @@ class SimulationEngine {
                         current_passenger_count = ?,
                         delay_minutes = 0,
                         direction = ?,
-                        segment_progress = ?,
-                        state = ?,
-                        dwell_seconds = ?
+                        segment_progress = 0.0,
+                        state = 'at_stop',
+                        dwell_seconds = 24
                     WHERE id = ?
-                `).run(initialPassengers, nextDirection, 0.0, 'at_stop', 8, trip.id);
+                `).run(initialPassengers, nextDirection, trip.id);
             } else {
                 // Advance stop index and start station dwell
                 trip.current_stop_index = nextIndex;
                 state.segmentProgress = 0.0;
                 state.state = 'at_stop';
-                state.dwellTicks = arrivedStop.is_major ? 3 : 2; // 2-3 ticks dwell
+                state.dwellTicks = arrivedStop.is_major ? 18 : 12; // 12-18 seconds dwell
                 trip.current_passenger_count = newPassengerCount;
                 trip.delay_minutes = newDelay;
 
                 db.prepare(`
                     UPDATE trips 
                     SET current_stop_index = ?, current_passenger_count = ?, delay_minutes = ?,
-                        segment_progress = ?, state = ?, dwell_seconds = ?
+                        segment_progress = 0.0, state = 'at_stop', dwell_seconds = ?
                     WHERE id = ?
-                `).run(nextIndex, newPassengerCount, newDelay, 0.0, 'at_stop', state.dwellTicks * 2, trip.id);
-
-                // Destination alert is managed explicitly when the user selects their target stop
+                `).run(nextIndex, newPassengerCount, newDelay, state.dwellTicks, trip.id);
             }
         } else {
-            // Bus is smoothly moving between currentStop and nextStop
-            const p = state.segmentProgress;
+            // Bus is smoothly moving along the road network between currentStop and nextStop
+            const p = Math.max(0, Math.min(0.999, state.segmentProgress));
 
-            // Interpolate position smoothly along the direction of travel
-            const lat = currentStop.latitude + (nextStop.latitude - currentStop.latitude) * p;
-            const lng = currentStop.longitude + (nextStop.longitude - currentStop.longitude) * p;
+            // Find segment road coordinates
+            const fromId = currentStop.stop_id || currentStop.id;
+            const toId = nextStop.stop_id || nextStop.id;
+            let segmentCoords = routeSegments[`${fromId}_${toId}`];
+            
+            if (!segmentCoords && routeSegments[`${toId}_${fromId}`]) {
+                segmentCoords = [...routeSegments[`${toId}_${fromId}`]].reverse();
+            }
 
-            // Smooth bell-curve speed profile: accelerates out of stop (18 km/h), cruises mid-segment (38-48 km/h), slows near stop (15 km/h)
+            let lat, lng;
+            if (segmentCoords && segmentCoords.length > 0) {
+                const idx = Math.min(segmentCoords.length - 1, Math.max(0, Math.floor(p * (segmentCoords.length - 1))));
+                lat = segmentCoords[idx][0];
+                lng = segmentCoords[idx][1];
+
+                // Calculate realistic heading along road tangent
+                let heading = state.heading;
+                if (idx < segmentCoords.length - 1) {
+                    heading = this.calculateBearing(segmentCoords[idx][0], segmentCoords[idx][1], segmentCoords[idx + 1][0], segmentCoords[idx + 1][1]);
+                } else if (idx > 0) {
+                    heading = this.calculateBearing(segmentCoords[idx - 1][0], segmentCoords[idx - 1][1], segmentCoords[idx][0], segmentCoords[idx][1]);
+                }
+                state.heading = Math.round(heading);
+            } else {
+                // Fallback straight interpolation
+                lat = currentStop.latitude + (nextStop.latitude - currentStop.latitude) * p;
+                lng = currentStop.longitude + (nextStop.longitude - currentStop.longitude) * p;
+            }
+
+            // Smooth bell-curve city bus speed profile (16 to 36 km/h)
             const speedCurve = Math.sin(p * Math.PI);
-            const speed = Math.round(20 + speedCurve * 26 + (Math.random() * 4 - 2));
+            const speed = Math.round(16 + speedCurve * 18 + (Math.random() * 2 - 1));
 
             db.prepare(`
                 UPDATE buses 

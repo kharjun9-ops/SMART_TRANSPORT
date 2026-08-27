@@ -73,7 +73,7 @@ const API = {
                     this.clearAuth();
                     if (window.app) window.app.showAuthModal();
                 }
-                throw new Error(data.error || `Request failed with status ${res.status}`);
+                throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
             }
 
             return data;
