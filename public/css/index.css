@@ -602,3 +602,29 @@ html.light .leaflet-popup-tip {
     background-color: var(--color-surface-container-high) !important;
 }
 
+/* Map Enlarge Transition & Walking Beacon Styling */
+#home-map-container {
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
+}
+
+.google-maps-walk-midpoint {
+    pointer-events: auto;
+    z-index: 450 !important;
+    transition: transform 0.2s ease;
+}
+
+.google-maps-walk-midpoint:hover {
+    transform: scale(1.08);
+}
+
+.google-maps-live-walker {
+    pointer-events: auto;
+    z-index: 500 !important;
+}
+
+@keyframes pulseWalker {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(26, 115, 232, 0.6)); }
+    50% { transform: scale(1.12); filter: drop-shadow(0 0 16px rgba(26, 115, 232, 0.9)); }
+}
+
+

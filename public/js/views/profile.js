@@ -102,7 +102,9 @@ const ProfileView = {
     },
 
     buildProfileHTML() {
-        const user = this.user || { name: 'Karthik Rao', email: 'karthik@demo.in', points: 1250, level: 'Level 4: Contributor' };
+        const user = this.user || { id: 'usr_38291', points: 1250, level: 'Level 4: Contributor' };
+        const rawNum = String(user.id || '').replace(/\D/g, '') || '38291';
+        const userDisplayId = '#' + rawNum.padStart(5, '0').slice(-5);
         const currentLang = I18n.getLang();
 
         return `
@@ -114,8 +116,8 @@ const ProfileView = {
                         <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">person</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 class="font-headline-md text-base font-bold text-on-surface truncate">${user.name}</h3>
-                        <p class="text-xs text-on-surface-variant truncate">${user.email}</p>
+                        <h3 class="font-headline-md text-base font-bold text-on-surface truncate">${userDisplayId}</h3>
+                        <p class="text-xs text-on-surface-variant truncate">Anonymous Passenger ID • Verified</p>
                         <div class="flex items-center gap-2 mt-2">
                             <span class="bg-primary/20 text-primary border border-primary/30 text-[10px] px-2.5 py-0.5 rounded-full font-semibold">
                                 🚶 ${I18n.translateDynamic(user.level || 'Level 4: Contributor')}

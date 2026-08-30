@@ -127,6 +127,81 @@ const I18n = {
             kn: 'ಪ್ರಮುಖ ಹಬ್',
             hi: 'प्रमुख हब'
         },
+        'home.available_buses_to': {
+            en: 'Available Buses to ${dest}',
+            kn: '${dest} ಗೆ ಲಭ್ಯವಿರುವ ಬಸ್‌ಗಳು',
+            hi: '${dest} के लिए उपलब्ध बसें'
+        },
+        'home.nearest_bus_stop': {
+            en: 'Nearest Bus Stop to Board',
+            kn: 'ಹತ್ತಿರದ ಹತ್ತುವ ಬಸ್ ನಿಲ್ದಾಣ',
+            hi: 'निकटतम बोर्डिंग बस स्टॉप'
+        },
+        'home.walk_to_stop': {
+            en: 'Walk ${dist} (~${mins} mins)',
+            kn: 'ನಡೆಯಿರಿ ${dist} (~${mins} ನಿಮಿಷ)',
+            hi: 'पैदल चलें ${dist} (~${mins} मिनट)'
+        },
+        'home.board_bus_here': {
+            en: 'Board Bus 378 here to reach ${dest}',
+            kn: '${dest} ತಲುಪಲು ಇಲ್ಲಿ ಬಸ್ 378 ಹತ್ತಿ',
+            hi: '${dest} पहुँचने के लिए यहाँ बस 378 पकड़ें'
+        },
+        'home.already_at_nearest': {
+            en: 'You are at this bus stop • Ready to board!',
+            kn: 'ನೀವು ಈ ಬಸ್ ನಿಲ್ದಾಣದಲ್ಲಿದ್ದೀರಿ • ಹತ್ತಲು ಸಿದ್ಧ!',
+            hi: 'आप इस बस स्टॉप पर हैं • चढ़ने के लिए तैयार!'
+        },
+        'home.enlarge_map': {
+            en: 'Enlarge Map',
+            kn: 'ನಕ್ಷೆ ದೊಡ್ಡದಾಗಿಸಿ',
+            hi: 'नक्शा बड़ा करें'
+        },
+        'home.start_walkthrough': {
+            en: 'Start Walkthrough',
+            kn: 'ನಡಿಗೆ ಮಾರ್ಗದರ್ಶನ ಪ್ರಾರಂಭಿಸಿ',
+            hi: 'वॉकिंग नेविगेशन शुरू करें'
+        },
+        'home.end_walkthrough': {
+            en: 'End Walkthrough',
+            kn: 'ಮಾರ್ಗದರ್ಶನ ಮುಕ್ತಾಯ',
+            hi: 'नेविगेशन समाप्त करें'
+        },
+        'home.live_walk_nav': {
+            en: 'Live Walking Navigation',
+            kn: 'ಲೈವ್ ನಡಿಗೆ ಮಾರ್ಗದರ್ಶನ',
+            hi: 'लाइव वॉकिंग नेविगेशन'
+        },
+        'home.best_bus_recommendation': {
+            en: 'Best Bus to Board for You',
+            kn: 'ನಿಮಗಾಗಿ ಅತ್ಯುತ್ತಮ ಬಸ್ ಶಿಫಾರಸು',
+            hi: 'आपके लिए सबसे उपयुक्त बस'
+        },
+        'home.best_choice': {
+            en: 'BEST CHOICE',
+            kn: 'ಅತ್ಯುತ್ತಮ ಆಯ್ಕೆ',
+            hi: 'सर्वोत्तम विकल्प'
+        },
+        'home.fastest_arrival': {
+            en: 'FASTEST ARRIVAL',
+            kn: 'ವೇಗವಾಗಿ ತಲುಪುವ ಬಸ್',
+            hi: 'सबसे तेज़ आगमन'
+        },
+        'home.comfort_choice': {
+            en: 'MOST SEATS AVAILABLE',
+            kn: 'ಹೆಚ್ಚು ಆಸನಗಳು ಲಭ್ಯ',
+            hi: 'अधिक सीटें उपलब्ध'
+        },
+        'home.arrived_at_stop': {
+            en: 'You have arrived at ${stop}!',
+            kn: 'ನೀವು ${stop} ಗೆ ತಲುಪಿದ್ದೀರಿ!',
+            hi: 'आप ${stop} पर पहुँच गए हैं!'
+        },
+        'home.close_map': {
+            en: 'Normal Size',
+            kn: 'ಸಾಮಾನ್ಯ ಗಾತ್ರ',
+            hi: 'सामान्य आकार'
+        },
         'home.change_stop': {
             en: 'Change Stop',
             kn: 'ನಿಲ್ದಾಣ ಬದಲಿಸಿ',

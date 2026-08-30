@@ -17,6 +17,373 @@ const MapUtils = {
     destinationCoordinates: null,
     destinationLabel: 'Destination',
     routeLayers: new Map(),
+    walkingTurnMarkers: [],
+
+    zoomIn() {
+        if (this.map) {
+            this.map.zoomIn();
+        }
+    },
+
+    zoomOut() {
+        if (this.map) {
+            this.map.zoomOut();
+        }
+    },
+
+    clearWalkingPath() {
+        if (this.walkingAbortController) {
+            try { this.walkingAbortController.abort(); } catch(e) {}
+            this.walkingAbortController = null;
+        }
+        if (this.walkingLayer && this.map) {
+            try { this.map.removeLayer(this.walkingLayer); } catch(e) {}
+            this.walkingLayer = null;
+        }
+        if (this.walkingMarker && this.map) {
+            try { this.map.removeLayer(this.walkingMarker); } catch(e) {}
+            this.walkingMarker = null;
+        }
+        if (this.walkingTurnMarkers && this.walkingTurnMarkers.length > 0) {
+            this.walkingTurnMarkers.forEach(m => {
+                try { this.map.removeLayer(m); } catch(e) {}
+            });
+            this.walkingTurnMarkers = [];
+        }
+        this.walkingRoadPoints = null;
+    },
+
+    focusTurn(lat, lng, zoom = 17) {
+        if (this.map && lat && lng) {
+            this.map.flyTo([lat, lng], zoom, { duration: 0.7 });
+        }
+    },
+
+    renderWalkingPolylines(latLngs, stopName = '', distText = '', minsText = '', steps = []) {
+        if (!this.map || !latLngs || latLngs.length < 2) return;
+
+        // Clean up previous layers
+        if (this.walkingLayer && this.map) {
+            try { this.map.removeLayer(this.walkingLayer); } catch(e) {}
+            this.walkingLayer = null;
+        }
+        if (this.walkingMarker && this.map) {
+            try { this.map.removeLayer(this.walkingMarker); } catch(e) {}
+            this.walkingMarker = null;
+        }
+        if (this.walkingTurnMarkers && this.walkingTurnMarkers.length > 0) {
+            this.walkingTurnMarkers.forEach(m => {
+                try { this.map.removeLayer(m); } catch(e) {}
+            });
+            this.walkingTurnMarkers = [];
+        }
+
+        // 1. High contrast crisp white casing for true road definition
+        const casing = L.polyline(latLngs, {
+            color: '#ffffff',
+            weight: 8.5,
+            opacity: 0.95,
+            lineCap: 'round',
+            lineJoin: 'round'
+        });
+
+        // 2. Solid bold vivid blue navigation road route (identical to the navigation line in the user's reference)
+        const core = L.polyline(latLngs, {
+            color: '#1a73e8',
+            weight: 5.5,
+            opacity: 1.0,
+            lineCap: 'round',
+            lineJoin: 'round'
+        });
+
+        const layerGroup = L.layerGroup([casing, core]).addTo(this.map);
+        this.walkingLayer = layerGroup;
+
+        // 3. Place Midpoint Walking badge marker along the actual road polyline
+        const midIdx = Math.floor(latLngs.length / 2);
+        const midLatLng = latLngs[midIdx] || latLngs[0];
+
+        const midIcon = L.divIcon({
+            className: 'google-maps-walk-midpoint',
+            html: `
+                <div style="
+                    background: #ffffff;
+                    color: #1a73e8;
+                    font-family: 'Inter', sans-serif;
+                    font-size: 11px;
+                    font-weight: 800;
+                    padding: 4px 10px;
+                    border-radius: 999px;
+                    border: 2px solid #1a73e8;
+                    box-shadow: 0 4px 14px rgba(26, 115, 232, 0.45), 0 2px 6px rgba(0,0,0,0.18);
+                    white-space: nowrap;
+                    transform: translate(-50%, -50%);
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    cursor: pointer;
+                ">
+                    <span style="font-size: 16px; line-height: 1;">🚶</span>
+                    <span style="color: #0f172a; font-weight: 700;">${distText ? `${distText} • ${minsText}` : 'Walk to Board'}</span>
+                </div>
+            `,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0]
+        });
+
+        this.walkingMarker = L.marker(midLatLng, { icon: midIcon }).addTo(this.map);
+
+        let popupHtml = `
+            <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #202124; padding: 4px 6px; min-width: 200px;">
+                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 4px;">
+                    <span style="font-size: 16px;">🚶</span>
+                    <strong style="color: #1a73e8; font-size: 12px;">Walking Road Navigation</strong>
+                </div>
+                <div style="font-size: 11.5px; font-weight: 700; color: #1e293b;">
+                    ${distText} (~${minsText})
+                </div>
+                <div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">
+                    Destination Stop: <strong style="color: #1a73e8;">${stopName || 'Nearest Bus Stop'}</strong>
+                </div>
+        `;
+
+        if (steps && steps.length > 0) {
+            const stepItems = steps
+                .filter(s => s.name && s.name.trim() !== '')
+                .slice(0, 4)
+                .map((s, idx) => {
+                    const mod = s.maneuver.modifier ? s.maneuver.modifier.replace('_', ' ') : '';
+                    const action = s.maneuver.type === 'depart' ? 'Head on' : `Turn ${mod || 'onto'}`;
+                    return `<li style="margin-bottom: 2px;">${action} <strong>${s.name}</strong> (${Math.round(s.distance)}m)</li>`;
+                })
+                .join('');
+            if (stepItems) {
+                popupHtml += `<ul style="font-size: 9.5px; color: #4b5563; padding-left: 14px; margin-top: 5px; border-top: 1px solid #e2e8f0; padding-top: 4px;">${stepItems}</ul>`;
+            }
+        }
+        popupHtml += `</div>`;
+
+        this.walkingMarker.bindPopup(popupHtml);
+
+        // 4. Render turn waypoint markers along the road for clear junction guidance
+        if (steps && steps.length > 1) {
+            steps.forEach((step, idx) => {
+                if (!step.maneuver || !step.maneuver.location) return;
+                const turnLng = step.maneuver.location[0];
+                const turnLat = step.maneuver.location[1];
+                const mType = step.maneuver.type;
+                const mMod = step.maneuver.modifier || '';
+
+                if (mType === 'depart' && idx === 0) return; // already covered by user pin
+
+                let symbol = '↑';
+                if (mMod.includes('left')) symbol = '↰';
+                else if (mMod.includes('right')) symbol = '↱';
+                else if (mType === 'arrive') symbol = '🏁';
+
+                const turnIcon = L.divIcon({
+                    className: 'google-maps-turn-waypoint',
+                    html: `
+                        <div style="
+                            width: 22px;
+                            height: 22px;
+                            background: #ffffff;
+                            border: 2.5px solid #1a73e8;
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 11px;
+                            font-weight: 900;
+                            color: #1a73e8;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                            transform: translate(-50%, -50%);
+                            cursor: pointer;
+                        ">
+                            ${symbol}
+                        </div>
+                    `,
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                });
+
+                const turnMarker = L.marker([turnLat, turnLng], { icon: turnIcon }).addTo(this.map);
+                const stepName = step.name ? ` onto <strong>${step.name}</strong>` : '';
+                turnMarker.bindPopup(`
+                    <div style="font-family: 'Inter', sans-serif; font-size: 11.5px; padding: 2px 4px; color: #202124;">
+                        <strong style="color: #1a73e8;">Step ${idx + 1}:</strong> ${mType === 'arrive' ? `Arrive at <strong>${stopName}</strong>` : `Turn ${mMod.replace('_', ' ')}${stepName}`}
+                        <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Distance: ${Math.round(step.distance)}m</div>
+                    </div>
+                `);
+                this.walkingTurnMarkers.push(turnMarker);
+            });
+        }
+    },
+
+    setWalkingUserLocation(lat, lng) {
+        if (!this.map) return;
+        this.userCoordinates = { lat, lng };
+
+        const walkUserIcon = L.divIcon({
+            className: 'google-maps-live-walker',
+            html: `
+                <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer; transform: translate(-50%, -50%);">
+                    <!-- Floating Walking Badge -->
+                    <div style="
+                        background: #1a73e8;
+                        color: #ffffff;
+                        font-family: 'Inter', sans-serif;
+                        font-weight: 800;
+                        font-size: 10px;
+                        padding: 3px 9px;
+                        border-radius: 999px;
+                        box-shadow: 0 3px 12px rgba(26,115,232,0.6);
+                        white-space: nowrap;
+                        margin-bottom: 4px;
+                        border: 1.5px solid #ffffff;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    ">
+                        <span style="font-size: 13px;">🚶</span>
+                        <span>LIVE WALKING</span>
+                    </div>
+
+                    <!-- Live Walker Circular Marker with Pulsing Ripple -->
+                    <div style="position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
+                        <div style="
+                            position: absolute;
+                            inset: -8px;
+                            border-radius: 50%;
+                            border: 2px solid #1a73e8;
+                            background: rgba(26, 115, 232, 0.25);
+                            animation: orangeRadarWave 2s infinite ease-out;
+                            pointer-events: none;
+                        "></div>
+                        <div style="
+                            width: 32px;
+                            height: 32px;
+                            background: #ffffff;
+                            border: 3px solid #1a73e8;
+                            border-radius: 50%;
+                            box-shadow: 0 4px 14px rgba(26, 115, 232, 0.6);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 18px;
+                            line-height: 1;
+                        ">
+                            🚶
+                        </div>
+                    </div>
+                </div>
+            `,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0]
+        });
+
+        if (this.markers.user) {
+            this.markers.user.setLatLng([lat, lng]);
+            this.markers.user.setIcon(walkUserIcon);
+        } else {
+            this.markers.user = L.marker([lat, lng], { icon: walkUserIcon }).addTo(this.map);
+        }
+    },
+
+    async drawWalkingPath(fromLatLng, toLatLng, stopName = '', distText = '', minsText = '', onCalculated = null) {
+        if (!this.map || !fromLatLng || !toLatLng) return;
+
+        this.clearWalkingPath();
+
+        const lat1 = fromLatLng[0], lng1 = fromLatLng[1];
+        const lat2 = toLatLng[0], lng2 = toLatLng[1];
+
+        // Store initial direct points
+        this.walkingRoadPoints = [fromLatLng, toLatLng];
+
+        // Render initial polyline
+        this.renderWalkingPolylines(this.walkingRoadPoints, stopName, distText, minsText);
+
+        // Abort previous pending fetch
+        if (this.walkingAbortController) {
+            this.walkingAbortController.abort();
+        }
+        this.walkingAbortController = new AbortController();
+        const signal = this.walkingAbortController.signal;
+
+        try {
+            // 1. Fetch real pedestrian road routing from OSRM foot API
+            const footUrl = `https://router.project-osrm.org/route/v1/foot/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson&steps=true`;
+            let res = await fetch(footUrl, { signal }).catch(() => null);
+            let data = res && res.ok ? await res.json().catch(() => null) : null;
+
+            // 2. Fallback to driving road routing if foot is unavailable
+            if (!data || !data.routes || !data.routes.length || !data.routes[0].geometry) {
+                const drivingUrl = `https://router.project-osrm.org/route/v1/driving/${lng1},${lat1};${lng2},${lat2}?overview=full&geometries=geojson&steps=true`;
+                res = await fetch(drivingUrl, { signal }).catch(() => null);
+                data = res && res.ok ? await res.json().catch(() => null) : null;
+            }
+
+            if (data && data.routes && data.routes[0] && data.routes[0].geometry) {
+                const coords = data.routes[0].geometry.coordinates;
+                if (coords && coords.length >= 2) {
+                    const roadPoints = coords.map(c => [c[1], c[0]]);
+                    const actualDistMeters = Math.round(data.routes[0].distance);
+                    const actualDurationSec = Math.round(data.routes[0].duration);
+                    let steps = [];
+                    if (data.routes[0].legs && data.routes[0].legs[0] && data.routes[0].legs[0].steps) {
+                        steps = data.routes[0].legs[0].steps;
+                    }
+
+                    this.walkingRoadPoints = roadPoints;
+                    const computedDistText = actualDistMeters < 1000 ? `${actualDistMeters} m` : `${(actualDistMeters / 1000).toFixed(1)} km`;
+                    const computedMins = Math.max(1, Math.round(actualDurationSec ? actualDurationSec / 60 : actualDistMeters / 80));
+                    const computedMinsText = `${computedMins} mins`;
+
+                    this.renderWalkingPolylines(roadPoints, stopName, computedDistText, computedMinsText, steps);
+
+                    if (onCalculated && typeof onCalculated === 'function') {
+                        onCalculated({
+                            distanceMeters: actualDistMeters,
+                            distanceText: computedDistText,
+                            walkingMins: computedMins,
+                            steps: steps,
+                            roadPoints: roadPoints
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            if (e && e.name !== 'AbortError') {
+                console.warn('Walking route calculation notice:', e);
+            }
+        }
+    },
+
+    clearRoutesAndBuses() {
+        if (!this.map) return;
+        this.clearWalkingPath();
+        this.routeLayers.forEach(layer => {
+            try { this.map.removeLayer(layer); } catch(e) {}
+        });
+        this.routeLayers.clear();
+
+        this.markers.buses.forEach(m => {
+            try { this.map.removeLayer(m); } catch(e) {}
+        });
+        this.markers.buses.clear();
+
+        this.markers.stops.forEach(s => {
+            try { this.map.removeLayer(s); } catch(e) {}
+        });
+        this.markers.stops.clear();
+
+        if (this.markers.destination) {
+            try { this.map.removeLayer(this.markers.destination); } catch(e) {}
+            this.markers.destination = null;
+            this.destinationCoordinates = null;
+        }
+    },
 
     initMap(containerId = 'map', center = [12.9716, 77.5946], zoom = 13, options = {}) {
         if (this.map) {
@@ -148,30 +515,6 @@ const MapUtils = {
 
         if (this.destinationCoordinates) {
             this.addDestinationMarker(this.destinationCoordinates.lat, this.destinationCoordinates.lng, this.destinationLabel);
-        }
-    },
-
-    clearRoutesAndBuses() {
-        if (!this.map) return;
-        this.routeLayers.forEach(layer => {
-            try { this.map.removeLayer(layer); } catch(e) {}
-        });
-        this.routeLayers.clear();
-
-        this.markers.buses.forEach(m => {
-            try { this.map.removeLayer(m); } catch(e) {}
-        });
-        this.markers.buses.clear();
-
-        this.markers.stops.forEach(s => {
-            try { this.map.removeLayer(s); } catch(e) {}
-        });
-        this.markers.stops.clear();
-
-        if (this.markers.destination) {
-            try { this.map.removeLayer(this.markers.destination); } catch(e) {}
-            this.markers.destination = null;
-            this.destinationCoordinates = null;
         }
     },
 

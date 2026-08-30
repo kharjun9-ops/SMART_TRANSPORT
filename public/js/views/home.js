@@ -4,7 +4,9 @@
  * 1. Clean map showing Bengaluru current location
  * 2. User searches/taps destination without autofill
  * 3. Shows available BMTC buses with arrival ETAs, fares & crowd levels
- * 4. Fully internationalized: English, Kannada (ಕನ್ನಡ), Hindi (हिन्दी)
+ * 4. Google Maps Turn-by-Turn GPS Walking Walkthrough to Nearest Bus Stop
+ * 5. Smart Multi-Bus Comparison & Recommendation (Best bus to board out of the 4 active buses)
+ * 6. Fully internationalized: English, Kannada (ಕನ್ನಡ), Hindi (हिन्दी)
  */
 const HomeView = {
     routes: [],
@@ -15,6 +17,20 @@ const HomeView = {
     searchQuery: '',
     matchedTransitOptions: [],
     livePollInterval: null,
+    isMapEnlarged: false,
+    nearestStopInfo: null,
+    walkingSteps: [],
+    isWalkingGuidanceOpen: false,
+
+    // Live Walking Navigation State
+    isNavigatingWalk: false,
+    navCurrentStepIndex: 0,
+    navWatchId: null,
+    navSimulatedIdx: 0,
+    isVoiceMuted: false,
+    autoWalkTimer: null,
+    hasArrivedAtStop: false,
+    lastSpokenStepIndex: -1,
 
     popularDestinations: [
         { key: 'dest.kengeri_ttmc', name: 'Kengeri TTMC', query: 'Kengeri', routeNum: '378', stopName: 'Kengeri TTMC / Bus Terminal' },
@@ -70,39 +86,97 @@ const HomeView = {
                     </div>
                 </div>
 
-                <!-- Clean Location Map (Google Maps Interface) -->
-                <section class="relative">
-                    <div class="relative w-full h-[240px] rounded-transit overflow-hidden border border-white/10 shadow-2xl bg-surface-container-low">
+                <!-- Clean Location Map (Google Maps Interface with Interactive Zoom & Enlarge Controls) -->
+                <section class="relative" id="home-map-section">
+                    
+                    <!-- Live Google Maps Navigation Top HUD Banner -->
+                    ${this.isNavigatingWalk ? this.renderLiveNavigationTopHUD() : ''}
+
+                    <div id="home-map-container" class="relative w-full ${this.isMapEnlarged || this.isNavigatingWalk ? 'h-[440px] shadow-2xl ring-2 ring-primary/40' : 'h-[240px]'} rounded-transit overflow-hidden border border-white/10 shadow-2xl bg-surface-container-low transition-all duration-300">
                         <div id="home-map" class="w-full h-full"></div>
                         
-                        <!-- HUD Status Badge -->
-                        <div class="absolute bottom-3 left-3 glass-panel px-3 py-1 rounded-full flex items-center gap-2 shadow-lg pointer-events-none z-[400]">
-                            <div class="w-2 h-2 rounded-full ${this.destination ? 'bg-primary' : 'bg-secondary'}"></div>
-                            <span class="font-label-sm text-[11px] text-on-surface font-medium" id="map-status-label">
-                                ${this.destination ? I18n.t('home.route_calculated') : I18n.t('home.map_label')}
-                            </span>
+                        <!-- Top Left: Enlarge Map / Close (X) Button -->
+                        <div class="absolute top-3 left-3 z-[400] flex items-center gap-2">
+                            <!-- Enlarge Button -->
+                            <button 
+                                id="map-expand-btn"
+                                onclick="HomeView.toggleMapEnlarge(true)"
+                                class="glass-panel text-on-surface hover:text-primary px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-1.5 text-xs font-bold active:scale-95 transition-all cursor-pointer ${this.isMapEnlarged || this.isNavigatingWalk ? 'hidden' : ''}"
+                                title="${I18n.t('home.enlarge_map') || 'Enlarge Map'}"
+                            >
+                                <span class="material-symbols-outlined text-sm text-primary">open_in_full</span>
+                                <span class="text-[11px] font-semibold">${I18n.t('home.enlarge_map') || 'Enlarge'}</span>
+                            </button>
+
+                            <!-- Close (X) Button when Enlarged -->
+                            <button 
+                                id="map-close-btn"
+                                onclick="HomeView.toggleMapEnlarge(false)"
+                                class="bg-surface-container-highest/95 hover:bg-error text-on-surface hover:text-white px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-1.5 text-xs font-bold active:scale-95 transition-all border border-white/20 cursor-pointer ${(this.isMapEnlarged && !this.isNavigatingWalk) ? '' : 'hidden'}"
+                                title="${I18n.t('home.close_map') || 'Back to Normal Size'}"
+                            >
+                                <span class="material-symbols-outlined text-base">close</span>
+                                <span class="text-[11px]">${I18n.t('home.close_map') || 'Normal Size'}</span>
+                            </button>
                         </div>
 
-                        <!-- Google Maps Layer Switcher -->
-                        <button 
-                            onclick="HomeView.toggleMapType()"
-                            class="absolute top-3 right-3 glass-panel text-on-surface hover:text-primary px-2.5 py-1 rounded-xl shadow-md flex items-center gap-1 text-[11px] font-bold z-[400] active:scale-95 transition-all cursor-pointer"
-                            title="Toggle Google Maps Satellite / Default"
-                            id="map-type-btn"
-                        >
-                            <span class="material-symbols-outlined text-sm text-primary">layers</span>
-                            <span id="map-type-label">${I18n.t('home.satellite')}</span>
-                        </button>
+                        <!-- Top Right Controls: Satellite Layer Switcher & Zoom (+ / -) -->
+                        <div class="absolute top-3 right-3 z-[400] flex flex-col items-end gap-2">
+                            <!-- Google Maps Layer Switcher -->
+                            <button 
+                                onclick="HomeView.toggleMapType()"
+                                class="glass-panel text-on-surface hover:text-primary px-2.5 py-1.5 rounded-xl shadow-md flex items-center gap-1 text-[11px] font-bold active:scale-95 transition-all cursor-pointer"
+                                title="Toggle Google Maps Satellite / Default"
+                                id="map-type-btn"
+                            >
+                                <span class="material-symbols-outlined text-sm text-primary">layers</span>
+                                <span id="map-type-label">${I18n.t('home.satellite')}</span>
+                            </button>
+
+                            <!-- Floating Zoom In / Zoom Out Controls -->
+                            <div class="glass-panel rounded-xl shadow-xl border border-white/10 flex flex-col overflow-hidden bg-surface-container/90 backdrop-blur-md">
+                                <button 
+                                    onclick="HomeView.zoomIn()" 
+                                    class="p-2 hover:bg-primary/20 text-on-surface hover:text-primary active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+                                    title="Zoom In (+)"
+                                    aria-label="Zoom In"
+                                >
+                                    <span class="material-symbols-outlined text-lg font-bold">add</span>
+                                </button>
+                                <div class="w-full h-px bg-white/10"></div>
+                                <button 
+                                    onclick="HomeView.zoomOut()" 
+                                    class="p-2 hover:bg-primary/20 text-on-surface hover:text-primary active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+                                    title="Zoom Out (-)"
+                                    aria-label="Zoom Out"
+                                >
+                                    <span class="material-symbols-outlined text-lg font-bold">remove</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- HUD Status Badge -->
+                        ${!this.isNavigatingWalk ? `
+                            <div class="absolute bottom-3 left-3 glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg pointer-events-none z-[400] max-w-[70%] truncate">
+                                <div class="w-2 h-2 rounded-full ${this.destination ? 'bg-primary' : 'bg-secondary'} shrink-0"></div>
+                                <span class="font-label-sm text-[11px] text-on-surface font-medium truncate" id="map-status-label">
+                                    ${this.destination ? (this.nearestStopInfo ? `🚶 ${this.nearestStopInfo.distanceText} to ${I18n.translateStop(this.nearestStopInfo.stop.name)}` : I18n.t('home.route_calculated')) : I18n.t('home.map_label')}
+                                </span>
+                            </div>
+                        ` : ''}
 
                         <!-- Recenter GPS Button -->
                         <button 
-                            onclick="HomeView.detectGPSLocation()"
+                            onclick="HomeView.recenterMap()"
                             class="absolute bottom-3 right-3 bg-primary text-on-primary p-2.5 rounded-full shadow-[0_2px_12px_rgba(26,115,232,0.4)] hover:bg-primary-fixed active:scale-90 transition-all z-[400] flex items-center justify-center cursor-pointer"
-                            title="Recenter GPS"
+                            title="Recenter GPS Location"
                         >
                             <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">my_location</span>
                         </button>
                     </div>
+
+                    <!-- Live Google Maps Navigation Bottom Control HUD -->
+                    ${this.isNavigatingWalk ? this.renderLiveNavigationBottomHUD() : ''}
                 </section>
 
                 <!-- Results & Options Container -->
@@ -113,42 +187,333 @@ const HomeView = {
         `;
     },
 
-    getMatchingStops(query) {
-        if (!query) return [];
-        const q = query.toLowerCase().trim();
+    /* =========================================================================
+       GOOGLE MAPS LIVE WALKING NAVIGATION HUD
+       ========================================================================= */
 
-        return this.stops
-            .filter(s => {
-                const enMatch = s.name.toLowerCase().includes(q);
-                const translated = I18n.translateStop(s.name);
-                const transMatch = translated.toLowerCase().includes(q);
-                return enMatch || transMatch;
-            })
-            .sort((a, b) => {
-                const aName = a.name.toLowerCase();
-                const bName = b.name.toLowerCase();
+    renderLiveNavigationTopHUD() {
+        const steps = this.walkingSteps || [];
+        const currentIdx = Math.min(this.navCurrentStepIndex, Math.max(0, steps.length - 1));
+        const currentStep = steps[currentIdx] || null;
+        const nextStep = steps[currentIdx + 1] || null;
 
-                // 1. Starts with query first
-                const aStarts = aName.startsWith(q) ? 0 : 1;
-                const bStarts = bName.startsWith(q) ? 0 : 1;
-                if (aStarts !== bStarts) return aStarts - bStarts;
+        let iconName = 'directions_walk';
+        let stepDist = currentStep ? Math.round(currentStep.distance) : 0;
+        let mainText = 'Head towards bus stop';
+        let subText = nextStep ? `Then ${this.formatManeuverText(nextStep)}` : 'Follow blue route on road';
 
-                // 2. Major hubs next
-                const aMajor = a.is_major ? 0 : 1;
-                const bMajor = b.is_major ? 0 : 1;
-                if (aMajor !== bMajor) return aMajor - bMajor;
+        if (currentStep && currentStep.maneuver) {
+            const mType = currentStep.maneuver.type;
+            const mod = (currentStep.maneuver.modifier || '').replace('_', ' ');
 
-                // 3. Sequence along route
-                return (a.sequence_order || 0) - (b.sequence_order || 0);
-            });
+            if (mType === 'arrive' || currentIdx === steps.length - 1) {
+                iconName = 'pin_drop';
+                mainText = `Arrive at ${this.nearestStopInfo?.stop ? I18n.translateStop(this.nearestStopInfo.stop.name) : 'Bus Stop'}`;
+                subText = 'Board your scheduled BMTC Bus 378';
+            } else if (mType === 'depart') {
+                iconName = 'straight';
+                mainText = `Head ${mod || 'forward'} on ${currentStep.name ? currentStep.name : 'road'}`;
+            } else if (mod.includes('left')) {
+                iconName = 'turn_left';
+                mainText = `Turn ${mod} onto ${currentStep.name ? currentStep.name : 'road'}`;
+            } else if (mod.includes('right')) {
+                iconName = 'turn_right';
+                mainText = `Turn ${mod} onto ${currentStep.name ? currentStep.name : 'road'}`;
+            } else {
+                iconName = 'navigation';
+                mainText = `Continue on ${currentStep.name ? currentStep.name : 'road'}`;
+            }
+        }
+
+        return `
+            <div class="mb-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white rounded-2xl p-3.5 shadow-2xl border border-emerald-400/40 relative overflow-hidden animate-fadeIn">
+                <!-- Glowing Top Navigation Bar -->
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-2xl bg-white/20 border border-white/40 flex items-center justify-center text-white shadow-inner shrink-0">
+                            <span class="material-symbols-outlined text-2xl font-bold">${iconName}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-black/25 text-emerald-200 text-[9.5px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    ${stepDist > 0 ? `In ${stepDist} m` : 'Now'}
+                                </span>
+                                <span class="text-[10px] text-white/80 font-medium">Step ${currentIdx + 1} of ${steps.length || 1}</span>
+                            </div>
+                            <h3 class="font-bold text-sm text-white leading-tight mt-0.5 truncate">${mainText}</h3>
+                            <p class="text-[11px] text-emerald-100/90 truncate mt-0.5">${subText}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button 
+                            onclick="HomeView.toggleVoiceMute()" 
+                            class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white text-xs cursor-pointer active:scale-90 transition-all"
+                            title="${this.isVoiceMuted ? 'Unmute Voice Guidance' : 'Mute Voice Guidance'}"
+                        >
+                            <span class="material-symbols-outlined text-base">${this.isVoiceMuted ? 'volume_off' : 'volume_up'}</span>
+                        </button>
+                        <button 
+                            onclick="HomeView.stopWalkthrough()" 
+                            class="w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 flex items-center justify-center text-white text-xs cursor-pointer active:scale-90 transition-all"
+                            title="Exit Walk Navigation"
+                        >
+                            <span class="material-symbols-outlined text-base">close</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
     },
 
-    highlightMatch(text, query) {
-        if (!query) return text;
-        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(${escaped})`, 'gi');
-        return text.replace(regex, '<span class="text-primary underline font-extrabold">$1</span>');
+    renderLiveNavigationBottomHUD() {
+        const dist = this.nearestStopInfo?.distanceText || '1.8 km';
+        const mins = this.nearestStopInfo?.walkingMins || 3;
+        const stopName = this.nearestStopInfo?.stop ? I18n.translateStop(this.nearestStopInfo.stop.name) : 'Bus Stop';
+
+        // Calculate dynamic ETA time
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + mins);
+        const etaTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        return `
+            <div class="mt-2 glass-panel rounded-2xl p-3 border border-emerald-500/40 bg-surface-container-high/95 shadow-2xl space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="text-left">
+                            <span class="text-[10px] text-on-surface-variant uppercase font-bold">Remaining Walk</span>
+                            <div class="text-base font-extrabold text-emerald-400 font-status-number">${dist}</div>
+                        </div>
+                        <div class="w-px h-7 bg-white/10"></div>
+                        <div class="text-left">
+                            <span class="text-[10px] text-on-surface-variant uppercase font-bold">Duration</span>
+                            <div class="text-sm font-bold text-on-surface font-status-number">~${mins} mins</div>
+                        </div>
+                        <div class="w-px h-7 bg-white/10"></div>
+                        <div class="text-left">
+                            <span class="text-[10px] text-on-surface-variant uppercase font-bold">Stop ETA</span>
+                            <div class="text-sm font-bold text-secondary font-status-number">${etaTime}</div>
+                        </div>
+                    </div>
+
+                    <div class="text-right">
+                        <span class="text-[9.5px] bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-bold">
+                            Destination: ${stopName}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Simulation & Interactive Walk Controls -->
+                <div class="flex items-center gap-2 pt-2 border-t border-white/10">
+                    <button 
+                        onclick="HomeView.simulateWalkStep()"
+                        class="flex-1 py-1.5 px-2.5 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                        title="Simulate walking step-by-step along road"
+                    >
+                        <span class="material-symbols-outlined text-sm">nordic_walking</span>
+                        <span>Walk Step</span>
+                    </button>
+
+                    <button 
+                        onclick="HomeView.toggleAutoWalk()"
+                        class="flex-1 py-1.5 px-2.5 rounded-xl ${this.autoWalkTimer ? 'bg-secondary text-on-secondary shadow-md' : 'bg-surface-container hover:bg-surface-container-highest text-on-surface border border-white/10'} text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                        title="Toggle automatic road walk simulation"
+                    >
+                        <span class="material-symbols-outlined text-sm">${this.autoWalkTimer ? 'pause' : 'play_arrow'}</span>
+                        <span>${this.autoWalkTimer ? 'Pause Walk' : 'Auto Walk'}</span>
+                    </button>
+
+                    <button 
+                        onclick="HomeView.stopWalkthrough()"
+                        class="py-1.5 px-3 rounded-xl bg-error/20 hover:bg-error/30 text-error border border-error/30 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-all cursor-pointer"
+                        title="Exit Walk Navigation"
+                    >
+                        <span class="material-symbols-outlined text-sm">cancel</span>
+                        <span>Exit</span>
+                    </button>
+                </div>
+            </div>
+        `;
     },
+
+    formatManeuverText(step) {
+        if (!step || !step.maneuver) return '';
+        const mType = step.maneuver.type;
+        const mod = (step.maneuver.modifier || '').replace('_', ' ');
+        if (mType === 'arrive') return `arrive at destination stop (${Math.round(step.distance)}m)`;
+        if (mod) return `turn ${mod} onto ${step.name || 'road'} (${Math.round(step.distance)}m)`;
+        return `continue onto ${step.name || 'road'} (${Math.round(step.distance)}m)`;
+    },
+
+    /* =========================================================================
+       INTELLIGENT MULTI-BUS COMPARISON & RECOMMENDATION ENGINE
+       ========================================================================= */
+
+    calculateBestBus(waitingStop, destinationStop) {
+        if (!waitingStop || !destinationStop || !this.activeTrips || this.activeTrips.length === 0) {
+            return [];
+        }
+
+        const waitStopName = waitingStop.name.toLowerCase();
+        const destStopName = destinationStop.name.toLowerCase();
+
+        // Find stop index along the route
+        const waitStopIdx = this.stops.findIndex(s => s.name.toLowerCase() === waitStopName || s.id === waitingStop.id);
+        const destStopIdx = this.stops.findIndex(s => s.name.toLowerCase() === destStopName || s.id === destinationStop.id);
+
+        // Determine correct direction (outbound vs inbound)
+        const targetDirection = (destStopIdx >= 0 && waitStopIdx >= 0 && destStopIdx < waitStopIdx) ? 'inbound' : 'outbound';
+
+        const scoredBuses = this.activeTrips.map((trip, idx) => {
+            let score = 100;
+            let reasons = [];
+            let waitTimeMins = 3;
+            let isRightDirection = (trip.direction === targetDirection);
+
+            const currentStopIdx = trip.current_stop_index || 0;
+            const targetStopSequence = waitStopIdx >= 0 ? waitStopIdx : 0;
+
+            if (isRightDirection) {
+                score += 50;
+                let stopsAway = 0;
+                if (trip.direction === 'outbound') {
+                    stopsAway = targetStopSequence - currentStopIdx;
+                } else {
+                    stopsAway = currentStopIdx - targetStopSequence;
+                }
+
+                if (stopsAway >= 0) {
+                    waitTimeMins = Math.max(1, Math.round(stopsAway * 3.2 + (trip.dwell_seconds || 0) / 60));
+                    score += Math.max(0, 60 - (waitTimeMins * 4));
+                    reasons.push(`Arrives at ${I18n.translateStop(waitingStop.name)} in ~${waitTimeMins} mins`);
+                } else {
+                    waitTimeMins = 24 + Math.abs(stopsAway) * 2;
+                    score -= 40;
+                    reasons.push(`Passed this stop • Next cycle in ~${waitTimeMins} mins`);
+                }
+            } else {
+                score -= 70;
+                waitTimeMins = 32 + (idx * 5);
+                reasons.push(`Opposite Direction (${trip.direction === 'outbound' ? 'To Kengeri' : 'To Electronic City'})`);
+            }
+
+            // Passenger count & seating comfort calculation
+            const cap = trip.capacity || 55;
+            const currentPass = trip.current_passenger_count || 16;
+            const freeSeats = Math.max(0, cap - currentPass);
+            const occupancy = currentPass / cap;
+
+            if (occupancy <= 0.35) {
+                score += 40;
+                reasons.push(`Plenty of Seats Available (${freeSeats} open seats)`);
+            } else if (occupancy <= 0.70) {
+                score += 15;
+                reasons.push(`Moderate Seating (${currentPass}/${cap} passengers)`);
+            } else {
+                score -= 25;
+                reasons.push(`Very Crowded (${currentPass}/${cap} passengers)`);
+            }
+
+            // Speed and schedule delay check
+            if ((trip.delay_minutes || 0) <= 0) {
+                score += 10;
+                reasons.push('On Schedule (0 min delay)');
+            } else {
+                score -= (trip.delay_minutes * 4);
+                reasons.push(`Minor delay (+${trip.delay_minutes}m)`);
+            }
+
+            return {
+                trip,
+                score,
+                waitTimeMins,
+                freeSeats,
+                occupancyPct: Math.round(occupancy * 100),
+                isRightDirection,
+                reasons,
+                badge: '',
+                badgeColor: ''
+            };
+        });
+
+        // Sort buses by score descending
+        scoredBuses.sort((a, b) => b.score - a.score);
+
+        // Assign descriptive badges
+        if (scoredBuses.length > 0) {
+            scoredBuses[0].isBest = true;
+            scoredBuses[0].badge = '🏆 BEST CHOICE';
+            scoredBuses[0].badgeColor = 'bg-emerald-500 text-white';
+
+            for (let i = 1; i < scoredBuses.length; i++) {
+                const item = scoredBuses[i];
+                if (!item.isRightDirection) {
+                    item.badge = '🔄 OPPOSITE DIRECTION';
+                    item.badgeColor = 'bg-slate-700 text-slate-300';
+                } else if (item.waitTimeMins <= scoredBuses[0].waitTimeMins) {
+                    item.badge = '⚡ FASTEST ARRIVAL';
+                    item.badgeColor = 'bg-blue-500 text-white';
+                } else if (item.occupancyPct < scoredBuses[0].occupancyPct) {
+                    item.badge = '💺 LOW CROWD ALTERNATIVE';
+                    item.badgeColor = 'bg-cyan-500 text-white';
+                } else {
+                    item.badge = `⏳ LATER BUS (~${item.waitTimeMins}m)`;
+                    item.badgeColor = 'bg-slate-700 text-slate-300';
+                }
+            }
+        }
+
+        return scoredBuses;
+    },
+
+    renderBestBusHeroBanner(scoredBuses) {
+        if (!scoredBuses || scoredBuses.length === 0) return '';
+        const best = scoredBuses[0];
+        const waitStopName = this.nearestStopInfo?.stop ? I18n.translateStop(this.nearestStopInfo.stop.name) : 'Your Waiting Stop';
+        const destDisplayName = this.destination ? I18n.translateStop(this.destination.name) : 'Destination';
+
+        return `
+            <div class="glass-panel rounded-2xl p-4 border-2 border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 via-surface-container-high to-surface-container shadow-2xl relative overflow-hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⭐</span>
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">SMART BMTC TRANSIT AI</span>
+                            <h4 class="font-bold text-sm text-on-surface">Recommended Bus: <span class="text-primary font-status-number">${best.trip.bus_number || 'KA-01-F-3781'}</span></h4>
+                        </div>
+                    </div>
+                    <span class="bg-emerald-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-md animate-pulse">#1 BEST CHOICE</span>
+                </div>
+                
+                <div class="bg-surface-container-lowest/80 rounded-xl p-3 border border-white/5 space-y-1.5 text-xs">
+                    <div class="text-[11.5px] text-on-surface font-semibold flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-secondary text-sm">schedule</span>
+                        <span>Arrives at <strong class="text-secondary">${waitStopName}</strong> in <strong class="text-emerald-400 font-status-number">~${best.waitTimeMins} mins</strong></span>
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-primary text-sm">airline_seat_recline_normal</span>
+                        <span><strong>${best.freeSeats} Free Seats</strong> available (${best.trip.current_passenger_count}/${best.trip.capacity || 55} passengers)</span>
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-tertiary text-sm">trending_flat</span>
+                        <span>Direct route to <strong class="text-on-surface">${destDisplayName}</strong> • Shortest total trip time</span>
+                    </div>
+                </div>
+
+                <button 
+                    onclick="HomeView.startJourney('${best.trip.id}')"
+                    class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-2 hover:brightness-110 active:scale-98 transition-all shadow-lg cursor-pointer"
+                >
+                    <span>Board Recommended Bus (${best.trip.bus_number})</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </button>
+            </div>
+        `;
+    },
+
+    /* =========================================================================
+       DESTINATIONS & TRANSIT CARDS RENDERER
+       ========================================================================= */
 
     renderDestinationOrSuggestions() {
         // State 1: When user has explicitly chosen a destination stop
@@ -166,12 +531,97 @@ const HomeView = {
                 `;
             }
 
+            // Calculate intelligent recommendation across all 4 buses
+            const scoredBuses = this.calculateBestBus(this.nearestStopInfo?.stop, this.destination);
+
+            const nearestStopCard = this.nearestStopInfo && this.nearestStopInfo.stop ? `
+                <div class="glass-panel rounded-2xl p-4 shadow-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-surface-container to-surface-container space-y-3 relative overflow-hidden">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-[0_0_10px_rgba(26,115,232,0.4)] shrink-0">
+                                <span class="material-symbols-outlined text-xl font-bold">directions_walk</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-primary font-extrabold uppercase tracking-wider">${I18n.t('home.nearest_bus_stop') || 'Nearest Boarding Bus Stop'}</span>
+                                <h4 class="font-bold text-sm text-on-surface flex items-center gap-1.5">
+                                    <span>${I18n.translateStop(this.nearestStopInfo.stop.name)}</span>
+                                    ${this.nearestStopInfo.stop.is_major ? `<span class="bg-primary/20 text-primary text-[9px] font-bold px-1.5 py-0.2 rounded-full">HUB</span>` : ''}
+                                </h4>
+                            </div>
+                        </div>
+                        ${this.nearestStopInfo.isAtStop ? `
+                            <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-1 rounded-full font-bold flex items-center gap-1 shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+                                <span>AT STOP</span>
+                            </span>
+                        ` : `
+                            <div class="text-right shrink-0">
+                                <div class="text-xs font-bold text-secondary font-status-number">${this.nearestStopInfo.distanceText}</div>
+                                <div class="text-[10px] text-on-surface-variant font-medium">~${this.nearestStopInfo.walkingMins} mins walk</div>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Walking Road Summary & Guidance Actions -->
+                    <div class="bg-surface-container-high/90 rounded-xl p-2.5 border border-white/5 flex flex-col gap-2 text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0 pr-1">
+                                <span class="material-symbols-outlined text-primary text-base shrink-0">navigation</span>
+                                <span class="text-[11.5px] text-on-surface leading-tight truncate">
+                                    ${this.nearestStopInfo.isAtStop ? 
+                                        (I18n.t('home.already_at_nearest') || 'You are at this bus stop • Ready to board!') : 
+                                        `Walk <strong class="text-primary">${this.nearestStopInfo.distanceText}</strong> (~<strong class="text-secondary">${this.nearestStopInfo.walkingMins} mins</strong>) via road to <strong class="text-on-surface">${destDisplayName}</strong>`
+                                    }
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <!-- Google Maps Walking Walkthrough Button -->
+                                <button 
+                                    onclick="${this.isNavigatingWalk ? 'HomeView.stopWalkthrough()' : 'HomeView.startWalkthrough()'}"
+                                    class="px-2.5 py-1 rounded-lg ${this.isNavigatingWalk ? 'bg-error text-white font-extrabold' : 'bg-emerald-500 hover:bg-emerald-600 text-white font-bold'} text-[10px] border border-white/20 transition-all flex items-center gap-1 cursor-pointer shadow-md active:scale-95" 
+                                    title="Start Google Maps Live Walking Navigation with GPS"
+                                >
+                                    <span class="material-symbols-outlined text-xs">${this.isNavigatingWalk ? 'stop' : 'explore'}</span>
+                                    <span>${this.isNavigatingWalk ? 'Stop Walk' : '🚶 Walkthrough'}</span>
+                                </button>
+
+                                <button 
+                                    onclick="HomeView.toggleWalkingGuidance()" 
+                                    class="px-2.5 py-1 rounded-lg ${this.isWalkingGuidanceOpen ? 'bg-primary text-on-primary' : 'bg-surface-container hover:bg-surface-container-highest text-on-surface'} text-[10px] font-bold border border-white/10 transition-all flex items-center gap-1 cursor-pointer" 
+                                    title="Show Turn-by-Turn Road Guidance"
+                                >
+                                    <span class="material-symbols-outlined text-xs">${this.isWalkingGuidanceOpen ? 'expand_less' : 'turn_right'}</span>
+                                    <span>${this.isWalkingGuidanceOpen ? 'Hide' : 'Steps'}</span>
+                                </button>
+                                <button 
+                                    onclick="HomeView.focusNearestStop()" 
+                                    class="px-2.5 py-1 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-[10px] font-bold border border-primary/30 transition-all flex items-center gap-1 cursor-pointer" 
+                                    title="Focus Road Route on Map"
+                                >
+                                    <span class="material-symbols-outlined text-xs">pin_drop</span>
+                                    <span>Map</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Expandable Turn-by-Turn Road Walking Directions -->
+                        ${this.isWalkingGuidanceOpen ? this.renderWalkingGuidanceSteps() : ''}
+                    </div>
+                </div>
+            ` : '';
+
+            // AI Smart Multi-Bus Recommendation Hero Banner
+            const recommendationBanner = this.renderBestBusHeroBanner(scoredBuses);
+
             return `
-                <div class="space-y-2.5">
-                    <div class="flex items-center justify-between px-1">
+                <div class="space-y-3">
+                    ${nearestStopCard}
+                    ${recommendationBanner}
+
+                    <div class="flex items-center justify-between px-1 pt-1">
                         <div>
-                            <h3 class="font-headline-md text-sm font-bold text-on-surface">${I18n.t('home.available_buses_to', { dest: destDisplayName }) || `Available Buses to ${destDisplayName}`}</h3>
-                            <p class="text-[11px] text-on-surface-variant">${I18n.t('home.buses_active', { count: this.matchedTransitOptions.length }) || `${this.matchedTransitOptions.length} Route 378 buses active`}</p>
+                            <h3 class="font-headline-md text-sm font-bold text-on-surface">${I18n.t('home.available_buses_to', { dest: destDisplayName }) || `All 4 Buses to ${destDisplayName}`}</h3>
+                            <p class="text-[11px] text-on-surface-variant">Live comparison across all active Route 378 buses</p>
                         </div>
                         <button onclick="HomeView.clearDestination()" class="text-xs text-primary font-semibold hover:underline cursor-pointer">
                             ${I18n.t('home.change_stop') || 'Change Stop'}
@@ -179,37 +629,39 @@ const HomeView = {
                     </div>
 
                     <div class="space-y-2.5">
-                        ${this.matchedTransitOptions.map((opt, idx) => {
+                        ${scoredBuses.map((scored, idx) => {
+                            const opt = { route: this.routes[0] || { route_number: '378', fare_lkr: 25 }, trip: scored.trip };
                             const crowdLevel = opt.trip?.crowd_level || 'low';
                             let crowdBadge = '';
                             if (crowdLevel === 'low') {
-                                crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.plenty_seats') || 'Plenty of Seats'}</span>`;
+                                crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.plenty_seats') || 'Plenty of Seats'} (${scored.freeSeats} free)</span>`;
                             } else if (crowdLevel === 'medium') {
-                                crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.standing_room') || 'Standing Room'}</span>`;
+                                crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.standing_room') || 'Standing Room'} (${opt.trip?.current_passenger_count || 32} pax)</span>`;
                             } else {
                                 crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.very_crowded') || 'Very Crowded'}</span>`;
                             }
 
-                            const durationMins = opt.route?.avg_duration_minutes || 30;
                             const fare = opt.route?.fare_lkr || 25;
-                            const nextStopForecast = opt.trip?.next_stop_forecast;
-                            const nextEta = opt.trip?.next_stop_eta || (nextStopForecast ? { eta_minutes: nextStopForecast.wait_time_minutes, display_text: nextStopForecast.display_text } : null);
                             const isAtStop = opt.trip?.state === 'at_stop' || opt.trip?.current_speed_kmh === 0;
                             const dwellSec = opt.trip?.dwell_seconds != null ? opt.trip.dwell_seconds : 15;
-                            const arrivingText = isAtStop ? `AT STOP (${dwellSec}s)` : (nextEta ? (nextEta.eta_minutes !== undefined ? I18n.t('home.arriving_in', { mins: nextEta.eta_minutes }) : nextEta.display_text) : I18n.t('home.arriving_in', { mins: 3 }));
                             const departedStopName = opt.trip?.current_stop_name || 'Electronic City';
                             const nextStopName = opt.trip?.next_stop_name || 'Hosa Road';
 
                             return `
-                                <div class="glass-panel rounded-2xl p-4 shadow-xl border ${idx === 0 ? 'border-primary/40' : 'border-white/10'} hover:bg-surface-container-high transition-all">
+                                <div class="glass-panel rounded-2xl p-4 shadow-xl border ${scored.isBest ? 'border-2 border-emerald-500/70 bg-gradient-to-r from-emerald-500/10 via-surface-container to-surface-container' : 'border-white/10'} hover:bg-surface-container-high transition-all">
                                     <div class="flex items-start justify-between mb-2">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-12 h-12 rounded-xl bg-primary text-on-primary font-bold font-status-number text-base flex items-center justify-center shadow-[0_0_12px_rgba(173,198,255,0.5)]">
+                                            <div class="w-12 h-12 rounded-xl ${scored.isBest ? 'bg-emerald-500 text-white font-extrabold shadow-[0_0_14px_rgba(16,185,129,0.5)]' : 'bg-primary text-on-primary font-bold font-status-number'} text-base flex items-center justify-center">
                                                 ${opt.route?.route_number || '378'}
                                             </div>
                                             <div>
-                                                <div class="flex items-center gap-2">
-                                                    <h4 class="font-bold text-sm text-on-surface">${opt.route?.name ? opt.route.name.split(' - ').map(s => I18n.translateStop(s)).join(' - ') : 'Electronic City - Kengeri TTMC'}</h4>
+                                                <div class="flex items-center gap-2 flex-wrap">
+                                                    <h4 class="font-bold text-sm text-on-surface">Bus ${opt.trip?.bus_number || '378'}</h4>
+                                                    ${scored.badge ? `
+                                                        <span class="${scored.badgeColor} text-[9.5px] px-2 py-0.5 rounded-full font-bold shadow-sm">
+                                                            ${scored.badge}
+                                                        </span>
+                                                    ` : ''}
                                                     ${isAtStop ? `
                                                         <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
                                                             <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
@@ -219,7 +671,9 @@ const HomeView = {
                                                         <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 26} km/h</span>
                                                     `}
                                                 </div>
-                                                <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-1.5 font-medium">
+                                                <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-2 font-medium">
+                                                    <span>Wait at Stop: <strong class="text-secondary font-bold">~${scored.waitTimeMins} mins</strong></span>
+                                                    <span>•</span>
                                                     <span>₹${fare}</span>
                                                 </div>
                                                 <!-- Left From / Dwell Info -->
@@ -234,10 +688,10 @@ const HomeView = {
                                     <div class="flex items-center justify-between pt-2 border-t border-white/10">
                                         ${crowdBadge}
                                         <button 
-                                            class="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary-fixed active:scale-95 transition-all shadow-md cursor-pointer"
+                                            class="px-4 py-2 rounded-xl ${scored.isBest ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold shadow-md' : 'bg-primary text-on-primary font-bold'} text-xs flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                                             onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
                                         >
-                                            <span>${I18n.t('home.track_join') || 'Track Bus & Join'}</span>
+                                            <span>${scored.isBest ? 'Board Best Bus' : (I18n.t('home.track_join') || 'Track & Join')}</span>
                                             <span class="material-symbols-outlined text-sm">arrow_forward</span>
                                         </button>
                                     </div>
@@ -278,23 +732,26 @@ const HomeView = {
                             return `
                                 <button 
                                     class="w-full glass-panel rounded-xl p-3 text-left hover:bg-surface-container-high active:scale-[0.99] transition-all flex items-center justify-between group shadow-sm cursor-pointer border border-white/5"
-                                    onclick="HomeView.selectDestination('${s.name.replace(/'/g, "\\'")}', '${s.name.replace(/'/g, "\\'")}')"
+                                    onclick="HomeView.selectDestination('${s.name.replace(/'/g, "\\'")}', '${this.searchQuery.replace(/'/g, "\\'")}')"
                                 >
                                     <div class="flex items-center gap-2.5 min-w-0 pr-2">
-                                        <div class="w-8 h-8 rounded-lg ${s.is_major ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-surface-container-highest text-on-surface-variant'} flex items-center justify-center flex-shrink-0">
-                                            <span class="material-symbols-outlined text-base">${s.is_major ? 'hub' : 'place'}</span>
+                                        <div class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors shrink-0">
+                                            <span class="material-symbols-outlined text-sm">pin_drop</span>
                                         </div>
-                                        <div class="truncate">
-                                            <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">
+                                        <div class="min-w-0">
+                                            <div class="font-semibold text-xs text-on-surface group-hover:text-primary transition-colors truncate">
                                                 ${this.highlightMatch(translatedName, this.searchQuery)}
                                             </div>
-                                            <div class="text-[10px] text-on-surface-variant flex items-center gap-1.5 mt-0.5">
-                                                <span class="text-primary font-semibold">${I18n.t('home.route_direct') || 'Route 378 Direct'}</span>
-                                                ${s.is_major ? `<span>•</span><span class="text-secondary font-semibold">${I18n.t('home.major_hub') || 'Major Hub'}</span>` : ''}
+                                            <div class="text-[10px] text-on-surface-variant truncate">
+                                                ${s.zone || 'BMTC Route 378 Corridor'}
                                             </div>
                                         </div>
                                     </div>
-                                    <span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary text-sm flex-shrink-0">arrow_forward</span>
+                                    ${s.is_major ? `
+                                        <span class="bg-primary/20 text-primary text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                                            ${I18n.t('home.hub') || 'HUB'}
+                                        </span>
+                                    ` : ''}
                                 </button>
                             `;
                         }).join('')}
@@ -303,33 +760,37 @@ const HomeView = {
             `;
         }
 
-        // State 3: Empty Search (Initial Home State) -> Show Popular destinations and Full corridor stops
+        // State 3: Default Initial View -> Popular Route Destinations & Corridor Stops
         return `
-            <div class="space-y-4 pt-1">
-                <div>
-                    <h3 class="font-headline-md text-xs font-bold text-on-surface mb-2.5 px-1 flex items-center justify-between">
-                        <span>${I18n.t('home.popular_destinations') || 'Popular Destinations'}</span>
-                        <span class="text-[11px] text-on-surface-variant font-normal">${I18n.t('home.tap_to_find') || 'Tap to view buses'}</span>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center px-1">
+                    <h3 class="font-headline-md text-xs font-bold text-on-surface uppercase tracking-wider">
+                        ${I18n.t('home.quick_destinations') || 'Popular Route 378 Destinations'}
                     </h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        ${this.popularDestinations.map(p => {
-                            const translatedDestName = I18n.t(p.key) || I18n.translateStop(p.name);
-                            return `
-                                <button 
-                                    class="glass-panel rounded-2xl p-3 text-left hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-between group shadow-md cursor-pointer"
-                                    onclick="HomeView.selectDestination('${p.name}', '${p.query}')"
-                                >
-                                    <div class="min-w-0 pr-2">
-                                        <div class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">${translatedDestName}</div>
-                                        <div class="text-[10px] text-on-surface-variant mt-0.5 font-medium">${I18n.t('home.route_direct') || 'Route 378 Direct'}</div>
+                    <span class="text-[10px] text-on-surface-variant">${I18n.t('home.tap_to_choose') || 'Tap to choose'}</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    ${this.popularDestinations.map(d => {
+                        const displayName = I18n.t(d.key) || d.name;
+                        return `
+                            <button 
+                                class="glass-panel rounded-2xl p-3 text-left hover:bg-surface-container-high active:scale-95 transition-all flex flex-col justify-between group shadow-sm border border-white/5 cursor-pointer"
+                                onclick="HomeView.selectDestination('${d.stopName.replace(/'/g, "\\'")}', '${d.query.replace(/'/g, "\\'")}')"
+                            >
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="w-7 h-7 rounded-lg bg-primary/15 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                                        <span class="material-symbols-outlined text-sm">location_on</span>
                                     </div>
-                                    <div class="w-7 h-7 rounded-lg bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary flex-shrink-0">
-                                        <span class="material-symbols-outlined text-sm">directions_bus</span>
-                                    </div>
-                                </button>
-                            `;
-                        }).join('')}
-                    </div>
+                                    <span class="text-[10px] font-bold font-status-number text-secondary">Route ${d.routeNum}</span>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xs text-on-surface group-hover:text-primary transition-colors truncate">${displayName}</h4>
+                                    <p class="text-[10px] text-on-surface-variant truncate">${I18n.t('home.route_direct') || 'Direct BMTC'}</p>
+                                </div>
+                            </button>
+                        `;
+                    }).join('')}
                 </div>
 
                 <!-- All Route 378 Stops List -->
@@ -365,10 +826,17 @@ const HomeView = {
         `;
     },
 
+    /* =========================================================================
+       INITIALIZATION & DATA LIFECYCLE
+       ========================================================================= */
+
     async init() {
         this.destination = null;
         this.searchQuery = '';
         this.matchedTransitOptions = [];
+        this.isNavigatingWalk = false;
+        this.navSimulatedIdx = 0;
+        this.hasArrivedAtStop = false;
 
         await this.fetchInitialData();
 
@@ -388,7 +856,7 @@ const HomeView = {
             }).catch(() => {});
         }
 
-        // Live polling every 2.5s for real-time bus updates (only renders route/buses if destination is selected)
+        // Live polling every 2.5s for real-time bus updates
         if (this.livePollInterval) clearInterval(this.livePollInterval);
         this.livePollInterval = setInterval(async () => {
             if (window.app && window.app.currentView === 'home') {
@@ -406,6 +874,7 @@ const HomeView = {
             clearInterval(this.livePollInterval);
             this.livePollInterval = null;
         }
+        this.stopWalkthrough();
     },
 
     async pollLiveActiveTrips() {
@@ -480,9 +949,8 @@ const HomeView = {
 
     handleSearchInput(value) {
         this.searchQuery = value || '';
-        this.destination = null; // NEVER autofill; allow user to freely type!
+        this.destination = null;
 
-        // Update clear button visibility
         const clearBtn = document.getElementById('dest-clear-btn');
         if (clearBtn) {
             if (this.searchQuery.trim()) {
@@ -535,6 +1003,10 @@ const HomeView = {
             lng: destLng
         };
 
+        // Calculate nearest bus stop from user's current GPS location
+        const nearestInfo = this.findNearestStop(this.userLocation.lat, this.userLocation.lng);
+        this.nearestStopInfo = nearestInfo;
+
         // Match Route 378
         const route378 = this.routes.find(r => r.route_number === '378') || this.routes[0];
         this.matchedTransitOptions = this.activeTrips.map(trip => ({
@@ -546,10 +1018,41 @@ const HomeView = {
             this.matchedTransitOptions = [{ route: route378, trip: this.activeTrips[0] || null }];
         }
 
-        // Update Map: Draw Route Line and Destination Pin
+        // Update Map: Draw Route Line, Destination Pin, and Walking Path
         MapUtils.clearRoutesAndBuses();
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng);
         MapUtils.addDestinationMarker(this.destination.lat, this.destination.lng, I18n.translateStop(destName) || destName);
+
+        // Draw Walking Path from user GPS location to nearest boarding stop along verified roads
+        if (nearestInfo && nearestInfo.stop) {
+            const stopLat = nearestInfo.stop.latitude || nearestInfo.stop.lat;
+            const stopLng = nearestInfo.stop.longitude || nearestInfo.stop.lng;
+            MapUtils.drawWalkingPath(
+                [this.userLocation.lat, this.userLocation.lng],
+                [stopLat, stopLng],
+                nearestInfo.stop.name,
+                nearestInfo.distanceText,
+                `${nearestInfo.walkingMins} min`,
+                (calc) => {
+                    if (this.nearestStopInfo) {
+                        this.nearestStopInfo.distanceMeters = calc.distanceMeters;
+                        this.nearestStopInfo.distanceText = calc.distanceText;
+                        this.nearestStopInfo.walkingMins = calc.walkingMins;
+                        this.nearestStopInfo.isAtStop = calc.distanceMeters <= 50;
+                        this.walkingSteps = calc.steps || [];
+
+                        const resultsEl = document.getElementById('transit-results-section');
+                        if (resultsEl) {
+                            resultsEl.innerHTML = this.renderDestinationOrSuggestions();
+                        }
+                        const mapLabel = document.getElementById('map-status-label');
+                        if (mapLabel) {
+                            mapLabel.textContent = `🚶 ${calc.distanceText} to ${I18n.translateStop(nearestInfo.stop.name)}`;
+                        }
+                    }
+                }
+            );
+        }
 
         // Draw Route Line
         if (this.stops && this.stops.length > 0) {
@@ -559,19 +1062,38 @@ const HomeView = {
 
         MapUtils.renderBuses(this.activeTrips);
 
+        // Frame view to show walking route + boarding stop + destination
+        if (nearestInfo && nearestInfo.stop) {
+            const stopLat = nearestInfo.stop.latitude || nearestInfo.stop.lat;
+            const stopLng = nearestInfo.stop.longitude || nearestInfo.stop.lng;
+            MapUtils.fitBounds([
+                [this.userLocation.lat, this.userLocation.lng],
+                [stopLat, stopLng],
+                [this.destination.lat, this.destination.lng]
+            ]);
+        }
+
         const resultsEl = document.getElementById('transit-results-section');
         if (resultsEl) {
             resultsEl.innerHTML = this.renderDestinationOrSuggestions();
         }
 
         const mapLabel = document.getElementById('map-status-label');
-        if (mapLabel) mapLabel.textContent = `${I18n.t('home.route_calculated') || 'Route to'} ${I18n.translateStop(destName) || destName}`;
+        if (mapLabel) {
+            mapLabel.textContent = nearestInfo && nearestInfo.stop ? 
+                `🚶 ${nearestInfo.distanceText} to ${I18n.translateStop(nearestInfo.stop.name)}` : 
+                `${I18n.t('home.route_calculated') || 'Route to'} ${I18n.translateStop(destName) || destName}`;
+        }
     },
 
     clearDestination() {
         this.destination = null;
         this.searchQuery = '';
         this.matchedTransitOptions = [];
+        this.nearestStopInfo = null;
+        this.walkingSteps = [];
+        this.isWalkingGuidanceOpen = false;
+        this.stopWalkthrough();
 
         const destInput = document.getElementById('destination-input');
         if (destInput) destInput.value = '';
@@ -579,8 +1101,9 @@ const HomeView = {
         const clearBtn = document.getElementById('dest-clear-btn');
         if (clearBtn) clearBtn.classList.add('hidden');
 
-        // Reset map cleanly: remove route lines and focus only on user location
+        // Reset map cleanly: remove route lines, walking paths, and focus only on user location
         MapUtils.clearRoutesAndBuses();
+        MapUtils.clearWalkingPath();
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng, true);
 
         const resultsEl = document.getElementById('transit-results-section');
@@ -590,6 +1113,549 @@ const HomeView = {
 
         const mapLabel = document.getElementById('map-status-label');
         if (mapLabel) mapLabel.textContent = I18n.t('home.map_label') || 'Bengaluru Location';
+    },
+
+    zoomIn() {
+        MapUtils.zoomIn();
+    },
+
+    zoomOut() {
+        MapUtils.zoomOut();
+    },
+
+    recenterMap() {
+        if (this.userLocation && MapUtils.map) {
+            MapUtils.map.flyTo([this.userLocation.lat, this.userLocation.lng], 17, { duration: 0.6 });
+        }
+    },
+
+    toggleMapEnlarge(expand = null) {
+        this.isMapEnlarged = expand !== null ? expand : !this.isMapEnlarged;
+        const container = document.getElementById('home-map-container');
+        const expandBtn = document.getElementById('map-expand-btn');
+        const closeBtn = document.getElementById('map-close-btn');
+
+        if (container) {
+            if (this.isMapEnlarged || this.isNavigatingWalk) {
+                container.classList.remove('h-[240px]');
+                container.classList.add('h-[440px]', 'shadow-2xl', 'ring-2', 'ring-primary/40');
+                if (expandBtn) expandBtn.classList.add('hidden');
+                if (closeBtn && !this.isNavigatingWalk) closeBtn.classList.remove('hidden');
+            } else {
+                container.classList.remove('h-[440px]', 'shadow-2xl', 'ring-2', 'ring-primary/40');
+                container.classList.add('h-[240px]');
+                if (expandBtn) expandBtn.classList.remove('hidden');
+                if (closeBtn) closeBtn.classList.add('hidden');
+            }
+        }
+
+        setTimeout(() => {
+            if (MapUtils.map) {
+                MapUtils.map.invalidateSize();
+            }
+        }, 320);
+    },
+
+    calculateDistanceMeters(lat1, lon1, lat2, lon2) {
+        const R = 6371000;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return Math.round(R * c);
+    },
+
+    findNearestStop(userLat, userLng) {
+        if (!this.stops || this.stops.length === 0) return null;
+        let closestStop = null;
+        let minDistance = Infinity;
+
+        for (const stop of this.stops) {
+            const lat = stop.latitude || stop.lat;
+            const lng = stop.longitude || stop.lng;
+            if (lat && lng) {
+                const dist = this.calculateDistanceMeters(userLat, userLng, lat, lng);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestStop = stop;
+                }
+            }
+        }
+
+        if (!closestStop) return null;
+
+        const distanceMeters = minDistance;
+        const distanceText = distanceMeters < 1000 ? `${distanceMeters} m` : `${(distanceMeters / 1000).toFixed(1)} km`;
+        const walkingMins = Math.max(1, Math.round(distanceMeters / 80));
+        const isAtStop = distanceMeters <= 50;
+
+        return {
+            stop: closestStop,
+            distanceMeters,
+            distanceText,
+            walkingMins,
+            isAtStop
+        };
+    },
+
+    focusNearestStop() {
+        if (!MapUtils.map) return;
+
+        if (MapUtils.walkingRoadPoints && MapUtils.walkingRoadPoints.length > 1) {
+            MapUtils.fitBounds(MapUtils.walkingRoadPoints, { padding: [45, 45] });
+        } else if (this.nearestStopInfo && this.nearestStopInfo.stop && this.userLocation) {
+            const s = this.nearestStopInfo.stop;
+            MapUtils.fitBounds([
+                [this.userLocation.lat, this.userLocation.lng],
+                [s.latitude || s.lat, s.longitude || s.lng]
+            ], { padding: [45, 45] });
+        }
+
+        if (MapUtils.walkingMarker) {
+            MapUtils.walkingMarker.openPopup();
+        }
+
+        const mapContainer = document.getElementById('home-map-container');
+        if (mapContainer) {
+            mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        if (window.NotificationUtils && typeof window.NotificationUtils.showToast === 'function') {
+            const stopName = this.nearestStopInfo?.stop ? I18n.translateStop(this.nearestStopInfo.stop.name) : 'Boarding Stop';
+            const dist = this.nearestStopInfo?.distanceText || '';
+            const mins = this.nearestStopInfo?.walkingMins ? `~${this.nearestStopInfo.walkingMins} mins` : '';
+            NotificationUtils.showToast(`🚶 Walking Route to ${stopName}`, `${dist} (${mins}) along verified roads`, 'info', 2200);
+        }
+    },
+
+    toggleWalkingGuidance() {
+        this.isWalkingGuidanceOpen = !this.isWalkingGuidanceOpen;
+        const resultsEl = document.getElementById('transit-results-section');
+        if (resultsEl) {
+            resultsEl.innerHTML = this.renderDestinationOrSuggestions();
+        }
+    },
+
+    focusStepLocation(lat, lng, stepIdx) {
+        if (lat && lng && MapUtils.map) {
+            MapUtils.focusTurn(lat, lng, 18);
+            const mapContainer = document.getElementById('home-map-container');
+            if (mapContainer) {
+                mapContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            if (window.NotificationUtils && typeof window.NotificationUtils.showToast === 'function') {
+                NotificationUtils.showToast(`🧭 Step ${stepIdx}`, 'Focused junction on map', 'info', 1600);
+            }
+        }
+    },
+
+    renderWalkingGuidanceSteps() {
+        if (!this.walkingSteps || this.walkingSteps.length === 0) {
+            return `
+                <div class="p-3 text-center text-xs text-on-surface-variant bg-surface-container/60 rounded-xl">
+                    Follow the solid blue route line on the map to reach the boarding stop.
+                </div>
+            `;
+        }
+
+        const stopName = this.nearestStopInfo?.stop?.name || 'Bus Stop';
+
+        return `
+            <div class="space-y-1.5 pt-2 border-t border-white/10 max-h-[240px] overflow-y-auto pr-1">
+                <div class="flex items-center justify-between pb-1 px-1">
+                    <span class="text-[10px] uppercase tracking-wider font-extrabold text-primary flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs">navigation</span>
+                        Turn-by-Turn Guidance (${this.walkingSteps.length} Steps)
+                    </span>
+                    <span class="text-[10px] text-on-surface-variant font-medium">Tap any step to view</span>
+                </div>
+
+                ${this.walkingSteps.map((step, idx) => {
+                    const isLast = idx === this.walkingSteps.length - 1;
+                    const mod = step.maneuver.modifier ? step.maneuver.modifier.replace('_', ' ') : '';
+                    const mType = step.maneuver.type;
+                    const stepDist = Math.round(step.distance);
+                    
+                    let iconName = 'straight';
+                    let iconColor = 'text-primary';
+                    let instruction = '';
+
+                    if (isLast || mType === 'arrive') {
+                        iconName = 'pin_drop';
+                        iconColor = 'text-error';
+                        instruction = `Arrive at <strong>${I18n.translateStop(stopName)}</strong> (Board Bus 378)`;
+                    } else if (mType === 'depart') {
+                        iconName = 'directions_walk';
+                        iconColor = 'text-secondary';
+                        instruction = `Head ${mod || 'forward'} on ${step.name ? `<strong>${step.name}</strong>` : 'road'}`;
+                    } else if (mod.includes('left')) {
+                        iconName = 'turn_left';
+                        iconColor = 'text-primary';
+                        instruction = `Turn ${mod} ${step.name ? `onto <strong>${step.name}</strong>` : ''}`;
+                    } else if (mod.includes('right')) {
+                        iconName = 'turn_right';
+                        iconColor = 'text-primary';
+                        instruction = `Turn ${mod} ${step.name ? `onto <strong>${step.name}</strong>` : ''}`;
+                    } else {
+                        iconName = 'navigation';
+                        iconColor = 'text-primary';
+                        instruction = `Continue on ${step.name ? `<strong>${step.name}</strong>` : 'road'}`;
+                    }
+
+                    const turnLat = step.maneuver.location ? step.maneuver.location[1] : null;
+                    const turnLng = step.maneuver.location ? step.maneuver.location[0] : null;
+
+                    return `
+                        <div 
+                            class="bg-surface-container/80 hover:bg-surface-container-highest rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs border border-white/5 cursor-pointer active:scale-[0.99] transition-all group"
+                            onclick="HomeView.focusStepLocation(${turnLat}, ${turnLng}, ${idx + 1})"
+                        >
+                            <div class="flex items-center gap-2.5 min-w-0 pr-1">
+                                <div class="w-6 h-6 rounded-full bg-white/10 group-hover:bg-primary/20 flex items-center justify-center shrink-0 ${iconColor}">
+                                    <span class="material-symbols-outlined text-sm">${iconName}</span>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="text-[11.5px] text-on-surface leading-tight truncate">
+                                        <span class="text-on-surface-variant font-bold mr-1">${idx + 1}.</span>
+                                        ${instruction}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <span class="text-[10px] font-bold text-secondary font-status-number">${stepDist > 0 ? `${stepDist} m` : 'Platform'}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
+
+    /* =========================================================================
+       LIVE WALKTHROUGH CONTROLLER WITH GPS & SIMULATION
+       ========================================================================= */
+
+    startWalkthrough() {
+        if (!this.nearestStopInfo || !this.nearestStopInfo.stop) {
+            if (window.NotificationUtils) {
+                NotificationUtils.showToast('Select Destination', 'Please select a destination to start walking navigation', 'info');
+            }
+            return;
+        }
+
+        this.isNavigatingWalk = true;
+        this.navCurrentStepIndex = 0;
+        this.navSimulatedIdx = 0;
+        this.hasArrivedAtStop = false;
+        this.lastSpokenStepIndex = -1;
+
+        // Enlarge map container
+        this.toggleMapEnlarge(true);
+
+        // Zoom into user location
+        if (MapUtils.map && this.userLocation) {
+            MapUtils.map.flyTo([this.userLocation.lat, this.userLocation.lng], 18, { duration: 0.8 });
+        }
+
+        // Set live walking user marker with 🚶 icon
+        MapUtils.setWalkingUserLocation(this.userLocation.lat, this.userLocation.lng);
+
+        // Announce voice instructions
+        this.announceCurrentStep();
+
+        // Start GPS watch
+        if (navigator.geolocation) {
+            this.navWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    this.onGPSWalkUpdate(pos.coords.latitude, pos.coords.longitude);
+                },
+                (err) => {
+                    console.warn('GPS Watch notice:', err);
+                },
+                { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 }
+            );
+        }
+
+        // Re-render whole view to show top/bottom navigation HUD
+        const appContainer = document.getElementById('app-container');
+        if (appContainer) {
+            this.render().then(html => {
+                appContainer.innerHTML = html;
+                // Reattach map
+                if (MapUtils.map) {
+                    MapUtils.map.invalidateSize();
+                }
+            });
+        }
+
+        const mapSection = document.getElementById('home-map-section');
+        if (mapSection) {
+            mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (window.NotificationUtils) {
+            NotificationUtils.showToast('🚶 Live Walk Navigation Active', 'Follow the road directions to the bus stop', 'success', 2500);
+        }
+    },
+
+    stopWalkthrough() {
+        this.isNavigatingWalk = false;
+        this.stopAutoWalk();
+
+        if (this.navWatchId !== null && navigator.geolocation) {
+            navigator.geolocation.clearWatch(this.navWatchId);
+            this.navWatchId = null;
+        }
+
+        // Restore standard user pin
+        MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng, false);
+
+        this.speakVoice('Walking navigation ended.');
+
+        const appContainer = document.getElementById('app-container');
+        if (appContainer) {
+            this.render().then(html => {
+                appContainer.innerHTML = html;
+                if (MapUtils.map) {
+                    MapUtils.map.invalidateSize();
+                }
+            });
+        }
+
+        if (window.NotificationUtils) {
+            NotificationUtils.showToast('Navigation Ended', 'Returned to standard view', 'info', 1800);
+        }
+    },
+
+    onGPSWalkUpdate(lat, lng) {
+        if (!this.isNavigatingWalk) return;
+
+        this.userLocation.lat = lat;
+        this.userLocation.lng = lng;
+
+        // Move the walker icon on the map
+        MapUtils.setWalkingUserLocation(lat, lng);
+        if (MapUtils.map) {
+            MapUtils.map.panTo([lat, lng], { animate: true, duration: 0.5 });
+        }
+
+        // Check proximity to destination bus stop
+        if (this.nearestStopInfo && this.nearestStopInfo.stop) {
+            const stopLat = this.nearestStopInfo.stop.latitude || this.nearestStopInfo.stop.lat;
+            const stopLng = this.nearestStopInfo.stop.longitude || this.nearestStopInfo.stop.lng;
+            const remainingDist = this.calculateDistanceMeters(lat, lng, stopLat, stopLng);
+
+            this.nearestStopInfo.distanceMeters = remainingDist;
+            this.nearestStopInfo.distanceText = remainingDist < 1000 ? `${remainingDist} m` : `${(remainingDist / 1000).toFixed(1)} km`;
+            this.nearestStopInfo.walkingMins = Math.max(1, Math.round(remainingDist / 80));
+
+            // Check if arrived (< 35m)
+            if (remainingDist <= 35) {
+                this.handleArrivalAtStop();
+                return;
+            }
+
+            // Find closest turn step
+            if (this.walkingSteps && this.walkingSteps.length > 0) {
+                let closestIdx = 0;
+                let minStepDist = Infinity;
+                this.walkingSteps.forEach((s, idx) => {
+                    if (s.maneuver && s.maneuver.location) {
+                        const d = this.calculateDistanceMeters(lat, lng, s.maneuver.location[1], s.maneuver.location[0]);
+                        if (d < minStepDist) {
+                            minStepDist = d;
+                            closestIdx = idx;
+                        }
+                    }
+                });
+
+                if (closestIdx !== this.navCurrentStepIndex) {
+                    this.navCurrentStepIndex = closestIdx;
+                    this.announceCurrentStep();
+                }
+            }
+
+            // Re-render HUD components
+            const topHud = document.querySelector('#home-map-section > div:first-child');
+            if (topHud && topHud.classList.contains('bg-gradient-to-r')) {
+                topHud.outerHTML = this.renderLiveNavigationTopHUD();
+            }
+        }
+    },
+
+    announceCurrentStep() {
+        if (!this.walkingSteps || this.walkingSteps.length === 0) return;
+        const currentIdx = Math.min(this.navCurrentStepIndex, this.walkingSteps.length - 1);
+        if (currentIdx === this.lastSpokenStepIndex) return;
+        this.lastSpokenStepIndex = currentIdx;
+
+        const currentStep = this.walkingSteps[currentIdx];
+        if (!currentStep) return;
+
+        const dist = Math.round(currentStep.distance);
+        const name = currentStep.name || 'the road';
+        const mod = (currentStep.maneuver?.modifier || '').replace('_', ' ');
+        const mType = currentStep.maneuver?.type;
+
+        let spoken = '';
+        if (mType === 'arrive' || currentIdx === this.walkingSteps.length - 1) {
+            spoken = `In ${dist} meters, arrive at ${this.nearestStopInfo?.stop?.name || 'the bus stop'}.`;
+        } else if (mType === 'depart') {
+            spoken = `Head ${mod || 'forward'} on ${name} for ${dist} meters.`;
+        } else if (mod) {
+            spoken = `In ${dist} meters, turn ${mod} onto ${name}.`;
+        } else {
+            spoken = `Continue on ${name} for ${dist} meters.`;
+        }
+
+        this.speakVoice(spoken);
+    },
+
+    speakVoice(text) {
+        if (this.isVoiceMuted || !text) return;
+        if ('speechSynthesis' in window) {
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {}
+        }
+    },
+
+    toggleVoiceMute() {
+        this.isVoiceMuted = !this.isVoiceMuted;
+        if (this.isVoiceMuted) {
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (window.NotificationUtils) NotificationUtils.showToast('Voice Muted', 'Audio guidance turned off', 'info', 1200);
+        } else {
+            this.speakVoice('Voice guidance enabled.');
+            if (window.NotificationUtils) NotificationUtils.showToast('Voice Enabled', 'Audio guidance turned on', 'info', 1200);
+        }
+        
+        const topHud = document.querySelector('#home-map-section > div:first-child');
+        if (topHud && topHud.classList.contains('bg-gradient-to-r')) {
+            topHud.outerHTML = this.renderLiveNavigationTopHUD();
+        }
+    },
+
+    simulateWalkStep() {
+        if (!MapUtils.walkingRoadPoints || MapUtils.walkingRoadPoints.length < 2) return;
+
+        this.navSimulatedIdx = Math.min(MapUtils.walkingRoadPoints.length - 1, (this.navSimulatedIdx || 0) + 1);
+        const pt = MapUtils.walkingRoadPoints[this.navSimulatedIdx];
+
+        this.onGPSWalkUpdate(pt[0], pt[1]);
+
+        if (this.navSimulatedIdx >= MapUtils.walkingRoadPoints.length - 1) {
+            this.stopAutoWalk();
+            this.handleArrivalAtStop();
+        }
+    },
+
+    toggleAutoWalk() {
+        if (this.autoWalkTimer) {
+            this.stopAutoWalk();
+            if (window.NotificationUtils) NotificationUtils.showToast('Auto-walk Paused', 'Simulation paused', 'info', 1200);
+        } else {
+            if (window.NotificationUtils) NotificationUtils.showToast('Auto-walk Active', 'Simulating walk along road', 'info', 1200);
+            this.autoWalkTimer = setInterval(() => {
+                this.simulateWalkStep();
+            }, 1200);
+        }
+
+        const bottomHud = document.querySelector('#home-map-section > div:last-child');
+        if (bottomHud) {
+            bottomHud.outerHTML = this.renderLiveNavigationBottomHUD();
+        }
+    },
+
+    stopAutoWalk() {
+        if (this.autoWalkTimer) {
+            clearInterval(this.autoWalkTimer);
+            this.autoWalkTimer = null;
+        }
+    },
+
+    handleArrivalAtStop() {
+        if (this.hasArrivedAtStop) return;
+        this.hasArrivedAtStop = true;
+        this.stopAutoWalk();
+
+        const stopName = this.nearestStopInfo?.stop ? I18n.translateStop(this.nearestStopInfo.stop.name) : 'Bus Stop';
+        const scoredBuses = this.calculateBestBus(this.nearestStopInfo?.stop, this.destination);
+        const best = scoredBuses && scoredBuses.length > 0 ? scoredBuses[0] : null;
+        const busPlate = best?.trip?.bus_number || 'Bus 378';
+
+        this.speakVoice(`You have arrived at ${stopName}! Ready to board ${busPlate}.`);
+
+        if (window.NotificationUtils) {
+            NotificationUtils.showToast(`🎉 Arrived at ${stopName}!`, `Ready to board ${busPlate}`, 'success', 4000);
+        }
+
+        if (window.app && typeof window.app.showModal === 'function') {
+            window.app.showModal(`
+                <div class="glass-panel rounded-2xl p-5 max-w-sm mx-auto shadow-2xl border border-secondary/40 text-center space-y-4">
+                    <div class="w-14 h-14 rounded-full bg-secondary/20 border-2 border-secondary text-secondary flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(78,222,163,0.4)]">
+                        <span class="material-symbols-outlined text-3xl">check_circle</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase tracking-wider font-extrabold text-secondary">WALK COMPLETE</span>
+                        <h3 class="font-bold text-base text-on-surface mt-0.5">Arrived at ${stopName}</h3>
+                        <p class="text-xs text-on-surface-variant mt-1">You are at the bus stop platform. Recommended <strong>${busPlate}</strong> arrives in ~3 mins.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <button 
+                            class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-2 hover:bg-primary-fixed cursor-pointer transition-all"
+                            onclick="window.app.closeModal(); HomeView.startJourney('${best?.trip?.id || ''}')"
+                        >
+                            <span>Board & Track ${busPlate}</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                        <button 
+                            class="w-full py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-xs border border-white/10 cursor-pointer"
+                            onclick="window.app.closeModal(); HomeView.stopWalkthrough();"
+                        >
+                            Dismiss
+                        </button>
+                    </div>
+                </div>
+            `);
+        }
+    },
+
+    getMatchingStops(query) {
+        if (!query) return [];
+        const q = query.toLowerCase().trim();
+
+        return this.stops
+            .filter(s => {
+                const enMatch = s.name.toLowerCase().includes(q);
+                const translated = I18n.translateStop(s.name);
+                const transMatch = translated.toLowerCase().includes(q);
+                return enMatch || transMatch;
+            })
+            .sort((a, b) => {
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+                const aStarts = aName.startsWith(q) ? 0 : 1;
+                const bStarts = bName.startsWith(q) ? 0 : 1;
+                if (aStarts !== bStarts) return aStarts - bStarts;
+                const aMajor = a.is_major ? 0 : 1;
+                const bMajor = b.is_major ? 0 : 1;
+                if (aMajor !== bMajor) return aMajor - bMajor;
+                return (a.sequence_order || 0) - (b.sequence_order || 0);
+            });
+    },
+
+    highlightMatch(text, query) {
+        if (!query) return text;
+        const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escaped})`, 'gi');
+        return text.replace(regex, '<span class="text-primary underline font-extrabold">$1</span>');
     },
 
     startJourney(tripId) {
