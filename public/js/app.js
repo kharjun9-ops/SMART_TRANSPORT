@@ -228,6 +228,166 @@ const app = {
         API.clearAuth();
         NotificationUtils.showToast('Signed Out', 'You have been signed out of Lumina Transit Bengaluru.', 'info');
         this.navigate('auth');
+    },
+
+    showEmergencyModal() {
+        const lat = window.HomeView?.userLocation?.lat || 12.9245;
+        const lng = window.HomeView?.userLocation?.lng || 77.5180;
+        const gpsString = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+
+        this.showModal(`
+            <div class="glass-panel rounded-2xl p-5 max-w-md mx-auto shadow-2xl border-2 border-error/60 bg-surface-container-high space-y-4 animate-in">
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-xl bg-error/20 border border-error/40 text-error flex items-center justify-center shadow-[0_0_12px_rgba(239,68,68,0.4)] animate-pulse">
+                            <span class="material-symbols-outlined text-2xl font-bold">emergency</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase font-extrabold tracking-wider text-error">EMERGENCY SOS RESPONSE</span>
+                            <h3 class="font-bold text-base text-on-surface">Emergency Helplines</h3>
+                        </div>
+                    </div>
+                    <button onclick="app.closeModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-on-surface text-xs cursor-pointer active:scale-90 transition-all">
+                        <span class="material-symbols-outlined text-base">close</span>
+                    </button>
+                </div>
+
+                <p class="text-xs text-on-surface-variant leading-relaxed">
+                    Tap any emergency service below to <strong>directly dial from your phone app</strong>. Available 24/7.
+                </p>
+
+                <!-- Quick Direct Emergency Dial Buttons -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <a href="tel:108" onclick="window.location.href='tel:108'" class="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-lg active:scale-95 transition-all text-center border border-white/20 cursor-pointer">
+                        <span class="text-base">🚑</span>
+                        <span>AMBULANCE 108</span>
+                    </a>
+                    <a href="tel:112" onclick="window.location.href='tel:112'" class="flex items-center justify-center gap-2 p-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-lg active:scale-95 transition-all text-center border border-white/20 cursor-pointer">
+                        <span class="text-base">👮</span>
+                        <span>POLICE 112</span>
+                    </a>
+                </div>
+
+                <!-- Emergency Phone Call Cards -->
+                <div class="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                    <!-- 108 Ambulance -->
+                    <a href="tel:108" onclick="window.location.href='tel:108'" class="flex items-center justify-between p-3 rounded-xl bg-error/15 hover:bg-error/25 border border-error/30 transition-all active:scale-[0.98] group cursor-pointer text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-error text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0">
+                                🚑
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-on-surface group-hover:text-error transition-colors">Medical Ambulance</h4>
+                                <p class="text-[10px] text-on-surface-variant">Free 24/7 Emergency Medical Response</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-error text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-md shrink-0">
+                            <span class="material-symbols-outlined text-sm">call</span>
+                            <span>108</span>
+                        </div>
+                    </a>
+
+                    <!-- 112 / 100 Police -->
+                    <a href="tel:112" onclick="window.location.href='tel:112'" class="flex items-center justify-between p-3 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 transition-all active:scale-[0.98] group cursor-pointer text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0">
+                                👮
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-on-surface group-hover:text-blue-400 transition-colors">Police Emergency Response</h4>
+                                <p class="text-[10px] text-on-surface-variant">National Emergency & Safety (112 / 100)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-blue-600 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-md shrink-0">
+                            <span class="material-symbols-outlined text-sm">call</span>
+                            <span>112</span>
+                        </div>
+                    </a>
+
+                    <!-- 101 Fire Fighters -->
+                    <a href="tel:101" onclick="window.location.href='tel:101'" class="flex items-center justify-between p-3 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 transition-all active:scale-[0.98] group cursor-pointer text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-orange-600 text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0">
+                                🚒
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-on-surface group-hover:text-orange-400 transition-colors">Fire Brigade Fighters</h4>
+                                <p class="text-[10px] text-on-surface-variant">Fire & Rescue Emergency Services</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-orange-600 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-md shrink-0">
+                            <span class="material-symbols-outlined text-sm">call</span>
+                            <span>101</span>
+                        </div>
+                    </a>
+
+                    <!-- 1800-425-1663 BMTC Transit Security & Helpline -->
+                    <a href="tel:18004251663" onclick="window.location.href='tel:18004251663'" class="flex items-center justify-between p-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all active:scale-[0.98] group cursor-pointer text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0">
+                                🚌
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-on-surface group-hover:text-emerald-400 transition-colors">BMTC Transit Security</h4>
+                                <p class="text-[10px] text-on-surface-variant">BMTC Bus Control Room & Helpline</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-emerald-600 text-white text-xs font-extrabold px-2.5 py-1.5 rounded-lg shadow-md shrink-0">
+                            <span class="material-symbols-outlined text-sm">call</span>
+                            <span>1800-425-1663</span>
+                        </div>
+                    </a>
+
+                    <!-- 1091 Women Safety Helpline -->
+                    <a href="tel:1091" onclick="window.location.href='tel:1091'" class="flex items-center justify-between p-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 transition-all active:scale-[0.98] group cursor-pointer text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0">
+                                👩
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-on-surface group-hover:text-purple-400 transition-colors">Women Safety Helpline</h4>
+                                <p class="text-[10px] text-on-surface-variant">Transit Women Safety Response (1091 / 181)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 bg-purple-600 text-white text-xs font-extrabold px-3 py-1.5 rounded-lg shadow-md shrink-0">
+                            <span class="material-symbols-outlined text-sm">call</span>
+                            <span>1091</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Share My Live GPS Coordinates Button -->
+                <div class="pt-2 border-t border-white/10 flex items-center gap-2">
+                    <button 
+                        onclick="app.shareEmergencyGPS('${gpsString}', '${mapsLink}')" 
+                        class="w-full py-2.5 rounded-xl bg-secondary/20 hover:bg-secondary/30 text-secondary border border-secondary/40 text-xs font-bold flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer shadow-md"
+                    >
+                        <span class="material-symbols-outlined text-base">my_location</span>
+                        <span>Copy & Share My Live GPS Location</span>
+                    </button>
+                </div>
+            </div>
+        `);
+    },
+
+    shareEmergencyGPS(coords, link) {
+        const text = `🚨 EMERGENCY ALERT: I need assistance! My live GPS location in Bengaluru is: ${coords}. Google Maps link: ${link}`;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                if (window.NotificationUtils) {
+                    NotificationUtils.showToast('GPS Coordinates Copied!', 'Send via SMS or WhatsApp to emergency services', 'success', 3000);
+                }
+            }).catch(() => {});
+        }
+        if (navigator.share) {
+            navigator.share({
+                title: '🚨 Emergency GPS Alert',
+                text: text,
+                url: link
+            }).catch(() => {});
+        }
     }
 };
 

@@ -53,10 +53,19 @@ const MapUtils = {
         this.walkingRoadPoints = null;
     },
 
+    activeStepMarker: null,
+
     focusTurn(lat, lng, zoom = 17) {
-        if (this.map && lat && lng) {
-            this.map.flyTo([lat, lng], zoom, { duration: 0.7 });
+        if (!this.map || !lat || !lng) return;
+
+        // Clean up any remaining step marker
+        if (this.activeStepMarker) {
+            try { this.map.removeLayer(this.activeStepMarker); } catch(e) {}
+            this.activeStepMarker = null;
         }
+
+        // Smoothly pan map to junction without adding icons or popups
+        this.map.flyTo([lat, lng], zoom, { duration: 0.6 });
     },
 
     renderWalkingPolylines(latLngs, stopName = '', distText = '', minsText = '', steps = []) {
@@ -77,6 +86,10 @@ const MapUtils = {
             });
             this.walkingTurnMarkers = [];
         }
+        if (this.activeStepMarker && this.map) {
+            try { this.map.removeLayer(this.activeStepMarker); } catch(e) {}
+            this.activeStepMarker = null;
+        }
 
         // 1. High contrast crisp white casing for true road definition
         const casing = L.polyline(latLngs, {
@@ -87,7 +100,7 @@ const MapUtils = {
             lineJoin: 'round'
         });
 
-        // 2. Solid bold vivid blue navigation road route (identical to the navigation line in the user's reference)
+        // 2. Solid bold vivid blue navigation road route
         const core = L.polyline(latLngs, {
             color: '#1a73e8',
             weight: 5.5,
@@ -98,126 +111,7 @@ const MapUtils = {
 
         const layerGroup = L.layerGroup([casing, core]).addTo(this.map);
         this.walkingLayer = layerGroup;
-
-        // 3. Place Midpoint Walking badge marker along the actual road polyline
-        const midIdx = Math.floor(latLngs.length / 2);
-        const midLatLng = latLngs[midIdx] || latLngs[0];
-
-        const midIcon = L.divIcon({
-            className: 'google-maps-walk-midpoint',
-            html: `
-                <div style="
-                    background: #ffffff;
-                    color: #1a73e8;
-                    font-family: 'Inter', sans-serif;
-                    font-size: 11px;
-                    font-weight: 800;
-                    padding: 4px 10px;
-                    border-radius: 999px;
-                    border: 2px solid #1a73e8;
-                    box-shadow: 0 4px 14px rgba(26, 115, 232, 0.45), 0 2px 6px rgba(0,0,0,0.18);
-                    white-space: nowrap;
-                    transform: translate(-50%, -50%);
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    cursor: pointer;
-                ">
-                    <span style="font-size: 16px; line-height: 1;">🚶</span>
-                    <span style="color: #0f172a; font-weight: 700;">${distText ? `${distText} • ${minsText}` : 'Walk to Board'}</span>
-                </div>
-            `,
-            iconSize: [0, 0],
-            iconAnchor: [0, 0]
-        });
-
-        this.walkingMarker = L.marker(midLatLng, { icon: midIcon }).addTo(this.map);
-
-        let popupHtml = `
-            <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #202124; padding: 4px 6px; min-width: 200px;">
-                <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 4px;">
-                    <span style="font-size: 16px;">🚶</span>
-                    <strong style="color: #1a73e8; font-size: 12px;">Walking Road Navigation</strong>
-                </div>
-                <div style="font-size: 11.5px; font-weight: 700; color: #1e293b;">
-                    ${distText} (~${minsText})
-                </div>
-                <div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">
-                    Destination Stop: <strong style="color: #1a73e8;">${stopName || 'Nearest Bus Stop'}</strong>
-                </div>
-        `;
-
-        if (steps && steps.length > 0) {
-            const stepItems = steps
-                .filter(s => s.name && s.name.trim() !== '')
-                .slice(0, 4)
-                .map((s, idx) => {
-                    const mod = s.maneuver.modifier ? s.maneuver.modifier.replace('_', ' ') : '';
-                    const action = s.maneuver.type === 'depart' ? 'Head on' : `Turn ${mod || 'onto'}`;
-                    return `<li style="margin-bottom: 2px;">${action} <strong>${s.name}</strong> (${Math.round(s.distance)}m)</li>`;
-                })
-                .join('');
-            if (stepItems) {
-                popupHtml += `<ul style="font-size: 9.5px; color: #4b5563; padding-left: 14px; margin-top: 5px; border-top: 1px solid #e2e8f0; padding-top: 4px;">${stepItems}</ul>`;
-            }
-        }
-        popupHtml += `</div>`;
-
-        this.walkingMarker.bindPopup(popupHtml);
-
-        // 4. Render turn waypoint markers along the road for clear junction guidance
-        if (steps && steps.length > 1) {
-            steps.forEach((step, idx) => {
-                if (!step.maneuver || !step.maneuver.location) return;
-                const turnLng = step.maneuver.location[0];
-                const turnLat = step.maneuver.location[1];
-                const mType = step.maneuver.type;
-                const mMod = step.maneuver.modifier || '';
-
-                if (mType === 'depart' && idx === 0) return; // already covered by user pin
-
-                let symbol = '↑';
-                if (mMod.includes('left')) symbol = '↰';
-                else if (mMod.includes('right')) symbol = '↱';
-                else if (mType === 'arrive') symbol = '🏁';
-
-                const turnIcon = L.divIcon({
-                    className: 'google-maps-turn-waypoint',
-                    html: `
-                        <div style="
-                            width: 22px;
-                            height: 22px;
-                            background: #ffffff;
-                            border: 2.5px solid #1a73e8;
-                            border-radius: 50%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 11px;
-                            font-weight: 900;
-                            color: #1a73e8;
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-                            transform: translate(-50%, -50%);
-                            cursor: pointer;
-                        ">
-                            ${symbol}
-                        </div>
-                    `,
-                    iconSize: [0, 0],
-                    iconAnchor: [0, 0]
-                });
-
-                const turnMarker = L.marker([turnLat, turnLng], { icon: turnIcon }).addTo(this.map);
-                const stepName = step.name ? ` onto <strong>${step.name}</strong>` : '';
-                turnMarker.bindPopup(`
-                    <div style="font-family: 'Inter', sans-serif; font-size: 11.5px; padding: 2px 4px; color: #202124;">
-                        <strong style="color: #1a73e8;">Step ${idx + 1}:</strong> ${mType === 'arrive' ? `Arrive at <strong>${stopName}</strong>` : `Turn ${mMod.replace('_', ' ')}${stepName}`}
-                        <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Distance: ${Math.round(step.distance)}m</div>
-                    </div>
-                `);
-                this.walkingTurnMarkers.push(turnMarker);
-            });
-        }
+        // Keep road clean without midpoint duplicate walker or clumsy markers
     },
 
     setWalkingUserLocation(lat, lng) {

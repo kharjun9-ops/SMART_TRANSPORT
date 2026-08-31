@@ -173,6 +173,17 @@
                 <h1 class="font-bold text-xs tracking-tight text-on-surface uppercase" id="app-title-header">SMART TRANSIT</h1>
             </div>
             <div class="flex items-center gap-1.5 ml-auto">
+                <!-- Emergency SOS Button -->
+                <button 
+                    aria-label="Emergency SOS Helplines" 
+                    class="bg-error hover:bg-red-600 text-white font-extrabold px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 shadow-lg shadow-error/40 active:scale-95 transition-all cursor-pointer border border-white/20 animate-pulse"
+                    onclick="app.showEmergencyModal()"
+                    title="Emergency SOS Helplines (Ambulance 108, Police 112, Fire 101, BMTC Security)"
+                >
+                    <span class="material-symbols-outlined text-sm font-bold">emergency</span>
+                    <span>SOS</span>
+                </button>
+
                 <!-- Language Toggle Button (EN / ಕನ್ನಡ / हिन्दी) -->
                 <button 
                     aria-label="Toggle Language" 
@@ -231,6 +242,8 @@
                 <span class="font-label-sm text-[11px] mt-0.5" id="nav-label-profile">Profile</span>
             </button>
         </nav>
+
+
     </div>
 
     <!-- Auth Screen Modal -->
@@ -243,20 +256,20 @@
 
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="/js/data/route_378_road_points.js?v=20"></script>
-    <script src="/js/utils/theme.js?v=20"></script>
-    <script src="/js/utils/i18n.js?v=20"></script>
-    <script src="/js/utils/api.js?v=20"></script>
-    <script src="/js/utils/map.js?v=35"></script>
-    <script src="/js/utils/gps.js?v=35"></script>
-    <script src="/js/utils/notifications.js?v=35"></script>
-    <script src="/js/views/auth.js?v=35"></script>
-    <script src="/js/views/home.js?v=35"></script>
-    <script src="/js/views/trips.js?v=25"></script>
-    <script src="/js/views/gamification.js?v=25"></script>
-    <script src="/js/views/complaints.js?v=25"></script>
-    <script src="/js/views/profile.js?v=25"></script>
-    <script src="/js/app.js?v=25"></script>
+    <script src="/js/data/route_378_road_points.js?v=90"></script>
+    <script src="/js/utils/theme.js?v=90"></script>
+    <script src="/js/utils/i18n.js?v=90"></script>
+    <script src="/js/utils/api.js?v=90"></script>
+    <script src="/js/utils/map.js?v=90"></script>
+    <script src="/js/utils/gps.js?v=90"></script>
+    <script src="/js/utils/notifications.js?v=90"></script>
+    <script src="/js/views/auth.js?v=90"></script>
+    <script src="/js/views/home.js?v=90"></script>
+    <script src="/js/views/trips.js?v=90"></script>
+    <script src="/js/views/gamification.js?v=90"></script>
+    <script src="/js/views/complaints.js?v=90"></script>
+    <script src="/js/views/profile.js?v=90"></script>
+    <script src="/js/app.js?v=90"></script>
 
     <!-- Global language switcher & failsafe auto-dismiss -->
     <script>
