@@ -190,6 +190,12 @@ class SimulationEngine {
                 state.state = 'in_transit';
                 state.segmentProgress = 0.003;
 
+                db.prepare(`
+                    UPDATE trips 
+                    SET segment_progress = 0.003, state = 'in_transit', dwell_seconds = 0 
+                    WHERE id = ?
+                `).run(trip.id);
+
                 // Auto-expire unboarded waitlist entries for currentStop as bus departs stop
                 try {
                     db.prepare("UPDATE stop_waiting_list SET status = 'expired' WHERE stop_id = ? AND route_id = ? AND status = 'waiting'")

@@ -655,7 +655,7 @@ const TripsView = {
         let headerLabel = 'NEXT STOP ARRIVAL';
         let subtext = `Next stop: ${nextStopName}`;
 
-        if (trip.state === 'at_stop') {
+        if (trip.state === 'at_stop' && (trip.dwell_seconds == null || trip.dwell_seconds > 0)) {
             const dwellSec = trip.dwell_seconds != null ? trip.dwell_seconds : 15;
             headerLabel = 'BUS AT STATION';
             etaDisplayText = `AT STOP (${dwellSec}s)`;
@@ -868,7 +868,7 @@ const TripsView = {
             <div class="flex justify-between items-end pt-1 pb-2 border-b border-white/10">
                 <div>
                     <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5" id="drawer-eta-header-label">
-                        ${trip.state === 'at_stop' ? 'BUS AT STATION' : 'NEXT STOP ARRIVAL'}
+                        ${(trip.state === 'at_stop' && (trip.dwell_seconds == null || trip.dwell_seconds > 0)) ? 'BUS AT STATION' : 'NEXT STOP ARRIVAL'}
                     </p>
                     <div class="flex items-baseline gap-1.5">
                         <span class="text-2xl font-extrabold text-white tracking-tight" id="drawer-eta-value">
@@ -876,7 +876,7 @@ const TripsView = {
                         </span>
                     </div>
                     <p class="text-[10px] text-gray-400 font-medium mt-0.5" id="drawer-eta-subtext">
-                        ${trip.state === 'at_stop'
+                        ${(trip.state === 'at_stop' && (trip.dwell_seconds == null || trip.dwell_seconds > 0))
                             ? `Next stop (${nextStop ? I18n.translateStop(nextStop.stop_name || nextStop.name) : 'Terminus'}) in ~${nextForecast ? (nextForecast.wait_time_minutes || 2) : 2} mins after departure`
                             : `Next stop: ${nextStop ? I18n.translateStop(nextStop.stop_name || nextStop.name) : 'Terminus'}`
                         }

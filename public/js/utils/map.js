@@ -784,7 +784,7 @@ const MapUtils = {
         const dotColor = crowdColors[trip.crowd_level] || '#1a73e8';
         const routeNum = trip.route_number || '378';
         const speed = trip.current_speed_kmh || 0;
-        const isAtStop = trip.state === 'at_stop' || speed === 0;
+        const isAtStop = trip.state === 'at_stop' && (trip.dwell_seconds == null || trip.dwell_seconds > 0);
         const heading = trip.heading || 0;
         const nextStopName = trip.next_stop_name || (trip.next_stop_forecast ? trip.next_stop_forecast.stop_name : 'Next Stop');
         const etaText = trip.next_stop_forecast ? trip.next_stop_forecast.display_text || `${trip.next_stop_forecast.wait_time_minutes}m` : (isAtStop ? 'At Stop' : `${speed} km/h`);
