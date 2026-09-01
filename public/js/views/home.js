@@ -828,8 +828,12 @@ const HomeView = {
                                                             <span class="text-amber-400 font-bold font-status-number">ETA: Passed Boarding Stop</span>
                                                         ` : !scored.isRightDirection ? `
                                                             <span class="text-slate-400 font-bold font-status-number">Opposite Direction (${scored.trip?.direction === 'outbound' ? 'To Electronic City' : 'To Kengeri'})</span>
+                                                        ` : isAtStop ? (scored.stopsAway === 0 ? `
+                                                            <span class="text-primary font-bold">Bus at Station (Board Now!) • Departs in ${dwellSec}s</span>
                                                         ` : `
-                                                            <span>Wait at Stop: <strong class="text-secondary font-bold font-status-number">~${scored.waitTimeMins} mins</strong> (${scored.stopsAway > 0 ? `${scored.stopsAway} stop${scored.stopsAway > 1 ? 's' : ''} away` : 'At Station'})</span>
+                                                            <span>Wait at Stop: <strong class="text-secondary font-bold font-status-number">~${scored.waitTimeMins} mins</strong> (${scored.stopsAway} stops away • Stopped at ${I18n.translateStop(departedStopName)})</span>
+                                                        `) : `
+                                                            <span>Wait at Stop: <strong class="text-secondary font-bold font-status-number">~${scored.waitTimeMins} mins</strong> (${scored.stopsAway > 0 ? `${scored.stopsAway} stop${scored.stopsAway > 1 ? 's' : ''} away` : 'Approaching Station'})</span>
                                                         `}
                                                         <span>•</span>
                                                         <span class="text-emerald-400 font-bold">₹${calculatedFare} <span class="text-[10px] text-gray-400 font-normal">(${stopsTraveled} stops)</span></span>

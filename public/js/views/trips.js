@@ -648,24 +648,42 @@ const TripsView = {
         const nextStop = currentIdx + 1 < stops.length ? stops[currentIdx + 1] : null;
         const forecast = trip.forecast;
         const nextForecast = forecast ? forecast.next_stop_forecast : null;
+        const nextStopName = nextStop ? I18n.translateStop(nextStop.stop_name || nextStop.name) : 'Terminus';
 
         let etaDisplayText = '2 mins';
         let etaValue = 2;
+        let headerLabel = 'NEXT STOP ARRIVAL';
+        let subtext = `Next stop: ${nextStopName}`;
+
         if (trip.state === 'at_stop') {
             const dwellSec = trip.dwell_seconds != null ? trip.dwell_seconds : 15;
+            headerLabel = 'BUS AT STATION';
             etaDisplayText = `AT STOP (${dwellSec}s)`;
-            etaValue = dwellSec;
+            const nextEtaMins = nextForecast ? (nextForecast.wait_time_minutes || 2) : 2;
+            subtext = `Next stop (${nextStopName}) in ~${nextEtaMins} mins after departure`;
         } else if (nextForecast) {
             etaValue = nextForecast.wait_time_minutes || 2;
             etaDisplayText = nextForecast.display_text || `${etaValue} mins`;
+            subtext = `Next stop: ${nextStopName}`;
         } else if (nextStop && nextStop.eta) {
             etaValue = nextStop.eta.eta_minutes || 2;
             etaDisplayText = nextStop.eta.display_text || `${etaValue} mins`;
+            subtext = `Next stop: ${nextStopName}`;
+        }
+
+        const headerLabelEl = document.getElementById('drawer-eta-header-label');
+        if (headerLabelEl) {
+            headerLabelEl.textContent = headerLabel;
         }
 
         const etaEl = document.getElementById('drawer-eta-value');
         if (etaEl) {
             etaEl.textContent = etaDisplayText;
+        }
+
+        const subtextEl = document.getElementById('drawer-eta-subtext');
+        if (subtextEl) {
+            subtextEl.textContent = subtext;
         }
 
         const capacity = trip.capacity || 55;
@@ -849,12 +867,20 @@ const TripsView = {
             <!-- Next Stop Arrival & Bus Crowd / Passengers Bar -->
             <div class="flex justify-between items-end pt-1 pb-2 border-b border-white/10">
                 <div>
-                    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5">${I18n.t('trips.next_stop_arrival') || 'Next Stop Arrival'}</p>
+                    <p class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mb-0.5" id="drawer-eta-header-label">
+                        ${trip.state === 'at_stop' ? 'BUS AT STATION' : 'NEXT STOP ARRIVAL'}
+                    </p>
                     <div class="flex items-baseline gap-1.5">
-                        <span class="text-3xl font-extrabold text-white tracking-tight" id="drawer-eta-value">
+                        <span class="text-2xl font-extrabold text-white tracking-tight" id="drawer-eta-value">
                             ${etaDisplayText}
                         </span>
                     </div>
+                    <p class="text-[10px] text-gray-400 font-medium mt-0.5" id="drawer-eta-subtext">
+                        ${trip.state === 'at_stop'
+                            ? `Next stop (${nextStop ? I18n.translateStop(nextStop.stop_name || nextStop.name) : 'Terminus'}) in ~${nextForecast ? (nextForecast.wait_time_minutes || 2) : 2} mins after departure`
+                            : `Next stop: ${nextStop ? I18n.translateStop(nextStop.stop_name || nextStop.name) : 'Terminus'}`
+                        }
+                    </p>
                 </div>
                 <div class="flex flex-col items-end gap-1">
                     <div class="flex items-center gap-1.5 text-xs font-bold ${crowdTextColor}">
