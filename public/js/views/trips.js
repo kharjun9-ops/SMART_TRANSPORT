@@ -241,6 +241,7 @@ const TripsView = {
     async init(params = {}) {
         if (params.tripId) {
             this.tripId = params.tripId;
+            this.isOnBoard = false; // Strictly unboarded on init until user explicitly clicks & verifies GPS
             this.userWaitlist = null; // Start fresh with Join Waiting List prompt
             this.alertedBoarding = false;
             this.alertedNear = false;
@@ -248,12 +249,6 @@ const TripsView = {
             this.alertedAtDestinationDeboard = false;
             this.alertedMissedStop = false;
             this.lastMissedAlertStopIndex = null;
-            if (this.tripId) {
-                const savedOnBoard = sessionStorage.getItem('lumina_onboard_' + this.tripId);
-                if (savedOnBoard === 'true') {
-                    this.isOnBoard = true;
-                }
-            }
             if (params.destinationStopId) {
                 this.selectedDestinationStopId = params.destinationStopId;
             }
@@ -284,16 +279,12 @@ const TripsView = {
             // Check if current user is on waitlist for this trip
             await this.checkUserWaitlistStatus();
 
-            // Restore saved destination alarm & on-board status
-            if (this.tripId) {
-                if (!this.selectedDestinationStopId) {
-                    this.selectedDestinationStopId = localStorage.getItem('lumina_dest_' + this.tripId) || null;
-                }
-                const savedOnBoard = sessionStorage.getItem('lumina_onboard_' + this.tripId);
-                if (savedOnBoard === 'true') {
-                    this.isOnBoard = true;
-                }
+            // Restore saved destination alarm
+            if (!this.selectedDestinationStopId && this.tripId) {
+                this.selectedDestinationStopId = localStorage.getItem('lumina_dest_' + this.tripId) || null;
             }
+            // Ensure isOnBoard is false until user explicitly checks in with GPS
+            this.isOnBoard = this.isOnBoard || false;
 
             // Initialize Trip Map
             const centerLat = this.tripData.current_latitude || 12.9778;
@@ -420,8 +411,8 @@ const TripsView = {
             // Update Map Marker live position
             MapUtils.renderBusMarker(this.tripData);
 
-            // Re-render the drawer UI components to match exact current stop
-            this.renderDrawerUI();
+            // Update live telemetry in-place for instant 60fps UI responsiveness without DOM thrashing
+            this.updateLiveTelemetryInPlace();
 
             // Check Waiting List Boarding Proximity Alert & Auto-Removal Logic
             if (this.userWaitlist && !this.isOnBoard && this.tripData && this.tripData.stops) {
@@ -1638,11 +1629,8 @@ const TripsView = {
             const isVerified = !!(res && (res.verified || res.status === 'verified'));
 
             if (isVerified) {
-                // Instantly update on-board status & passenger count ONLY when verified!
+                // Instantly update on-board status & passenger count ONLY when GPS is verified!
                 this.isOnBoard = true;
-                if (this.tripId) {
-                    sessionStorage.setItem('lumina_onboard_' + this.tripId, 'true');
-                }
                 this.userWaitlist = null;
                 if (res && res.passengerCount != null && this.tripData) {
                     this.tripData.current_passenger_count = res.passengerCount;
@@ -1653,9 +1641,6 @@ const TripsView = {
             } else {
                 // Rejection: Keep isOnBoard = false
                 this.isOnBoard = false;
-                if (this.tripId) {
-                    sessionStorage.removeItem('lumina_onboard_' + this.tripId);
-                }
                 const reason = res?.verification?.rejectionReason || res?.message || 'You are outside the 350m bus stop geofence. Enable Demo Geofence if testing from home.';
                 NotificationUtils.showToast('Boarding Rejected ⚠️', reason, 'error', 5000);
             }
@@ -1668,9 +1653,6 @@ const TripsView = {
             }
         } catch (e) {
             this.isOnBoard = false;
-            if (this.tripId) {
-                sessionStorage.removeItem('lumina_onboard_' + this.tripId);
-            }
             NotificationUtils.showToast('Verification Error ⚠️', e.message || 'Failed to verify GPS location', 'error', 4000);
             this.renderDrawerUI();
             this.updateLiveTelemetryInPlace();
@@ -1701,9 +1683,6 @@ const TripsView = {
 
         // Reset on-board status and clear deboard alarm
         this.isOnBoard = false;
-        if (this.tripId) {
-            sessionStorage.removeItem('lumina_onboard_' + this.tripId);
-        }
         this.selectedDestinationStopId = null;
         this.alertedNear = false;
         if (this.tripId) {
