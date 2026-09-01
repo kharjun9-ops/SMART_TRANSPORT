@@ -189,6 +189,12 @@ class SimulationEngine {
                 // Dwell finished -> transition to in_transit towards next stop
                 state.state = 'in_transit';
                 state.segmentProgress = 0.003;
+
+                // Auto-expire unboarded waitlist entries for currentStop as bus departs stop
+                try {
+                    db.prepare("UPDATE stop_waiting_list SET status = 'expired' WHERE stop_id = ? AND route_id = ? AND status = 'waiting'")
+                        .run(currentStop.stop_id, trip.route_id);
+                } catch (e) {}
             }
         }
 

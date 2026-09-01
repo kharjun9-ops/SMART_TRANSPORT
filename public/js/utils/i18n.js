@@ -152,6 +152,11 @@ const I18n = {
             kn: 'ನೀವು ಈ ಬಸ್ ನಿಲ್ದಾಣದಲ್ಲಿದ್ದೀರಿ • ಹತ್ತಲು ಸಿದ್ಧ!',
             hi: 'आप इस बस स्टॉप पर हैं • चढ़ने के लिए तैयार!'
         },
+        'home.quick_destinations': {
+            en: 'Popular Route 378 Destinations',
+            kn: 'ಪ್ರಮುಖ ರೂಟ್ 378 ತಾಣಗಳು',
+            hi: 'लोकप्रिय रूट 378 गंतव्य'
+        },
         'home.enlarge_map': {
             en: 'Enlarge Map',
             kn: 'ನಕ್ಷೆ ದೊಡ್ಡದಾಗಿಸಿ',

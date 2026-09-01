@@ -63,6 +63,24 @@ const HomeView = {
                     </button>
                 </div>
 
+                <!-- Verified Multi-User Crowd Consensus Alerts (Shown ONLY when 2+ passenger uploads match) -->
+                ${(() => {
+                    const verifiedAlerts = window.ComplaintsView ? ComplaintsView.getVerifiedCrowdConsensusAlerts() : [];
+                    if (!verifiedAlerts || verifiedAlerts.length === 0) return '';
+                    return verifiedAlerts.map(alert => `
+                        <div class="glass-panel rounded-2xl p-3 px-3.5 bg-gradient-to-r from-amber-500/20 via-surface-container-high to-surface-container border border-amber-500/40 flex items-center justify-between shadow-lg animate-in">
+                            <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                <span class="material-symbols-outlined text-amber-400 text-lg font-bold animate-pulse shrink-0">warning</span>
+                                <div class="min-w-0">
+                                    <div class="font-extrabold text-[10px] text-amber-300 uppercase tracking-wide">VERIFIED CROWD CONSENSUS ALERT</div>
+                                    <div class="text-xs text-on-surface font-medium truncate">${alert.text}</div>
+                                </div>
+                            </div>
+                            <span class="bg-amber-500 text-black text-[10px] font-black px-2.5 py-0.5 rounded-full shrink-0">VERIFIED (${alert.count} Uploads)</span>
+                        </div>
+                    `).join('');
+                })()}
+
                 <!-- Destination Search Bar (Google Maps Style) -->
                 <div class="glass-panel rounded-2xl p-4 shadow-xl border border-white/15 relative overflow-hidden">
                     <div class="flex items-center gap-3">
@@ -367,6 +385,19 @@ const HomeView = {
        ACCURATE REAL-TIME MULTI-BUS COMPARISON & RECOMMENDATION ENGINE
        ========================================================================= */
 
+    calculateDynamicFare(startIdx, endIdx) {
+        if (startIdx === -1 || endIdx === -1) return 25;
+        const distanceStops = Math.abs(endIdx - startIdx);
+        if (distanceStops <= 0) return 5;
+        if (distanceStops <= 2) return 5;
+        if (distanceStops <= 4) return 10;
+        if (distanceStops <= 6) return 15;
+        if (distanceStops <= 9) return 20;
+        if (distanceStops <= 12) return 25;
+        if (distanceStops <= 15) return 30;
+        return 35;
+    },
+
     calculateBestBus(waitingStop, destinationStop) {
         if (!waitingStop || !this.activeTrips || this.activeTrips.length === 0) {
             return [];
@@ -381,7 +412,7 @@ const HomeView = {
             destStopIdx = this.stops.findIndex(s => s.name.toLowerCase() === destStopName || s.id === destinationStop.id);
         }
 
-        // Determine travel direction
+        // Determine travel direction and destination stop index
         let targetDirection = 'outbound';
         if (destStopIdx !== -1 && waitStopIdx !== -1) {
             targetDirection = destStopIdx < waitStopIdx ? 'inbound' : 'outbound';
@@ -390,50 +421,91 @@ const HomeView = {
         const scoredBuses = this.activeTrips.map((trip) => {
             let score = 100;
             let reasons = [];
-            let isRightDirection = (trip.direction === targetDirection);
 
-            // Find where this bus currently is in master stops list
-            let busStopIdx = -1;
-            if (trip.current_stop_name) {
-                busStopIdx = this.stops.findIndex(s => s.name.toLowerCase() === trip.current_stop_name.toLowerCase());
+            // Get directional stop sequence for this specific trip
+            const isOutbound = (trip.direction === 'outbound');
+            const tripStops = isOutbound ? this.stops : [...this.stops].reverse();
+
+            // Find sequence indexes of boarding and destination stops along this trip's route
+            const tripWaitIdx = tripStops.findIndex(s => s.name.toLowerCase() === waitStopName || s.id === waitingStop.id);
+            let tripDestIdx = -1;
+            if (destinationStop) {
+                const destStopName = destinationStop.name.toLowerCase();
+                tripDestIdx = tripStops.findIndex(s => s.name.toLowerCase() === destStopName || s.id === destinationStop.id);
             }
-            if (busStopIdx === -1 && trip.next_stop_name) {
-                const nextIdx = this.stops.findIndex(s => s.name.toLowerCase() === trip.next_stop_name.toLowerCase());
-                if (nextIdx !== -1) {
-                    busStopIdx = trip.direction === 'outbound' ? Math.max(0, nextIdx - 1) : Math.min(this.stops.length - 1, nextIdx + 1);
+
+            const busCurrentIdx = trip.current_stop_index || 0;
+
+            // Direction Check: Does this trip travel from Boarding Stop -> Destination Stop?
+            let isRightDirection = true;
+            if (tripWaitIdx !== -1 && tripDestIdx !== -1) {
+                if (tripDestIdx <= tripWaitIdx) {
+                    isRightDirection = false; // Moves in reverse direction relative to destination
                 }
+            } else if (targetDirection && trip.direction !== targetDirection) {
+                isRightDirection = false;
             }
-            if (busStopIdx === -1) {
-                busStopIdx = trip.direction === 'outbound' ? (trip.current_stop_index || 0) : (this.stops.length - 1 - (trip.current_stop_index || 0));
+
+            // Accurate Passed Stop Evaluation
+            let isPassedBoarding = false;
+            let isPassedDestination = false;
+
+            if (tripWaitIdx === -1) {
+                isPassedBoarding = true;
+            } else if (busCurrentIdx > tripWaitIdx) {
+                isPassedBoarding = true; // Bus is already past the boarding stop in sequence
+            } else if (busCurrentIdx === tripWaitIdx) {
+                if (trip.state === 'in_transit') {
+                    // Bus has ALREADY DEPARTED the boarding stop towards the next station!
+                    isPassedBoarding = true;
+                } else {
+                    // Stationary AT boarding stop right now
+                    isPassedBoarding = false;
+                }
+            } else {
+                isPassedBoarding = false; // Approaching boarding stop
+            }
+
+            if (tripDestIdx !== -1) {
+                if (busCurrentIdx > tripDestIdx) {
+                    isPassedDestination = true;
+                } else if (busCurrentIdx === tripDestIdx && trip.state === 'in_transit') {
+                    isPassedDestination = true;
+                }
             }
 
             let waitTimeMins = 3;
+            let stopsAway = tripWaitIdx !== -1 ? Math.max(0, tripWaitIdx - busCurrentIdx) : 0;
 
-            if (isRightDirection) {
+            if (isRightDirection && !isPassedBoarding && !isPassedDestination) {
                 score += 50;
-                let stopsAway = 0;
-                if (trip.direction === 'outbound') {
-                    stopsAway = waitStopIdx - busStopIdx;
-                } else {
-                    stopsAway = busStopIdx - waitStopIdx;
-                }
 
                 if (stopsAway === 0) {
-                    waitTimeMins = Math.max(1, Math.round((trip.dwell_seconds || 15) / 60) + 1);
+                    const dwellSec = trip.dwell_seconds != null ? trip.dwell_seconds : 15;
+                    waitTimeMins = Math.max(1, Math.round(dwellSec / 60) + 1);
                     score += 60;
-                    reasons.push(`Arriving at ${I18n.translateStop(waitingStop.name)} in ~${waitTimeMins} mins`);
-                } else if (stopsAway > 0) {
-                    waitTimeMins = Math.max(2, Math.round(stopsAway * 2.8));
+                    reasons.push(`Arriving at ${I18n.translateStop(waitingStop.name)} (At Station)`);
+                } else {
+                    const speed = trip.current_speed_kmh || 24;
+                    const speedFactor = speed > 0 ? (25 / Math.max(10, speed)) : 1.2;
+                    waitTimeMins = Math.max(1, Math.round(stopsAway * 2.5 * speedFactor + (trip.delay_minutes || 0)));
                     score += Math.max(0, 60 - (waitTimeMins * 3));
                     reasons.push(`Approaching (${stopsAway} stop${stopsAway > 1 ? 's' : ''} away) • ETA ~${waitTimeMins} mins`);
-                } else {
-                    waitTimeMins = 18 + Math.abs(stopsAway) * 2;
-                    score -= 30;
-                    reasons.push(`Next cycle bus • ETA ~${waitTimeMins} mins`);
                 }
+            } else if (isPassedDestination) {
+                score -= 2000;
+                waitTimeMins = 99;
+                stopsAway = -1;
+                reasons.push('🛑 Passed your destination stop');
+            } else if (isPassedBoarding) {
+                score -= 1000;
+                waitTimeMins = 99;
+                stopsAway = -1;
+                reasons.push('🛑 Passed your boarding stop');
             } else {
-                score -= 60;
+                score -= 600;
                 waitTimeMins = 25;
+                stopsAway = -1;
                 reasons.push(`Opposite Direction (${trip.direction === 'outbound' ? 'To Kengeri' : 'To Electronic City'})`);
             }
 
@@ -466,49 +538,92 @@ const HomeView = {
                 trip,
                 score,
                 waitTimeMins,
+                stopsAway,
                 freeSeats,
                 occupancyPct: Math.round(occupancy * 100),
                 isRightDirection,
+                isPassedBoarding,
+                isPassedDestination,
                 reasons,
                 badge: '',
                 badgeColor: ''
             };
         });
 
-        // Sort descending
+        // Sort descending by score
         scoredBuses.sort((a, b) => b.score - a.score);
 
-        if (scoredBuses.length > 0) {
-            scoredBuses[0].isBest = true;
-            scoredBuses[0].badge = '🏆 BEST CHOICE';
-            scoredBuses[0].badgeColor = 'bg-emerald-500 text-white';
+        // Filter valid upcoming buses that have NOT passed the passenger
+        const validUpcoming = scoredBuses.filter(b => !b.isPassedBoarding && !b.isPassedDestination && b.isRightDirection);
 
-            for (let i = 1; i < scoredBuses.length; i++) {
-                const item = scoredBuses[i];
-                if (!item.isRightDirection) {
-                    item.badge = '🔄 OPPOSITE DIRECTION';
-                    item.badgeColor = 'bg-slate-700 text-slate-300';
-                } else if (item.waitTimeMins <= scoredBuses[0].waitTimeMins) {
+        if (validUpcoming.length > 0) {
+            validUpcoming[0].isBest = true;
+            validUpcoming[0].badge = '🏆 BEST CHOICE';
+            validUpcoming[0].badgeColor = 'bg-emerald-500 text-white';
+
+            for (let i = 1; i < validUpcoming.length; i++) {
+                const item = validUpcoming[i];
+                if (item.waitTimeMins <= validUpcoming[0].waitTimeMins) {
                     item.badge = '⚡ FASTEST ARRIVAL';
                     item.badgeColor = 'bg-blue-500 text-white';
-                } else if (item.occupancyPct < scoredBuses[0].occupancyPct) {
+                } else if (item.occupancyPct < validUpcoming[0].occupancyPct) {
                     item.badge = '💺 LOW CROWD ALTERNATIVE';
                     item.badgeColor = 'bg-cyan-500 text-white';
                 } else {
-                    item.badge = `⏳ NEXT BUS (~${item.waitTimeMins}m)`;
+                    item.badge = `⏳ UPCOMING BUS (~${item.waitTimeMins}m)`;
                     item.badgeColor = 'bg-slate-700 text-slate-300';
                 }
             }
         }
+
+        // Tag buses that have already passed or travel in opposite direction with explicit badges
+        scoredBuses.forEach(item => {
+            if (item.isPassedDestination) {
+                item.isBest = false;
+                item.badge = '🛑 PASSED DESTINATION';
+                item.badgeColor = 'bg-red-500/20 text-red-300 border border-red-500/40';
+            } else if (item.isPassedBoarding) {
+                item.isBest = false;
+                item.badge = '🔴 PASSED BOARDING STOP';
+                item.badgeColor = 'bg-orange-500/20 text-orange-300 border border-orange-500/40';
+            } else if (!item.isRightDirection) {
+                item.isBest = false;
+                const dirLabel = item.trip.direction === 'outbound' ? 'To Electronic City' : 'To Kengeri';
+                item.badge = `🔄 OPPOSITE DIRECTION (${dirLabel})`;
+                item.badgeColor = 'bg-slate-700/80 text-slate-300 border border-slate-600/50';
+            }
+        });
 
         return scoredBuses;
     },
 
     renderBestBusHeroBanner(scoredBuses) {
         if (!scoredBuses || scoredBuses.length === 0) return '';
-        const best = scoredBuses[0];
+
+        // Find best valid upcoming bus (has not passed boarding or destination stop)
+        const best = scoredBuses.find(b => b.isBest && !b.isPassedBoarding && !b.isPassedDestination);
+
+        if (!best) {
+            return `
+                <div class="glass-panel rounded-2xl p-4 border border-amber-500/40 bg-amber-500/10 shadow-lg text-amber-300 flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-amber-400 text-xl font-bold">swap_calls</span>
+                        <div>
+                            <div class="font-extrabold text-xs text-amber-300 uppercase tracking-wider">NO DIRECT BUSES APPROACHING YOUR STOP</div>
+                            <div class="text-[11px] text-on-surface font-normal">Active buses below are either traveling in the opposite direction or have already passed your stop.</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         const waitStopName = this.nearestStopInfo?.stop ? I18n.translateStop(this.nearestStopInfo.stop.name) : 'Your Waiting Stop';
         const destDisplayName = this.destination ? I18n.translateStop(this.destination.name) : 'Destination';
+
+        const boardingIdx = this.stops.findIndex(s => s.name.toLowerCase() === (this.nearestStopInfo?.stop?.name || '').toLowerCase());
+        const destIdx = this.stops.findIndex(s => s.name.toLowerCase() === (this.destination?.name || '').toLowerCase());
+        const stopsTraveled = (boardingIdx !== -1 && destIdx !== -1) ? Math.abs(destIdx - boardingIdx) : 5;
+        const calculatedFare = this.calculateDynamicFare(boardingIdx, destIdx);
 
         return `
             <div class="glass-panel rounded-2xl p-4 border-2 border-emerald-500/60 bg-gradient-to-br from-emerald-500/15 via-surface-container-high to-surface-container shadow-2xl relative overflow-hidden space-y-3">
@@ -526,15 +641,15 @@ const HomeView = {
                 <div class="bg-surface-container-lowest/80 rounded-xl p-3 border border-white/5 space-y-1.5 text-xs">
                     <div class="text-[11.5px] text-on-surface font-semibold flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-secondary text-sm">schedule</span>
-                        <span>Arrives at <strong class="text-secondary">${waitStopName}</strong> in <strong class="text-emerald-400 font-status-number">~${best.waitTimeMins} mins</strong></span>
+                        <span>Arrives at <strong class="text-secondary">${waitStopName}</strong> in <strong class="text-emerald-400 font-status-number">~${best.waitTimeMins} mins</strong> (${best.stopsAway > 0 ? `${best.stopsAway} stop${best.stopsAway > 1 ? 's' : ''} away` : 'At Station'})</span>
+                    </div>
+                    <div class="text-[11px] text-on-surface-variant flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-emerald-400 text-sm">payments</span>
+                        <span>Calculated Stage Fare: <strong class="text-emerald-400 font-bold">₹${calculatedFare}</strong> (${stopsTraveled} stops to ${destDisplayName})</span>
                     </div>
                     <div class="text-[11px] text-on-surface-variant flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-primary text-sm">airline_seat_recline_normal</span>
                         <span><strong>${best.freeSeats} Free Seats</strong> available (${best.trip.current_passenger_count}/${best.trip.capacity || 55} passengers)</span>
-                    </div>
-                    <div class="text-[11px] text-on-surface-variant flex items-center gap-1.5">
-                        <span class="material-symbols-outlined text-tertiary text-sm">trending_flat</span>
-                        <span>Direct route to <strong class="text-on-surface">${destDisplayName}</strong> • Shortest total trip time</span>
                     </div>
                 </div>
 
@@ -659,75 +774,89 @@ const HomeView = {
                     </div>
 
                     <div class="space-y-2.5">
-                        ${scoredBuses.map((scored) => {
-                            const opt = { route: this.routes[0] || { route_number: '378', fare_lkr: 25 }, trip: scored.trip };
-                            const crowdLevel = opt.trip?.crowd_level || 'low';
-                            let crowdBadge = '';
-                            if (crowdLevel === 'low') {
-                                crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.plenty_seats') || 'Plenty of Seats'} (${scored.freeSeats} free)</span>`;
-                            } else if (crowdLevel === 'medium') {
-                                crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.standing_room') || 'Standing Room'} (${opt.trip?.current_passenger_count || 32} pax)</span>`;
-                            } else {
-                                crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.very_crowded') || 'Very Crowded'}</span>`;
-                            }
+                        ${(() => {
+                            const boardingIdx = this.stops.findIndex(s => s.name.toLowerCase() === (this.nearestStopInfo?.stop?.name || '').toLowerCase());
+                            const destIdx = this.stops.findIndex(s => s.name.toLowerCase() === (this.destination?.name || '').toLowerCase());
+                            const stopsTraveled = (boardingIdx !== -1 && destIdx !== -1) ? Math.abs(destIdx - boardingIdx) : 5;
+                            const calculatedFare = this.calculateDynamicFare(boardingIdx, destIdx);
 
-                            const fare = opt.route?.fare_lkr || 25;
-                            const isAtStop = opt.trip?.state === 'at_stop' || opt.trip?.current_speed_kmh === 0;
-                            const dwellSec = opt.trip?.dwell_seconds != null ? opt.trip.dwell_seconds : 15;
-                            const departedStopName = opt.trip?.current_stop_name || 'Electronic City';
-                            const nextStopName = opt.trip?.next_stop_name || 'Hosa Road';
+                            return scoredBuses.map((scored) => {
+                                const opt = { route: this.routes[0] || { route_number: '378', fare_lkr: 25 }, trip: scored.trip };
+                                const crowdLevel = opt.trip?.crowd_level || 'low';
+                                let crowdBadge = '';
+                                if (crowdLevel === 'low') {
+                                    crowdBadge = `<span class="bg-secondary/20 text-secondary border border-secondary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.plenty_seats') || 'Plenty of Seats'} (${scored.freeSeats} free)</span>`;
+                                } else if (crowdLevel === 'medium') {
+                                    crowdBadge = `<span class="bg-tertiary/20 text-tertiary border border-tertiary/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.standing_room') || 'Standing Room'} (${opt.trip?.current_passenger_count || 32} pax)</span>`;
+                                } else {
+                                    crowdBadge = `<span class="bg-error/20 text-error border border-error/30 text-[10px] px-2.5 py-0.5 rounded-full font-bold">${I18n.t('crowd.very_crowded') || 'Very Crowded'}</span>`;
+                                }
 
-                            return `
-                                <div class="glass-panel rounded-2xl p-4 shadow-xl border ${scored.isBest ? 'border-2 border-emerald-500/70 bg-gradient-to-r from-emerald-500/10 via-surface-container to-surface-container' : 'border-white/10'} hover:bg-surface-container-high transition-all">
-                                    <div class="flex items-start justify-between mb-2">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-12 h-12 rounded-xl ${scored.isBest ? 'bg-emerald-500 text-white font-extrabold shadow-[0_0_14px_rgba(16,185,129,0.5)]' : 'bg-primary text-on-primary font-bold font-status-number'} text-base flex items-center justify-center">
-                                                ${opt.route?.route_number || '378'}
-                                            </div>
-                                            <div>
-                                                <div class="flex items-center gap-2 flex-wrap">
-                                                    <h4 class="font-bold text-sm text-on-surface">Bus ${opt.trip?.bus_number || '378'}</h4>
-                                                    ${scored.badge ? `
-                                                        <span class="${scored.badgeColor} text-[9.5px] px-2 py-0.5 rounded-full font-bold shadow-sm">
-                                                            ${scored.badge}
-                                                        </span>
-                                                    ` : ''}
-                                                    ${isAtStop ? `
-                                                        <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                                                            <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
-                                                            <span>AT STOP (${dwellSec}s)</span>
-                                                        </span>
-                                                    ` : `
-                                                        <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 26} km/h</span>
-                                                    `}
+                                const isAtStop = opt.trip?.state === 'at_stop' || opt.trip?.current_speed_kmh === 0;
+                                const dwellSec = opt.trip?.dwell_seconds != null ? opt.trip.dwell_seconds : 15;
+                                const departedStopName = opt.trip?.current_stop_name || 'Electronic City';
+                                const nextStopName = opt.trip?.next_stop_name || 'Hosa Road';
+
+                                return `
+                                    <div class="glass-panel rounded-2xl p-4 shadow-xl border ${scored.isBest ? 'border-2 border-emerald-500/70 bg-gradient-to-r from-emerald-500/10 via-surface-container to-surface-container' : 'border-white/10'} hover:bg-surface-container-high transition-all">
+                                        <div class="flex items-start justify-between mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-12 h-12 rounded-xl ${scored.isBest ? 'bg-emerald-500 text-white font-extrabold shadow-[0_0_14px_rgba(16,185,129,0.5)]' : 'bg-primary text-on-primary font-bold font-status-number'} text-base flex items-center justify-center">
+                                                    ${opt.route?.route_number || '378'}
                                                 </div>
-                                                <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-2 font-medium">
-                                                    <span>Wait at Stop: <strong class="text-secondary font-bold font-status-number">~${scored.waitTimeMins} mins</strong></span>
-                                                    <span>•</span>
-                                                    <span>₹${fare}</span>
-                                                </div>
-                                                <!-- Left From / Dwell Info -->
-                                                <div class="mt-1 text-[10px] ${isAtStop ? 'text-primary' : 'text-gray-400'} font-semibold flex items-center gap-1">
-                                                    <span class="material-symbols-outlined text-[13px]">${isAtStop ? 'hail' : 'departure_board'}</span>
-                                                    <span>${isAtStop ? `Stopped at ${I18n.translateStop(departedStopName)} • Departs in ${dwellSec}s` : `Left: ${I18n.translateStop(departedStopName)} → Next: ${I18n.translateStop(nextStopName)}`}</span>
+                                                <div>
+                                                    <div class="flex items-center gap-2 flex-wrap">
+                                                        <h4 class="font-bold text-sm text-on-surface">Bus ${opt.trip?.bus_number || '378'}</h4>
+                                                        ${scored.badge ? `
+                                                            <span class="${scored.badgeColor} text-[9.5px] px-2 py-0.5 rounded-full font-bold shadow-sm">
+                                                                ${scored.badge}
+                                                            </span>
+                                                        ` : ''}
+                                                        ${isAtStop ? `
+                                                            <span class="bg-primary/20 text-primary border border-primary/30 text-[9.5px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                                                <span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                                                                <span>AT STOP (${dwellSec}s)</span>
+                                                            </span>
+                                                        ` : `
+                                                            <span class="bg-secondary/20 text-secondary border border-secondary/30 text-[9.5px] px-1.5 py-0.2 rounded-full font-bold">${opt.trip?.current_speed_kmh || 26} km/h</span>
+                                                        `}
+                                                    </div>
+                                                    <div class="text-[11px] text-on-surface-variant mt-0.5 flex items-center gap-2 font-medium">
+                                                        ${scored.isPassedDestination ? `
+                                                            <span class="text-error font-bold font-status-number">ETA: Passed Destination Stop</span>
+                                                        ` : scored.isPassedBoarding ? `
+                                                            <span class="text-amber-400 font-bold font-status-number">ETA: Passed Boarding Stop</span>
+                                                        ` : !scored.isRightDirection ? `
+                                                            <span class="text-slate-400 font-bold font-status-number">Opposite Direction (${scored.trip?.direction === 'outbound' ? 'To Electronic City' : 'To Kengeri'})</span>
+                                                        ` : `
+                                                            <span>Wait at Stop: <strong class="text-secondary font-bold font-status-number">~${scored.waitTimeMins} mins</strong> (${scored.stopsAway > 0 ? `${scored.stopsAway} stop${scored.stopsAway > 1 ? 's' : ''} away` : 'At Station'})</span>
+                                                        `}
+                                                        <span>•</span>
+                                                        <span class="text-emerald-400 font-bold">₹${calculatedFare} <span class="text-[10px] text-gray-400 font-normal">(${stopsTraveled} stops)</span></span>
+                                                    </div>
+                                                    <!-- Left From / Dwell Info -->
+                                                    <div class="mt-1 text-[10px] ${isAtStop ? 'text-primary' : 'text-gray-400'} font-semibold flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-[13px]">${isAtStop ? 'hail' : 'departure_board'}</span>
+                                                        <span>${isAtStop ? `Stopped at ${I18n.translateStop(departedStopName)} • Departs in ${dwellSec}s` : `Left: ${I18n.translateStop(departedStopName)} → Next: ${I18n.translateStop(nextStopName)}`}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="flex items-center justify-between pt-2 border-t border-white/10">
-                                        ${crowdBadge}
-                                        <button 
-                                            class="px-4 py-2 rounded-xl ${scored.isBest ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold shadow-md' : 'bg-primary text-on-primary font-bold'} text-xs flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
-                                            onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
-                                        >
-                                            <span>${scored.isBest ? 'Board Best Bus' : (I18n.t('home.track_join') || 'Track & Join')}</span>
-                                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                                        </button>
+                                        <div class="flex items-center justify-between pt-2 border-t border-white/10">
+                                            ${crowdBadge}
+                                            <button 
+                                                class="px-4 py-2 rounded-xl ${scored.isBest ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-extrabold shadow-md' : 'bg-primary text-on-primary font-bold'} text-xs flex items-center gap-1.5 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                                                onclick="HomeView.startJourney('${opt.trip?.id || ''}')"
+                                            >
+                                                <span>${scored.isBest ? 'Board Best Bus' : (I18n.t('home.track_join') || 'Track & Join')}</span>
+                                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            `;
-                        }).join('')}
+                                `;
+                            }).join('');
+                        })()}
                     </div>
                 </div>
             `;
@@ -879,27 +1008,8 @@ const HomeView = {
         MapUtils.clearRoutesAndBuses();
         MapUtils.setUserLocation(this.userLocation.lat, this.userLocation.lng, true);
 
-        // If nearest stop available, prepare initial walking road path to the stop
-        if (initialNearest && initialNearest.stop) {
-            const stopLat = initialNearest.stop.latitude || initialNearest.stop.lat;
-            const stopLng = initialNearest.stop.longitude || initialNearest.stop.lng;
-            MapUtils.drawWalkingPath(
-                [this.userLocation.lat, this.userLocation.lng],
-                [stopLat, stopLng],
-                initialNearest.stop.name,
-                initialNearest.distanceText,
-                `${initialNearest.walkingMins} min`,
-                (calc) => {
-                    if (this.nearestStopInfo) {
-                        this.nearestStopInfo.distanceMeters = calc.distanceMeters;
-                        this.nearestStopInfo.distanceText = calc.distanceText;
-                        this.nearestStopInfo.walkingMins = calc.walkingMins;
-                        this.nearestStopInfo.isAtStop = calc.distanceMeters <= 50;
-                        this.walkingSteps = calc.steps || [];
-                    }
-                }
-            );
-        }
+        // Clean Map startup: map opens clean focused on user location pin without pre-drawn walking route lines
+        MapUtils.clearWalkingPath();
 
         // Check for live device GPS to refine user location
         if (window.GPSUtils) {

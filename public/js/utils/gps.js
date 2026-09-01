@@ -62,9 +62,9 @@ const GPSUtils = {
      * Show interactive verification result modal with full telemetry breakdown
      */
     showVerificationResultModal(result, actionName = 'Check-in') {
-        const isVerified = result.verified || result.status === 'verified';
-        const isPending = result.status === 'pending';
-        const isRejected = result.status === 'rejected' || !isVerified;
+        const isVerified = !!(result && (result.verified || result.status === 'verified'));
+        const isPending = result && result.status === 'pending';
+        const isRejected = !isVerified && !isPending;
 
         let statusIcon = 'check_circle';
         let statusTitle = 'Verification Successful!';
@@ -83,10 +83,18 @@ const GPSUtils = {
             statusBg = 'bg-tertiary/15 border-tertiary/30';
         }
 
-        const checks = result.verification?.checks || [];
-        const distanceStop = result.verification?.distanceToStopMeters;
-        const distanceBus = result.verification?.distanceToBusMeters;
-        const confidence = Math.round((result.verification?.confidence || 0.5) * 100);
+        const checks = result?.verification?.checks || result?.checks || [];
+        const distanceStop = result?.verification?.distanceToStopMeters ?? result?.distanceToStopMeters ?? null;
+        const distanceBus = result?.verification?.distanceToBusMeters ?? result?.distanceToBusMeters ?? null;
+        const confidence = Math.round((result?.verification?.confidence ?? result?.confidenceScore ?? (isVerified ? 0.9 : 0.2)) * 100);
+
+        const outcomeText = isVerified 
+            ? (result?.points > 0 ? `+${result.points} Pts` : '+10 Pts')
+            : (isPending ? '+10 (Held)' : '0 Pts (Withheld)');
+
+        const messageText = isRejected 
+            ? (result?.message || result?.verification?.rejectionReason || result?.rejectionReason || 'GPS Location out of bus stop range (350m perimeter). Enable Demo Geofence to test from home.')
+            : (result?.message || 'Location & telemetry verified within perimeter.');
 
         window.app.showModal(`
             <div class="glass-panel rounded-2xl p-5 max-w-md mx-auto shadow-2xl border border-white/15 relative overflow-hidden space-y-4">
@@ -97,7 +105,7 @@ const GPSUtils = {
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="font-bold text-sm ${statusColor}">${statusTitle}</h3>
-                        <p class="text-[11px] text-on-surface-variant leading-tight">${result.message || (isVerified ? 'Location & telemetry verified within perimeter.' : 'Integrity check failed.')}</p>
+                        <p class="text-[11px] text-on-surface-variant leading-tight">${messageText}</p>
                     </div>
                     <button class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-on-surface-variant" onclick="window.app.closeModal()">
                         <span class="material-symbols-outlined text-lg">close</span>
@@ -108,8 +116,8 @@ const GPSUtils = {
                 <div class="grid grid-cols-2 gap-2 text-center">
                     <div class="bg-surface-container/70 rounded-xl p-2.5 border border-white/10">
                         <span class="text-[10px] text-on-surface-variant uppercase font-semibold">Points Outcome</span>
-                        <div class="font-status-number text-lg font-bold ${result.points > 0 ? 'text-primary' : 'text-outline'} mt-0.5">
-                            ${result.points > 0 ? `+${result.points} Pts` : (result.pendingPoints > 0 ? `+${result.pendingPoints} (Held)` : '0 Pts (Withheld)')}
+                        <div class="font-status-number text-lg font-bold ${isVerified ? 'text-primary' : 'text-outline'} mt-0.5">
+                            ${outcomeText}
                         </div>
                     </div>
                     <div class="bg-surface-container/70 rounded-xl p-2.5 border border-white/10">
@@ -144,7 +152,7 @@ const GPSUtils = {
                             <span class="material-symbols-outlined text-xs text-primary">directions_bus</span>
                             Distance to Bus
                         </span>
-                        <span class="font-semibold ${distanceBus !== null && distanceBus <= 350 ? 'text-secondary' : 'text-on-surface-variant'}">
+                        <span class="font-semibold ${distanceBus !== null && distanceBus <= 350 ? 'text-secondary' : (distanceBus !== null ? 'text-error' : 'text-on-surface-variant')}">
                             ${distanceBus !== null ? `${distanceBus}m ${distanceBus <= 350 ? '✓' : ''}` : 'In Transit'}
                         </span>
                     </div>
@@ -167,15 +175,15 @@ const GPSUtils = {
                         <span>Testing from home?</span>
                     </div>
                     <button 
-                        class="px-2 py-1 rounded-lg ${this.isDemoMode() ? 'bg-secondary/20 text-secondary border border-secondary/30' : 'bg-surface-container-high text-on-surface border border-white/10'} font-bold text-[10px] transition-all"
+                        class="px-2.5 py-1.5 rounded-lg ${this.isDemoMode() ? 'bg-secondary/20 text-secondary border border-secondary/30' : 'bg-primary text-on-primary'} font-bold text-[10px] transition-all cursor-pointer"
                         onclick="GPSUtils.toggleDemoMode()"
                     >
-                        ${this.isDemoMode() ? 'Demo Geofence: ON' : 'Turn Demo Mode ON'}
+                        ${this.isDemoMode() ? 'Demo Geofence: ON ✓' : 'Turn Demo Mode ON'}
                     </button>
                 </div>
 
                 <button 
-                    class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs hover:bg-primary-fixed transition-all"
+                    class="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-xs hover:bg-primary-fixed transition-all cursor-pointer"
                     onclick="window.app.closeModal()"
                 >
                     Dismiss

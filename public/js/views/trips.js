@@ -11,7 +11,13 @@ const TripsView = {
     trackInterval: null,
     alertedNear: false,
     alertedBoarding: false,
+    alertedNextStopDeboard: false,
+    alertedAtDestinationDeboard: false,
+    alertedMissedStop: false,
+    lastMissedAlertStopIndex: null,
+    isDeboardAlarmActive: true,
     activeTab: 'summary', // 'summary' | 'forecast' | 'timeline'
+    isMapEnlarged: false,
 
     async render(params = {}) {
         this.tripId = params.tripId || null;
@@ -68,27 +74,41 @@ const TripsView = {
                     </div>
                 </header>
 
-                <!-- Main Map Area (Top ~38% vh) -->
-                <div class="fixed top-0 w-full h-[38vh] min-h-[220px] max-h-[380px] z-0 pt-14">
+                <!-- Main Map Area (Top ~38% vh or Fullscreen when enlarged) -->
+                <div class="fixed top-0 left-0 w-full ${this.isMapEnlarged ? 'h-[calc(100vh-60px)] z-10' : 'h-[38vh] min-h-[220px] max-h-[380px] z-0'} pt-14 transition-all duration-300" id="trip-map-container">
                     <div id="live-trip-map" class="w-full h-full"></div>
                     <!-- Smooth Gradient Overlay -->
                     <div class="absolute bottom-0 w-full h-20 bg-gradient-to-t from-[#0a0d14] via-[#0a0d14]/75 to-transparent pointer-events-none z-[400]"></div>
 
-                    <!-- Recenter / Detect GPS Real Location Button -->
-                    <button 
-                        onclick="TripsView.detectGPSLocation()"
-                        class="absolute top-16 right-3 bg-primary text-on-primary p-2.5 rounded-full shadow-[0_2px_12px_rgba(26,115,232,0.5)] hover:bg-primary-fixed active:scale-90 transition-all z-[450] flex items-center justify-center cursor-pointer"
-                        title="Detect & Center My Real Location"
-                        id="trip-locate-btn"
-                    >
-                        <span class="material-symbols-outlined text-lg font-bold">my_location</span>
-                    </button>
+                    <!-- Map Control Bar (Enlarge & Recenter GPS Buttons) -->
+                    <div class="absolute top-16 right-3 flex items-center gap-2 z-[450]">
+                        <!-- Enlarge / Shrink Map Button -->
+                        <button 
+                            onclick="TripsView.toggleMapEnlarge()"
+                            class="glass-panel text-on-surface hover:text-primary px-3 py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.6)] flex items-center gap-1.5 text-xs font-bold active:scale-95 transition-all cursor-pointer border border-white/20"
+                            id="trip-enlarge-map-btn"
+                            title="${this.isMapEnlarged ? 'Shrink Map' : 'Enlarge Map to Fullscreen'}"
+                        >
+                            <span class="material-symbols-outlined text-sm font-bold">${this.isMapEnlarged ? 'close_fullscreen' : 'open_in_full'}</span>
+                            <span class="text-[11px] font-semibold">${this.isMapEnlarged ? 'Shrink' : 'Enlarge Map'}</span>
+                        </button>
+
+                        <!-- Recenter / Detect GPS Real Location Button -->
+                        <button 
+                            onclick="TripsView.detectGPSLocation()"
+                            class="bg-primary text-on-primary p-2 rounded-full shadow-[0_2px_12px_rgba(26,115,232,0.5)] hover:bg-primary-fixed active:scale-90 transition-all flex items-center justify-center cursor-pointer"
+                            title="Detect & Center My Real Location"
+                            id="trip-locate-btn"
+                        >
+                            <span class="material-symbols-outlined text-lg font-bold">my_location</span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Bottom Sheet / Drawer (Bottom ~64% vh) -->
-                <main class="fixed bottom-0 w-full h-[64vh] max-h-[660px] z-20 bg-[#0a0d14] rounded-t-[28px] shadow-[0_-10px_40px_rgba(0,0,0,0.85)] border-t border-white/10 flex flex-col pt-2.5 pb-[85px] overflow-hidden">
-                    <!-- Drag Handle -->
-                    <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 shrink-0"></div>
+                <!-- Bottom Sheet / Drawer (Bottom ~64% vh or Collapsed when map is enlarged) -->
+                <main id="trip-bottom-drawer" class="fixed bottom-0 w-full ${this.isMapEnlarged ? 'h-[70px]' : 'h-[64vh] max-h-[660px]'} z-20 bg-[#0a0d14]/95 backdrop-blur-xl rounded-t-[28px] shadow-[0_-10px_40px_rgba(0,0,0,0.85)] border-t border-white/10 flex flex-col pt-2.5 pb-[85px] overflow-hidden transition-all duration-300">
+                    <!-- Drag Handle / Toggle Header -->
+                    <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-2 shrink-0 cursor-pointer" onclick="TripsView.toggleMapEnlarge()" title="Toggle Map View"></div>
 
                     <div class="flex-1 overflow-y-auto px-4 flex flex-col gap-3.5" id="trip-live-drawer-content">
                         <div class="text-center py-8 text-gray-400">
@@ -119,6 +139,23 @@ const TripsView = {
                     </div>
 
                     <div class="flex flex-col gap-3">
+                        <!-- Verified Multi-User Crowd Consensus Alerts (Shown ONLY when 2+ passenger uploads match) -->
+                        ${(() => {
+                            const verifiedAlerts = window.ComplaintsView ? ComplaintsView.getVerifiedCrowdConsensusAlerts() : [];
+                            if (!verifiedAlerts || verifiedAlerts.length === 0) return '';
+                            return verifiedAlerts.map(alert => `
+                                <div class="glass-panel rounded-2xl p-3 px-3.5 bg-gradient-to-r from-amber-500/20 via-surface-container-high to-surface-container border border-amber-500/40 flex items-center justify-between shadow-lg animate-in">
+                                    <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                                        <span class="material-symbols-outlined text-amber-400 text-lg font-bold animate-pulse shrink-0">warning</span>
+                                        <div class="min-w-0">
+                                            <div class="font-extrabold text-[10px] text-amber-300 uppercase tracking-wide">VERIFIED CROWD CONSENSUS ALERT</div>
+                                            <div class="text-xs text-on-surface font-medium truncate">${alert.text}</div>
+                                        </div>
+                                    </div>
+                                    <span class="bg-amber-500 text-black text-[10px] font-black px-2.5 py-0.5 rounded-full shrink-0">VERIFIED (${alert.count} Passenger Uploads)</span>
+                                </div>
+                            `).join('');
+                        })()}
                         ${trips.length === 0 ? `
                             <div class="glass-panel rounded-2xl p-6 text-center space-y-3">
                                 <span class="material-symbols-outlined text-4xl text-primary">directions_bus</span>
@@ -207,6 +244,19 @@ const TripsView = {
             this.userWaitlist = null; // Start fresh with Join Waiting List prompt
             this.alertedBoarding = false;
             this.alertedNear = false;
+            this.alertedNextStopDeboard = false;
+            this.alertedAtDestinationDeboard = false;
+            this.alertedMissedStop = false;
+            this.lastMissedAlertStopIndex = null;
+            if (this.tripId) {
+                const savedOnBoard = sessionStorage.getItem('lumina_onboard_' + this.tripId);
+                if (savedOnBoard === 'true') {
+                    this.isOnBoard = true;
+                }
+            }
+            if (params.destinationStopId) {
+                this.selectedDestinationStopId = params.destinationStopId;
+            }
             await this.loadTripDetails();
 
             // Polling tracking updates every 1.0s (real-time telemetry sync)
@@ -234,9 +284,15 @@ const TripsView = {
             // Check if current user is on waitlist for this trip
             await this.checkUserWaitlistStatus();
 
-            // Restore saved destination alarm
-            if (!this.selectedDestinationStopId && this.tripId) {
-                this.selectedDestinationStopId = localStorage.getItem('lumina_dest_' + this.tripId) || null;
+            // Restore saved destination alarm & on-board status
+            if (this.tripId) {
+                if (!this.selectedDestinationStopId) {
+                    this.selectedDestinationStopId = localStorage.getItem('lumina_dest_' + this.tripId) || null;
+                }
+                const savedOnBoard = sessionStorage.getItem('lumina_onboard_' + this.tripId);
+                if (savedOnBoard === 'true') {
+                    this.isOnBoard = true;
+                }
             }
 
             // Initialize Trip Map
@@ -367,7 +423,7 @@ const TripsView = {
             // Re-render the drawer UI components to match exact current stop
             this.renderDrawerUI();
 
-            // Check Waiting List Boarding Proximity Alert (When user is in waiting list and bus is arriving soon / at station)
+            // Check Waiting List Boarding Proximity Alert & Auto-Removal Logic
             if (this.userWaitlist && !this.isOnBoard && this.tripData && this.tripData.stops) {
                 const waitlistStopId = this.userWaitlist.stop_id || this.userWaitlist.id;
                 const waitlistIdx = this.tripData.stops.findIndex(s => 
@@ -384,55 +440,208 @@ const TripsView = {
                     const waitlistStopName = waitlistStop ? (waitlistStop.stop_name || waitlistStop.name) : (this.userWaitlist.stop_name || 'your stop');
                     const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Previous Stop';
 
-                    // Next stop arrival & forecast detection
+                    // 1. AUTO-REMOVAL FROM WAITLIST: User did NOT board when bus arrived & departed!
+                    const hasDepartedWaitlistStop = currentIdx > waitlistIdx || (currentIdx === waitlistIdx && this.tripData.state === 'in_transit' && (this.alertedBoarding === 'at_stop' || this.alertedBoarding === true));
+
+                    if (hasDepartedWaitlistStop) {
+                        const stopName = this.userWaitlist.stop_name || waitlistStopName;
+                        API.leaveWaitlist(waitlistStopId, this.tripId).catch(() => {});
+                        this.userWaitlist = null;
+                        this.alertedBoarding = false;
+                        
+                        NotificationUtils.showToast(
+                            'Waitlist Removed ⌛', 
+                            `You were automatically removed from the ${stopName} waiting list because you did not board when the bus arrived.`, 
+                            'info', 
+                            6000
+                        );
+
+                        this.renderDrawerUI();
+                        this.updateLiveTelemetryInPlace();
+                        return;
+                    }
+
+                    // 2. SYNCHRONIZED ETA & BOARDING PROXIMITY ALERT
                     const forecast = this.tripData.forecast;
                     const nextForecast = forecast ? forecast.next_stop_forecast : null;
                     const etaEl = document.getElementById('drawer-eta-value');
-                    const etaValText = etaEl ? etaEl.textContent.trim().toLowerCase() : '';
-                    const nextEtaText = (nextForecast ? (nextForecast.display_text || '') : (waitlistStop.eta ? (waitlistStop.eta.display_text || '') : '')).toLowerCase();
+                    const etaValText = etaEl ? etaEl.textContent.trim() : '';
+
+                    // Extract actual live ETA text (ensures 100% match with stops timeline and header)
+                    const liveEtaText = (nextForecast && nextForecast.display_text)
+                        ? nextForecast.display_text
+                        : (waitlistStop && waitlistStop.eta && waitlistStop.eta.display_text
+                            ? waitlistStop.eta.display_text
+                            : (etaValText && !etaValText.includes('AT STOP') ? etaValText : '1 min'));
+
+                    const etaLower = liveEtaText.toLowerCase();
 
                     // "Arriving soon" condition: Next stop is user's waitlisted stop (stopsRemaining === 1)
                     const isArrivingSoon = stopsRemaining === 1 && (
                         this.tripData.state === 'in_transit' ||
-                        etaValText.includes('arriving') ||
-                        etaValText.includes('< 1') ||
-                        etaValText.includes('1 min') ||
-                        nextEtaText.includes('arriving') ||
-                        nextEtaText.includes('< 1') ||
-                        nextEtaText.includes('1 min') ||
+                        etaLower.includes('arriving') ||
+                        etaLower.includes('< 1') ||
+                        etaLower.includes('1 min') ||
                         (nextForecast && nextForecast.wait_time_minutes <= 2)
                     );
 
                     if (isArrivingSoon && !this.alertedBoarding) {
                         this.alertedBoarding = true;
-                        this.triggerBoardingAlert(waitlistStopName, currName, false);
+                        this.triggerBoardingAlert(waitlistStopName, currName, false, liveEtaText);
                     } else if (stopsRemaining <= 0 && this.tripData.state === 'at_stop' && this.alertedBoarding !== 'at_stop') {
                         this.alertedBoarding = 'at_stop';
-                        this.triggerBoardingAlert(waitlistStopName, waitlistStopName, true);
+                        this.triggerBoardingAlert(waitlistStopName, waitlistStopName, true, 'At Station');
                     }
                 }
             }
 
-            // Check 1-Station-Before Deboarding Proximity Alert (ONLY when user is boarded)
-            if (this.isOnBoard && this.selectedDestinationStopId && this.tripData && this.tripData.stops) {
-                const destIdx = this.tripData.stops.findIndex(s => s.stop_id === this.selectedDestinationStopId);
+            // Check Deboarding Proximity & Missed Stop Alarms (when user has selected a destination stop)
+            if (this.selectedDestinationStopId && this.tripData && this.tripData.stops) {
+                const destIdx = this.tripData.stops.findIndex(s => 
+                    (s.stop_id && s.stop_id === this.selectedDestinationStopId) ||
+                    (s.id && s.id === this.selectedDestinationStopId)
+                );
+
                 if (destIdx !== -1) {
                     const currentIdx = this.tripData.current_stop_index || 0;
                     const stopsRemaining = destIdx - currentIdx;
+                    const destStop = this.tripData.stops[destIdx];
+                    const currentStop = this.tripData.stops[currentIdx];
+                    const destName = destStop ? (destStop.stop_name || destStop.name) : 'your destination';
+                    const currName = currentStop ? (currentStop.stop_name || currentStop.name) : 'Next Stop';
 
-                    if (stopsRemaining === 1 && !this.alertedNear) {
-                        this.alertedNear = true;
-                        const destStop = this.tripData.stops[destIdx];
-                        const currentStop = this.tripData.stops[currentIdx];
-                        const destName = destStop ? destStop.stop_name : 'your destination';
-                        const currName = currentStop ? currentStop.stop_name : 'Current Station';
-                        this.triggerDeboardingAlert(destName, currName);
-                    } else if (stopsRemaining <= 0 && this.alertedNear !== 'arrived') {
-                        this.alertedNear = 'arrived';
-                        const destStop = this.tripData.stops[destIdx];
-                        const destName = destStop ? destStop.stop_name : 'your destination';
-                        NotificationUtils.showToast('Arrived at Destination!', `You have reached ${destName}. Please deboard now!`, 'success', 8000);
-                        if ('vibrate' in navigator) navigator.vibrate([400, 150, 400]);
+                    // 1. Deboarding Pre-Alert (1 stop remaining)
+                    if (stopsRemaining === 1 && !this.alertedNextStopDeboard) {
+                        this.alertedNextStopDeboard = true;
+                        
+                        if (this.isDeboardAlarmActive !== false && window.AlarmUtils) {
+                            AlarmUtils.playDeboardChime();
+                        }
+                        
+                        NotificationUtils.showToast(
+                            '🔔 DEBOARDING ALERT', 
+                            `Next stop is your destination: ${destName}! Get ready to deboard.`, 
+                            'warning', 
+                            7000
+                        );
+
+                        if ('speechSynthesis' in window) {
+                            try {
+                                const utter = new SpeechSynthesisUtterance("Next stop is your destination, " + destName + ". Please get ready to deboard.");
+                                window.speechSynthesis.speak(utter);
+                            } catch(e) {}
+                        }
+                    } 
+                    // 2. Deboarding Alert AT Destination Stop (0 stops remaining)
+                    else if (stopsRemaining === 0 && !this.alertedAtDestinationDeboard && this.isOnBoard) {
+                        this.alertedAtDestinationDeboard = true;
+
+                        if (window.AlarmUtils) {
+                            AlarmUtils.playDeboardChime();
+                        }
+
+                        NotificationUtils.showToast(
+                            '📍 DESTINATION ARRIVED!', 
+                            `The bus is at your target stop: ${destName}! Please deboard now.`, 
+                            'success', 
+                            8000
+                        );
+
+                        if ('speechSynthesis' in window) {
+                            try {
+                                const utter = new SpeechSynthesisUtterance("The bus has arrived at your destination, " + destName + ". Please deboard now!");
+                                window.speechSynthesis.speak(utter);
+                            } catch(e) {}
+                        }
+
+                        // Show popup modal to deboard at target stop
+                        window.app.showModal(`
+                            <div class="glass-panel rounded-2xl p-5 max-w-md mx-auto shadow-2xl border-2 border-emerald-500/80 bg-gradient-to-b from-emerald-950/90 via-surface-container-high to-surface-container text-white space-y-4">
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40">
+                                    <div class="w-12 h-12 rounded-full bg-emerald-500/30 border border-emerald-400 flex items-center justify-center text-emerald-400 shrink-0 animate-bounce">
+                                        <span class="material-symbols-outlined text-3xl">directions_bus</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-extrabold text-base text-emerald-300 uppercase tracking-wider">Destination Reached</h3>
+                                        <p class="text-xs text-emerald-200 mt-0.5 font-medium">Arrived at: <strong class="text-white">${destName}</strong></p>
+                                    </div>
+                                </div>
+
+                                <p class="text-xs text-gray-200 leading-normal">
+                                    The bus has reached your selected deboarding stop <strong>${destName}</strong>. Tap below to confirm deboarding.
+                                </p>
+
+                                <div class="flex items-center gap-2 pt-1">
+                                    <button 
+                                        class="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                        onclick="window.app.closeModal(); TripsView.handleDeboardingClick();"
+                                    >
+                                        <span class="material-symbols-outlined text-base">exit_to_app</span>
+                                        <span>I'm Deboarding Now</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `);
+                    }
+                    // 3. MISSED STOP REMINDER FOR NEXT STOP (Bus passed destination stop and user did NOT deboard!)
+                    else if (stopsRemaining < 0 && this.isOnBoard && this.lastMissedAlertStopIndex !== currentIdx) {
+                        this.lastMissedAlertStopIndex = currentIdx;
+
+                        // Play loud urgent beeps
+                        if (window.AlarmUtils) {
+                            AlarmUtils.playMissedStopAlarm();
+                        }
+
+                        // Voice warning alert
+                        if ('speechSynthesis' in window) {
+                            try {
+                                const utter = new SpeechSynthesisUtterance("Warning! You missed your deboarding stop " + destName + ". Please get ready to deboard at the next stop, " + currName + ", immediately!");
+                                window.speechSynthesis.speak(utter);
+                            } catch(e) {}
+                        }
+
+                        // Display loud alert notification
+                        NotificationUtils.showToast(
+                            '🚨 MISSED DESTINATION REMINDER!', 
+                            `You missed your stop ${destName}! The bus is now approaching ${currName}. Deboard at ${currName} next!`, 
+                            'error', 
+                            12000
+                        );
+
+                        // Show unmissable popup modal with direct deboard action for the NEXT stop
+                        window.app.showModal(`
+                            <div class="glass-panel rounded-2xl p-5 max-w-md mx-auto shadow-2xl border-2 border-red-500/80 bg-gradient-to-b from-red-950/90 via-surface-container-high to-surface-container text-white space-y-4 animate-bounce-short">
+                                <div class="flex items-center gap-3 p-3 rounded-xl bg-red-500/20 border border-red-500/40">
+                                    <div class="w-12 h-12 rounded-full bg-red-500/30 border border-red-400 flex items-center justify-center text-red-400 shrink-0 animate-pulse">
+                                        <span class="material-symbols-outlined text-3xl">warning</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-extrabold text-base text-red-300 uppercase tracking-wider">Missed Stop Reminder</h3>
+                                        <p class="text-xs text-red-200 mt-0.5 font-medium">Passed Stop: <strong class="text-white">${destName}</strong></p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-surface-container-lowest/80 rounded-xl p-3 border border-white/10 space-y-2 text-xs">
+                                    <div class="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                                        <span class="material-symbols-outlined text-sm">directions_bus</span>
+                                        <span>Deboard at Next Stop: <strong class="text-emerald-400 font-extrabold underline">${currName}</strong></span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-300 leading-normal">
+                                        You missed your scheduled deboarding stop (<strong>${destName}</strong>). Please get ready to deboard immediately at the next station: <strong>${currName}</strong>.
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center gap-2 pt-1">
+                                    <button 
+                                        class="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-extrabold text-xs shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                                        onclick="window.app.closeModal(); TripsView.handleDeboardingClick();"
+                                    >
+                                        <span class="material-symbols-outlined text-base">exit_to_app</span>
+                                        <span>I'm Deboarding at ${currName} Now</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `);
                     }
                 }
             }
@@ -667,6 +876,21 @@ const TripsView = {
                     </p>
                 </div>
             </div>
+
+            <!-- Deboard Audio Alarm Control Toggle -->
+            <button 
+                onclick="TripsView.toggleDeboardAlarm()"
+                class="w-full py-2.5 px-3.5 rounded-xl border ${this.isDeboardAlarmActive ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]' : 'bg-surface-container-high border-white/10 text-on-surface-variant'} flex items-center justify-between font-bold text-xs transition-all active:scale-[0.99] cursor-pointer my-1 shadow-sm"
+                id="deboard-alarm-btn"
+            >
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base ${this.isDeboardAlarmActive ? 'text-amber-400 animate-pulse' : 'text-on-surface-variant'}">notifications_active</span>
+                    <span>${this.isDeboardAlarmActive ? 'Deboard Audio Alarm ACTIVE (Beep Alert)' : 'Enable Deboard Audio Alarm'}</span>
+                </div>
+                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${this.isDeboardAlarmActive ? 'bg-amber-500 text-black' : 'bg-white/10 text-on-surface-variant'}">
+                    ${this.isDeboardAlarmActive ? 'ON' : 'OFF'}
+                </span>
+            </button>
 
             <!-- 🌟 DEPARTED FROM & STATION DWELL LIVE INFO BANNER 🌟 -->
             ${trip.state === 'at_stop' ? `
@@ -1226,6 +1450,10 @@ const TripsView = {
 
         this.selectedDestinationStopId = stopId;
         this.alertedNear = false;
+        this.alertedNextStopDeboard = false;
+        this.alertedAtDestinationDeboard = false;
+        this.alertedMissedStop = false;
+        this.lastMissedAlertStopIndex = null;
         if (this.tripId) {
             localStorage.setItem('lumina_dest_' + this.tripId, stopId);
         }
@@ -1257,15 +1485,17 @@ const TripsView = {
         }
     },
 
-    triggerBoardingAlert(waitlistStopName, currentStopName, isAtStation = false) {
+    triggerBoardingAlert(waitlistStopName, currentStopName, isAtStation = false, etaText = '1 min') {
         // 1. Audio Chime
         try { NotificationUtils.playChime(); } catch(e) {}
+
+        const displayTimeText = isAtStation ? 'At Station' : (etaText.includes('min') ? etaText : `${etaText} mins`);
 
         // 2. Announce Voice Alert
         try {
             const speechText = isAtStation
                 ? `Attention: Route ${this.tripData?.route_short_name || '378'} has arrived at ${waitlistStopName}. Please board the bus now.`
-                : `Attention: Route ${this.tripData?.route_short_name || '378'} is 1 minute away from ${waitlistStopName}. Please get ready to board.`;
+                : `Attention: Route ${this.tripData?.route_short_name || '378'} is ${displayTimeText} away from ${waitlistStopName}. Please get ready to board.`;
             NotificationUtils.speakAlert(speechText);
         } catch(e) {}
 
@@ -1278,10 +1508,10 @@ const TripsView = {
 
         // 4. Persistent Toast Banner
         NotificationUtils.showToast(
-            isAtStation ? '🚌 Bus Has Arrived!' : '🚌 Bus Arriving in ~1 Min!',
+            isAtStation ? '🚌 Bus Has Arrived!' : `🚌 Bus Arriving in ~${displayTimeText}!`,
             isAtStation 
                 ? `Route ${this.tripData?.route_short_name || '378'} is at ${waitlistStopName}. Please board now!`
-                : `Bus is at ${currentStopName}, next stop is ${waitlistStopName} — prepare to board!`,
+                : `Bus is at ${currentStopName}, next stop is ${waitlistStopName} (ETA ~${displayTimeText}) — prepare to board!`,
             'bus_approaching',
             10000
         );
@@ -1303,7 +1533,7 @@ const TripsView = {
                 </div>
                 <div>
                     <span class="text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block" style="background-color: rgba(26, 115, 232, 0.15); border: 1px solid rgba(26, 115, 232, 0.35); color: #1a73e8;">
-                        ${isAtStation ? 'Bus At Station • Board Now' : 'Boarding Alert • ~1 Min Away'}
+                        ${isAtStation ? 'Bus At Station • Board Now' : `Boarding Alert • ~${displayTimeText}`}
                     </span>
                     <h3 class="text-xl font-extrabold mt-3" style="color: ${titleColor} !important;">
                         ${isAtStation ? `Bus Arrived at ${I18n.translateStop(waitlistStopName)}` : `Next Stop: ${I18n.translateStop(waitlistStopName)}`}
@@ -1311,7 +1541,7 @@ const TripsView = {
                     <p class="text-xs mt-2 leading-relaxed font-medium" style="color: ${bodyColor} !important;">
                         ${isAtStation 
                             ? `Route <strong style="color: ${highlightColor} !important; font-weight: 700;">${this.tripData?.route_short_name || '378'}</strong> is at <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(waitlistStopName)}</strong>. Tap below to confirm boarding and update crowd intelligence.`
-                            : `Route <strong style="color: ${highlightColor} !important; font-weight: 700;">${this.tripData?.route_short_name || '378'}</strong> is leaving <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(currentStopName)}</strong> and will reach <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(waitlistStopName)}</strong> in about 1 minute!`
+                            : `Route <strong style="color: ${highlightColor} !important; font-weight: 700;">${this.tripData?.route_short_name || '378'}</strong> is leaving <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(currentStopName)}</strong> and will reach <strong style="color: ${highlightColor} !important; font-weight: 700;">${I18n.translateStop(waitlistStopName)}</strong> in about ${displayTimeText}!`
                         }
                     </p>
                 </div>
@@ -1390,24 +1620,10 @@ const TripsView = {
             return;
         }
 
-        if (this.tripData && this.tripData.state !== 'at_stop') {
-            NotificationUtils.showToast('Bus In Motion 🚌', 'Safety rule: You can only board when the bus arrives and stops at a station.', 'warning', 4000);
-            return;
-        }
-
         const currentStop = this.tripData?.stops ? this.tripData.stops[this.tripData.current_stop_index] : null;
         const stopId = currentStop ? currentStop.stop_id : (this.tripData?.stops?.[0]?.stop_id || null);
 
-        // Instantly increment on-board passenger count locally for responsive UX
-        if (this.tripData) {
-            this.tripData.current_passenger_count = (this.tripData.current_passenger_count || 35) + 1;
-        }
-        this.isOnBoard = true;
-        this.userWaitlist = null;
-        this.renderDrawerUI();
-        this.updateLiveTelemetryInPlace();
-
-        NotificationUtils.showToast('Boarding Verified! 🚌', 'Checked in on-board. Passenger count updated (+10 Pts)', 'success', 3500);
+        NotificationUtils.showToast('Verifying GPS... 📡', 'Validating high-precision GPS geofence telemetry.', 'info', 2000);
 
         try {
             const loc = await GPSUtils.getCurrentPosition();
@@ -1419,8 +1635,29 @@ const TripsView = {
                 loc.isDemo
             );
 
-            if (res && res.passengerCount != null && this.tripData) {
-                this.tripData.current_passenger_count = res.passengerCount;
+            const isVerified = !!(res && (res.verified || res.status === 'verified'));
+
+            if (isVerified) {
+                // Instantly update on-board status & passenger count ONLY when verified!
+                this.isOnBoard = true;
+                if (this.tripId) {
+                    sessionStorage.setItem('lumina_onboard_' + this.tripId, 'true');
+                }
+                this.userWaitlist = null;
+                if (res && res.passengerCount != null && this.tripData) {
+                    this.tripData.current_passenger_count = res.passengerCount;
+                } else if (this.tripData) {
+                    this.tripData.current_passenger_count = (this.tripData.current_passenger_count || 35) + 1;
+                }
+                NotificationUtils.showToast('Boarding Verified! 🚌', 'Checked in on-board. Passenger count updated (+10 Pts)', 'success', 3500);
+            } else {
+                // Rejection: Keep isOnBoard = false
+                this.isOnBoard = false;
+                if (this.tripId) {
+                    sessionStorage.removeItem('lumina_onboard_' + this.tripId);
+                }
+                const reason = res?.verification?.rejectionReason || res?.message || 'You are outside the 350m bus stop geofence. Enable Demo Geofence if testing from home.';
+                NotificationUtils.showToast('Boarding Rejected ⚠️', reason, 'error', 5000);
             }
 
             GPSUtils.showVerificationResultModal(res, 'Boarding Check-in');
@@ -1430,6 +1667,11 @@ const TripsView = {
                 window.app.updateSidebarUser();
             }
         } catch (e) {
+            this.isOnBoard = false;
+            if (this.tripId) {
+                sessionStorage.removeItem('lumina_onboard_' + this.tripId);
+            }
+            NotificationUtils.showToast('Verification Error ⚠️', e.message || 'Failed to verify GPS location', 'error', 4000);
             this.renderDrawerUI();
             this.updateLiveTelemetryInPlace();
         }
@@ -1440,21 +1682,12 @@ const TripsView = {
             NotificationUtils.showToast('Boarding Required ⚠️', 'You must check in with "I\'m Boarding" first before you can deboard.', 'warning', 3500);
             return;
         }
-        if (this.tripData && this.tripData.state !== 'at_stop') {
-            NotificationUtils.showToast('Bus In Motion ⚠️', 'Passenger safety: You can only deboard when the bus has stopped at a station.', 'warning', 4000);
-            return;
-        }
         this.handleDeboarding();
     },
 
     async handleDeboarding() {
         if (!this.isOnBoard) {
             NotificationUtils.showToast('Boarding Required ⚠️', 'You must be on board before you can deboard.', 'warning', 3500);
-            return;
-        }
-
-        if (this.tripData && this.tripData.state !== 'at_stop') {
-            NotificationUtils.showToast('Bus In Motion ⚠️', 'Passenger safety: You can only deboard when the bus has stopped at a station.', 'warning', 4000);
             return;
         }
 
@@ -1468,6 +1701,9 @@ const TripsView = {
 
         // Reset on-board status and clear deboard alarm
         this.isOnBoard = false;
+        if (this.tripId) {
+            sessionStorage.removeItem('lumina_onboard_' + this.tripId);
+        }
         this.selectedDestinationStopId = null;
         this.alertedNear = false;
         if (this.tripId) {
@@ -1662,5 +1898,55 @@ const TripsView = {
                 }
             }, 'Crowd Intelligence Report');
         }
+    },
+
+    destroy() {
+        if (this.isMapEnlarged) {
+            this.isMapEnlarged = false;
+        }
+    },
+
+    toggleMapEnlarge(expand = null) {
+        this.isMapEnlarged = expand !== null ? expand : !this.isMapEnlarged;
+
+        const mapContainer = document.getElementById('trip-map-container');
+        const bottomDrawer = document.getElementById('trip-bottom-drawer');
+        const btn = document.getElementById('trip-enlarge-map-btn');
+
+        if (mapContainer && bottomDrawer) {
+            if (this.isMapEnlarged) {
+                mapContainer.className = 'fixed top-0 left-0 w-full h-[calc(100vh-60px)] z-10 pt-14 transition-all duration-300';
+                bottomDrawer.className = 'fixed bottom-0 w-full h-[70px] z-20 bg-[#0a0d14]/95 backdrop-blur-xl rounded-t-[28px] shadow-[0_-10px_40px_rgba(0,0,0,0.85)] border-t border-white/10 flex flex-col pt-2.5 pb-[85px] overflow-hidden transition-all duration-300';
+            } else {
+                mapContainer.className = 'fixed top-0 w-full h-[38vh] min-h-[220px] max-h-[380px] z-0 pt-14 transition-all duration-300';
+                bottomDrawer.className = 'fixed bottom-0 w-full h-[64vh] max-h-[660px] z-20 bg-[#0a0d14] rounded-t-[28px] shadow-[0_-10px_40px_rgba(0,0,0,0.85)] border-t border-white/10 flex flex-col pt-2.5 pb-[85px] overflow-hidden transition-all duration-300';
+            }
+        }
+
+        if (btn) {
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-sm font-bold">${this.isMapEnlarged ? 'close_fullscreen' : 'open_in_full'}</span>
+                <span class="text-[11px] font-semibold">${this.isMapEnlarged ? 'Shrink' : 'Enlarge Map'}</span>
+            `;
+            btn.title = this.isMapEnlarged ? 'Shrink Map' : 'Enlarge Map';
+        }
+
+        // Invalidate Leaflet map size after CSS animation
+        setTimeout(() => {
+            if (window.MapUtils && MapUtils.map) {
+                MapUtils.invalidateSize();
+            }
+        }, 320);
+    },
+
+    toggleDeboardAlarm() {
+        this.isDeboardAlarmActive = !this.isDeboardAlarmActive;
+        if (this.isDeboardAlarmActive && window.AlarmUtils) {
+            AlarmUtils.playDeboardChime();
+            NotificationUtils.showToast('🔔 Deboard Alarm Active', 'You will receive audio beeps and vibration when your stop is next or missed!', 'success', 3000);
+        } else {
+            NotificationUtils.showToast('Deboard Alarm Disabled', 'Audio beeps turned off', 'info', 2000);
+        }
+        this.renderDrawerUI();
     }
 };
